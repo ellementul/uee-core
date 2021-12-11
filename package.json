@@ -7,7 +7,8 @@
     "dev": "ts-node src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "test": "jest"
+    "test": "jest",
+    "wtest": "jest --watch"
   },
   "repository": {
     "type": "git",
