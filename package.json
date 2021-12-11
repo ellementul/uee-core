@@ -1,0 +1,27 @@
+{
+  "name": "uee",
+  "version": "0.1.0",
+  "description": "United Events Env",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "tsc && node dist/app.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ellementul/UEE.git"
+  },
+  "author": "Ellementul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ellementul/UEE/issues"
+  },
+  "homepage": "https://github.com/ellementul/UEE#readme",
+  "devDependencies": {
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3"
+  },
+  "dependencies": {
+    "chalk": "^5.0.0"
+  }
+}
