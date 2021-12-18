@@ -1,1 +1,2 @@
-console.log('Hello world!');
+console.info('##############################################')
+console.info('###### Starting main node... #################')
