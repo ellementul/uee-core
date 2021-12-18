@@ -6,6 +6,16 @@ test('Contsructor', () => {
   expect(events).toBeInstanceOf(Events)
 })
 
+test('Invalid event action', () => {
+  const events = new Events()
+  const action = 'InvalidAction'
+  const name = 'Something Name!'
+
+  expect(() => {
+    events.receiveMessage(JSON.parse(`{ "action": "${action}", "name": "${name}"}`))
+  }).toThrow(new EventError(`Unknowed action in message: ${action}`))
+})
+
 describe('Create event', () => {
   const events = new Events()
   const name = 'Something Name!'
@@ -21,7 +31,7 @@ describe('Create event', () => {
     })
 
     events.onUpdatingEvents(cbUpdateEvents)
-    events.createEvent(name)
+    events.receiveMessage({action: 'DefineEvent', name})
 
     expect(console.info).toHaveBeenCalled()
     expect(cbUpdateEvents).toHaveBeenCalledTimes(1)
@@ -39,7 +49,7 @@ describe('Create event', () => {
     })
 
     events.onUpdatingEvents(cbUpdateEvents)
-    events.createEvent(name)
+    events.receiveMessage({action: 'DefineEvent', name})
 
     expect(console.warn).toHaveBeenCalled()
     expect(cbUpdateEvents).toHaveBeenCalledTimes(0)
@@ -50,7 +60,7 @@ describe('Add listener node', () => {
   const events = new Events()
   const eventName = 'Something Name!'
   const nodeUid = randomUUID()
-  events.createEvent(eventName)
+  events.receiveMessage({action: 'DefineEvent', name: eventName})
 
   test('New listener', () => {
     jest.spyOn(console, 'info')
@@ -58,19 +68,19 @@ describe('Add listener node', () => {
       expect(message).toBe(`New listaner "${eventName}" for event "${nodeUid}"`)
     })
 
-    events.addListenerNode(eventName, nodeUid)
+    events.receiveMessage({action: 'ListenEvent', name: eventName, node: nodeUid})
     expect(console.info).toHaveBeenCalled()
   })
 
   test('Repeat listener', () => {
-    events.addListenerNode(eventName, nodeUid)
+    events.receiveMessage({action: 'ListenEvent', name: eventName, node: nodeUid})
   })
 
   test('Undefined event', () => {
     const undefindEventName = 'Smothing the other name!'
 
     expect(() => {
-      events.addListenerNode(undefindEventName, nodeUid)
+      events.receiveMessage({action: 'ListenEvent', name: undefindEventName, node: nodeUid})
     }).toThrow(new UndefinedEventError(undefindEventName))
   })
 })
@@ -83,11 +93,11 @@ describe('Calling event', () => {
   const nodeUidTwo = randomUUID()
   const nodeUidThree = randomUUID()
 
-  events.createEvent(eventNameOne)
-  events.createEvent(eventNameTwo)
-  events.addListenerNode(eventNameOne, nodeUidOne)
-  events.addListenerNode(eventNameOne, nodeUidThree)
-  events.addListenerNode(eventNameTwo, nodeUidTwo)
+  events.receiveMessage({action: 'DefineEvent', name: eventNameOne})
+  events.receiveMessage({action: 'DefineEvent', name: eventNameTwo})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, node: nodeUidOne})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, node: nodeUidThree})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameTwo, node: nodeUidTwo})
 
   const cbCalllingEvents = jest.fn()
 
@@ -100,14 +110,14 @@ describe('Calling event', () => {
       })
     })
     events.onCallingEvents(cbCalllingEvents)
-    events.callEvent(eventNameOne)
+    events.receiveMessage({action: 'CallEvent', name: eventNameOne})
 
     expect(cbCalllingEvents).toHaveBeenCalled()
   })
 
   test('Calling event without nodes', () => {
     const eventNameWithoutNodes = 'Event Name Without Nodes'
-    events.createEvent(eventNameWithoutNodes)
+    events.receiveMessage({action: 'DefineEvent', name: eventNameWithoutNodes})
 
     cbCalllingEvents.mockImplementationOnce(event => {
       expect(event).toEqual({
@@ -116,16 +126,16 @@ describe('Calling event', () => {
       })
     })
     events.onCallingEvents(cbCalllingEvents)
-    events.callEvent(eventNameWithoutNodes)
+    events.receiveMessage({action: 'CallEvent', name: eventNameWithoutNodes})
 
     expect(cbCalllingEvents).toHaveBeenCalled()
   })
 
-  test('Calling event without nodes', () => {
+  test('Calling undefined event', () => {
     const undefinedEventName = 'Undefinde Event Name'
 
     expect(() => {
-      events.callEvent(undefinedEventName)
+      events.receiveMessage({action: 'CallEvent', name: undefinedEventName})
     }).toThrow(new UndefinedEventError(undefinedEventName))
     
   })

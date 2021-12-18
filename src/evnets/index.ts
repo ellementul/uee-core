@@ -1,3 +1,5 @@
+import { IEventMessage, handlerUpdateEventsType, handlerCallEventsType } from './types'
+
 import EventEmitter from 'events'
 
 class EventError extends Error {
@@ -14,6 +16,9 @@ class UndefinedEventError extends EventError {
   }
 }
 
+const updatingEvent = Symbol()
+const callingEvent = Symbol()
+
 class Event {
   name: string
   nodes: Set<string>
@@ -24,23 +29,29 @@ class Event {
   }
 }
 
-interface EventCalling {
-  name: string
-  nodes: string[]
-}
-
-type handlerUpdateEventsType = (events: string[]) => void
-type handlerCallEventsType = (event: EventCalling) => void
-
-const updatingEvent = Symbol()
-const callingEvent = Symbol()
-
 class Events {
   private eventList: Map<string, Event> = new Map
 
   private emitter = new EventEmitter
 
-  public createEvent(name:string): void {
+  public receiveMessage({ action, name, node }: IEventMessage): void {
+
+    switch (action) {
+      case "DefineEvent":
+        this.createEvent(name)
+        break
+      case "ListenEvent":
+        this.addListenerNode(name, node)
+        break
+      case "CallEvent":
+        this.callEvent(name)
+        break
+      default:
+        throw new EventError(`Unknowed action in message: ${action}`)
+    }
+  }
+
+  private createEvent(name:string): void {
     if (this.eventList.has(name)) {
       console.warn(`Repeat defined event with name "${name}"`)
       return
@@ -52,7 +63,7 @@ class Events {
     console.info(`Defined new event "${name}"`)
   }
 
-  public addListenerNode(eventName, nodeUid): void {
+  private addListenerNode(eventName, nodeUid): void {
     const event = this.eventList.get(eventName)
 
     if(!event)
@@ -62,7 +73,7 @@ class Events {
     console.info(`New listaner "${eventName}" for event "${nodeUid}"`)
   }
 
-  public callEvent(name: string) {
+  private callEvent(name: string) {
     const event = this.eventList.get(name)
 
     if(!event)
@@ -81,4 +92,4 @@ class Events {
   }
 }
 
-export { EventError, UndefinedEventError, EventCalling, Events }                                   
+export { EventError, UndefinedEventError, IEventMessage, Events }                                   
