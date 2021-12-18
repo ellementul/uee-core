@@ -41,11 +41,15 @@ class Events {
   private emitter = new EventEmitter
 
   public createEvent(name:string): void {
-    if (this.eventList.has(name))
+    if (this.eventList.has(name)) {
+      console.warn(`Repeat defined event with name "${name}"`)
       return
+    }
 
     this.eventList.set(name, new Event(name))
     this.emitter.emit(updatingEvent, Array.from(this.eventList.keys()))
+
+    console.info(`Defined new event "${name}"`)
   }
 
   public addListenerNode(eventName, nodeUid): void {
@@ -55,6 +59,7 @@ class Events {
       throw new  UndefinedEventError(eventName)
 
     event.nodes.add(nodeUid)
+    console.info(`New listaner "${eventName}" for event "${nodeUid}"`)
   }
 
   public callEvent(name: string) {

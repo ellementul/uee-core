@@ -1,8 +1,6 @@
 import { randomUUID } from 'crypto'
 import { EventError, UndefinedEventError, Events } from './index'
 
-
-
 test('Contsructor', () => {
   const events = new Events()
   expect(events).toBeInstanceOf(Events)
@@ -13,6 +11,10 @@ describe('Create event', () => {
   const name = 'Something Name!'
 
   test('New event', () => {
+    jest.spyOn(console, 'info')
+    .mockImplementationOnce(message => {
+      expect(message).toBe(`Defined new event "${name}"`)
+    })
     
     const cbUpdateEvents = jest.fn((eventList) => {
       expect(eventList).toEqual([ name ])
@@ -21,10 +23,16 @@ describe('Create event', () => {
     events.onUpdatingEvents(cbUpdateEvents)
     events.createEvent(name)
 
+    expect(console.info).toHaveBeenCalled()
     expect(cbUpdateEvents).toHaveBeenCalledTimes(1)
   })
 
   test('Repeat event', () => {
+
+    jest.spyOn(console, 'warn')
+    .mockImplementationOnce(message => {
+      expect(message).toBe(`Repeat defined event with name "${name}"`)
+    })
 
     const cbUpdateEvents = jest.fn((eventList) => {
       expect(eventList).toEqual([ name ])
@@ -33,6 +41,7 @@ describe('Create event', () => {
     events.onUpdatingEvents(cbUpdateEvents)
     events.createEvent(name)
 
+    expect(console.warn).toHaveBeenCalled()
     expect(cbUpdateEvents).toHaveBeenCalledTimes(0)
   })
 })
@@ -44,7 +53,13 @@ describe('Add listener node', () => {
   events.createEvent(eventName)
 
   test('New listener', () => {
+    jest.spyOn(console, 'info')
+    .mockImplementationOnce(message => {
+      expect(message).toBe(`New listaner "${eventName}" for event "${nodeUid}"`)
+    })
+
     events.addListenerNode(eventName, nodeUid)
+    expect(console.info).toHaveBeenCalled()
   })
 
   test('Repeat listener', () => {
