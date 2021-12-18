@@ -1,47 +1,79 @@
 import EventEmitter from 'events'
-import { randomUUID } from 'crypto'
 
-interface IEvent {
-  name: string
-  uid: string
-}
-
-class Event implements IEvent {
-  name: string
-  uid: string
-  nodes: string[]
-
-  constructor(name:string) {
-    this.name = name
-    this.uid = randomUUID()
-    this.nodes = []
+class EventError extends Error {
+  constructor (message) {
+    const errorMessage = `Module Events Errror: ${message}`
+    super(errorMessage)
   }
 }
 
-type handlerUpdateEventsType = (events: IEvent[]) => void
+class UndefinedEventError extends EventError {
+  constructor (message) {
+    const errorMessage = `The event with this name is undefined, name: ${message}`
+    super(errorMessage)
+  }
+}
 
-const updateEvent = Symbol()
+class Event {
+  name: string
+  nodes: Set<string>
+
+  constructor (name:string) {
+    this.name = name
+    this.nodes = new Set
+  }
+}
+
+interface EventCalling {
+  name: string
+  nodes: string[]
+}
+
+type handlerUpdateEventsType = (events: string[]) => void
+type handlerCallEventsType = (event: EventCalling) => void
+
+const updatingEvent = Symbol()
+const callingEvent = Symbol()
 
 class Events {
-  private eventList: Event[] = []
+  private eventList: Map<string, Event> = new Map
 
   private emitter = new EventEmitter
 
   public createEvent(name:string): void {
-    if(this.eventList.some(event => event.name === name))
+    if (this.eventList.has(name))
       return
 
-    this.eventList.push(new Event(name))
-    this.emitter.emit(updateEvent, this.eventList.map(({ name, uid }) => ({ name, uid })))
+    this.eventList.set(name, new Event(name))
+    this.emitter.emit(updatingEvent, Array.from(this.eventList.keys()))
   }
 
-  public onUpdateEvents(cb:handlerUpdateEventsType): void {
-    this.emitter.addListener(updateEvent, cb)
+  public addListenerNode(eventName, nodeUid): void {
+    const event = this.eventList.get(eventName)
+
+    if(!event)
+      throw new  UndefinedEventError(eventName)
+
+    event.nodes.add(nodeUid)
   }
 
-  public addListenerNode(eventUid, nodeUid): void {
-    this.eventList.filter(event => event.uid === eventUid)
+  public callEvent(name: string) {
+    const event = this.eventList.get(name)
+
+    if(!event)
+      throw new UndefinedEventError(name)
+
+    this.emitter.emit(callingEvent, { name, nodes: [...event.nodes] })
+  }
+
+  // Add listeners for js event
+  public onUpdatingEvents(cb:handlerUpdateEventsType): void {
+    this.emitter.addListener(updatingEvent, cb)
+  }
+
+  public onCallingEvents(cb: handlerCallEventsType): void {
+    this.emitter.addListener(callingEvent, cb)
   }
 }
 
-export default Events
+export { EventError, UndefinedEventError, EventCalling, Events }                                   

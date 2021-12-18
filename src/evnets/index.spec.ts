@@ -1,16 +1,5 @@
-jest.mock('crypto', () => {
-  const originalModule = jest.requireActual('crypto')
-
-  //Mock the default export and named export 'foo'
-  return {
-    __esModule: true,
-    ...originalModule,
-    randomUUID: jest.fn(originalModule.randomUUID)
-  };
-});
-
 import { randomUUID } from 'crypto'
-import Events from './index'
+import { EventError, UndefinedEventError, Events } from './index'
 
 
 
@@ -26,10 +15,10 @@ describe('Create event', () => {
   test('New event', () => {
     
     const cbUpdateEvents = jest.fn((eventList) => {
-      expect(eventList).toEqual([{ name, uid: expect.any(String) }])
+      expect(eventList).toEqual([ name ])
     })
 
-    events.onUpdateEvents(cbUpdateEvents)
+    events.onUpdatingEvents(cbUpdateEvents)
     events.createEvent(name)
 
     expect(cbUpdateEvents).toHaveBeenCalledTimes(1)
@@ -38,10 +27,10 @@ describe('Create event', () => {
   test('Repeat event', () => {
 
     const cbUpdateEvents = jest.fn((eventList) => {
-      expect(eventList).toEqual([{ name, uid: expect.any(String) }])
+      expect(eventList).toEqual([ name ])
     })
 
-    events.onUpdateEvents(cbUpdateEvents)
+    events.onUpdatingEvents(cbUpdateEvents)
     events.createEvent(name)
 
     expect(cbUpdateEvents).toHaveBeenCalledTimes(0)
@@ -50,15 +39,79 @@ describe('Create event', () => {
 
 describe('Add listener node', () => {
   const events = new Events()
-  const nameEvent = 'Something Name!'
+  const eventName = 'Something Name!'
   const nodeUid = randomUUID()
-  events.createEvent(nameEvent)
+  events.createEvent(eventName)
 
   test('New listener', () => {
-    events.addListenerNode(nameEvent, nodeUid)
+    events.addListenerNode(eventName, nodeUid)
   })
 
   test('Repeat listener', () => {
-    events.addListenerNode(nameEvent, nodeUid)
+    events.addListenerNode(eventName, nodeUid)
+  })
+
+  test('Undefined event', () => {
+    const undefindEventName = 'Smothing the other name!'
+
+    expect(() => {
+      events.addListenerNode(undefindEventName, nodeUid)
+    }).toThrow(new UndefinedEventError(undefindEventName))
+  })
+})
+
+describe('Calling event', () => {
+  const events = new Events()
+  const eventNameOne = 'Something Name One!'
+  const eventNameTwo = 'Something Name Two!'
+  const nodeUidOne = randomUUID()
+  const nodeUidTwo = randomUUID()
+  const nodeUidThree = randomUUID()
+
+  events.createEvent(eventNameOne)
+  events.createEvent(eventNameTwo)
+  events.addListenerNode(eventNameOne, nodeUidOne)
+  events.addListenerNode(eventNameOne, nodeUidThree)
+  events.addListenerNode(eventNameTwo, nodeUidTwo)
+
+  const cbCalllingEvents = jest.fn()
+
+  test('Calling event for two nodes', () => {
+    
+    cbCalllingEvents.mockImplementationOnce(event => {
+      expect(event).toEqual({
+        name: eventNameOne,
+        nodes: [nodeUidOne, nodeUidThree]
+      })
+    })
+    events.onCallingEvents(cbCalllingEvents)
+    events.callEvent(eventNameOne)
+
+    expect(cbCalllingEvents).toHaveBeenCalled()
+  })
+
+  test('Calling event without nodes', () => {
+    const eventNameWithoutNodes = 'Event Name Without Nodes'
+    events.createEvent(eventNameWithoutNodes)
+
+    cbCalllingEvents.mockImplementationOnce(event => {
+      expect(event).toEqual({
+        name: eventNameWithoutNodes,
+        nodes: []
+      })
+    })
+    events.onCallingEvents(cbCalllingEvents)
+    events.callEvent(eventNameWithoutNodes)
+
+    expect(cbCalllingEvents).toHaveBeenCalled()
+  })
+
+  test('Calling event without nodes', () => {
+    const undefinedEventName = 'Undefinde Event Name'
+
+    expect(() => {
+      events.callEvent(undefinedEventName)
+    }).toThrow(new UndefinedEventError(undefinedEventName))
+    
   })
 })
