@@ -21,11 +21,11 @@ const callingEvent = Symbol()
 
 class Event {
   name: string
-  nodes: Set<string>
+  modules: Set<string>
 
   constructor (name:string) {
     this.name = name
-    this.nodes = new Set
+    this.modules = new Set
   }
 }
 
@@ -34,14 +34,14 @@ class Events {
 
   private emitter = new EventEmitter
 
-  public receiveMessage({ action, name, node }: IEventMessage): void {
+  public receiveMessage({ action, name, module }: IEventMessage): void {
 
     switch (action) {
       case "DefineEvent":
         this.createEvent(name)
         break
       case "ListenEvent":
-        this.addListenerNode(name, node)
+        this.addListenerModule(name, module)
         break
       case "CallEvent":
         this.callEvent(name)
@@ -63,14 +63,14 @@ class Events {
     console.info(`Defined new event "${name}"`)
   }
 
-  private addListenerNode(eventName, nodeUid): void {
+  private addListenerModule(eventName, moduleUid): void {
     const event = this.eventList.get(eventName)
 
     if(!event)
       throw new  UndefinedEventError(eventName)
 
-    event.nodes.add(nodeUid)
-    console.info(`New listaner "${eventName}" for event "${nodeUid}"`)
+    event.modules.add(moduleUid)
+    console.info(`New listaner "${eventName}" for event "${moduleUid}"`)
   }
 
   private callEvent(name: string) {
@@ -79,7 +79,7 @@ class Events {
     if(!event)
       throw new UndefinedEventError(name)
 
-    this.emitter.emit(callingEvent, { name, nodes: [...event.nodes] })
+    this.emitter.emit(callingEvent, { name, modules: [...event.modules] })
   }
 
   // Add listeners for js event

@@ -14,20 +14,7 @@ interface Message {
   data: object
 }
 
-class Node {
-  public uid: string
-  public clientUid: string
-
-  public send () {
-
-  }
-
-  public receive () {
-
-  }
-}
-
-class Nodes {
+class ManageModules {
   private nodesList: Node[]
   private emitter = new EventEmitter
 
@@ -62,4 +49,4 @@ class Nodes {
   }
 }
 
-export { Nodes }
+export { ManageModules }

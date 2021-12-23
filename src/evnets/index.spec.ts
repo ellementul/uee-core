@@ -56,31 +56,31 @@ describe('Create event', () => {
   })
 })
 
-describe('Add listener node', () => {
+describe('Add listener module', () => {
   const events = new Events()
   const eventName = 'Something Name!'
-  const nodeUid = randomUUID()
+  const moduleUid = randomUUID()
   events.receiveMessage({action: 'DefineEvent', name: eventName})
 
   test('New listener', () => {
     jest.spyOn(console, 'info')
     .mockImplementationOnce(message => {
-      expect(message).toBe(`New listaner "${eventName}" for event "${nodeUid}"`)
+      expect(message).toBe(`New listaner "${eventName}" for event "${moduleUid}"`)
     })
 
-    events.receiveMessage({action: 'ListenEvent', name: eventName, node: nodeUid})
+    events.receiveMessage({action: 'ListenEvent', name: eventName, module: moduleUid})
     expect(console.info).toHaveBeenCalled()
   })
 
   test('Repeat listener', () => {
-    events.receiveMessage({action: 'ListenEvent', name: eventName, node: nodeUid})
+    events.receiveMessage({action: 'ListenEvent', name: eventName, module: moduleUid})
   })
 
   test('Undefined event', () => {
     const undefindEventName = 'Smothing the other name!'
 
     expect(() => {
-      events.receiveMessage({action: 'ListenEvent', name: undefindEventName, node: nodeUid})
+      events.receiveMessage({action: 'ListenEvent', name: undefindEventName, module: moduleUid})
     }).toThrow(new UndefinedEventError(undefindEventName))
   })
 })
@@ -89,24 +89,24 @@ describe('Calling event', () => {
   const events = new Events()
   const eventNameOne = 'Something Name One!'
   const eventNameTwo = 'Something Name Two!'
-  const nodeUidOne = randomUUID()
-  const nodeUidTwo = randomUUID()
-  const nodeUidThree = randomUUID()
+  const moduleUidOne = randomUUID()
+  const moduleUidTwo = randomUUID()
+  const moduleUidThree = randomUUID()
 
   events.receiveMessage({action: 'DefineEvent', name: eventNameOne})
   events.receiveMessage({action: 'DefineEvent', name: eventNameTwo})
-  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, node: nodeUidOne})
-  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, node: nodeUidThree})
-  events.receiveMessage({action: 'ListenEvent', name: eventNameTwo, node: nodeUidTwo})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, module: moduleUidOne})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameOne, module: moduleUidThree})
+  events.receiveMessage({action: 'ListenEvent', name: eventNameTwo, module: moduleUidTwo})
 
   const cbCalllingEvents = jest.fn()
 
-  test('Calling event for two nodes', () => {
+  test('Calling event for two modules', () => {
     
     cbCalllingEvents.mockImplementationOnce(event => {
       expect(event).toEqual({
         name: eventNameOne,
-        nodes: [nodeUidOne, nodeUidThree]
+        modules: [moduleUidOne, moduleUidThree]
       })
     })
     events.onCallingEvents(cbCalllingEvents)
@@ -115,18 +115,18 @@ describe('Calling event', () => {
     expect(cbCalllingEvents).toHaveBeenCalled()
   })
 
-  test('Calling event without nodes', () => {
-    const eventNameWithoutNodes = 'Event Name Without Nodes'
-    events.receiveMessage({action: 'DefineEvent', name: eventNameWithoutNodes})
+  test('Calling event without modules', () => {
+    const eventNameWithoutmodules = 'Event Name Without modules'
+    events.receiveMessage({action: 'DefineEvent', name: eventNameWithoutmodules})
 
     cbCalllingEvents.mockImplementationOnce(event => {
       expect(event).toEqual({
-        name: eventNameWithoutNodes,
-        nodes: []
+        name: eventNameWithoutmodules,
+        modules: []
       })
     })
     events.onCallingEvents(cbCalllingEvents)
-    events.receiveMessage({action: 'CallEvent', name: eventNameWithoutNodes})
+    events.receiveMessage({action: 'CallEvent', name: eventNameWithoutmodules})
 
     expect(cbCalllingEvents).toHaveBeenCalled()
   })

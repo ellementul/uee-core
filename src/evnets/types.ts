@@ -6,12 +6,12 @@ export type TActionType = DEFINE | LISTEN | CALL
 export interface IEventMessage {
   action: TActionType,
   name: string,
-  node?: string
+  module?: string
 }
 
 interface IEventCalling {
   name: string
-  nodes: string[]
+  modules: string[]
 }
 
 export type handlerUpdateEventsType = (events: string[]) => void
