@@ -1,10 +1,7 @@
-type DEFINE = 'DefineEvent'
-type LISTEN = 'ListenEvent'
-type CALL = 'CallEvent'
-export type TActionType = DEFINE | LISTEN | CALL
+import { TEventAction } from '../UEE/UEEnvironment/types'
 
 export interface IEventMessage {
-  action: TActionType,
+  action: TEventAction,
   name: string,
   module?: string
 }

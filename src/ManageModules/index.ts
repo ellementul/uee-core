@@ -4,7 +4,7 @@ import EventEmitter from 'events'
 // TODO move in types file
 const enum MessageType {
   CONNECTION_TYPE = 'Connection',
-  NODES_SERVICE_TYPE = 'NodesService',
+  NODES_SERVICE_TYPE = 'ModulesService',
   EVENTS_SERVICE = 'EventsService'
 }
 
