@@ -1,10 +1,9 @@
-import { IEvent, IAction, THandleCallingEvent } from './types'
+import { IEvent, IAction, IModuleMessage, TMessage, THandleCallingEvent, THandleSentEventMessage } from './types'
 
 import EventEmitter from 'events'
 import { UEEModule } from '../UEEModule'
 
-const registeringModule = Symbol()
-const subscribingEvent = Symbol()
+const sendingMessage = Symbol()
 
 class UEEError extends Error {
   constructor (message) {
@@ -13,11 +12,41 @@ class UEEError extends Error {
   }
 }
 
-class UEEnviroment {
+export class UEEnviroment {
+
+  public onSendingMessage(cb: THandleSentEventMessage) {
+    this.emitter.addListener(sendingMessage, cb)
+  }
+
+  public receiveMessage ({ type, action }: TMessage) {
+
+    switch (type) {
+      case "EventsService":
+        this.receiveEventMessage(action)
+        break
+      default:
+        throw new UEEError(`Unknowed message type in message: ${type}`)
+    }
+  }
+
+  public onSubcribingEvent (eventName: string, cb: THandleCallingEvent): void {
+    if(this.eventSubsribes.has(eventName))
+      this.subscribeEvent(eventName, cb)
+    else
+      this.waitedSubscribes.set(cb, eventName)
+  }
+
+
+  // Private area
+  private emitter = new EventEmitter
   private eventSubsribes: Map<string, THandleCallingEvent[]> = new Map
   private waitedSubscribes: Map<THandleCallingEvent, string> = new Map
 
-  public receiveEventMessage ({ type, event }: IAction) {
+  private sendMessage(message: IModuleMessage) {
+    this.emitter.emit(sendingMessage, message)
+  }
+
+  private receiveEventMessage ({ type, event }: IAction) {
 
     switch (type) {
       case "DefineEvent":
@@ -29,13 +58,6 @@ class UEEnviroment {
       default:
         throw new UEEError(`Unknowed action type in message: ${type}`)
     }
-  }
-
-  public onSubcribingEvent (eventName: string, cb: THandleCallingEvent): void {
-    if(this.eventSubsribes.has(eventName))
-      this.subscribeEvent(eventName, cb)
-    else
-      this.waitedSubscribes.set(cb, eventName)
   }
 
   private defineEvent (event: IEvent): void {
@@ -55,9 +77,24 @@ class UEEnviroment {
     this.eventSubsribes.set(eventName, handlesList)
   }
 
-  private subscribeEvent (eventName: string, cb: THandleCallingEvent): void {
-    const handleList = this.eventSubsribes.get(eventName)
-    handleList.push(cb)
+  private prepareSubscribeEvent(moduleUid) { 
+    return ((eventName: string, cb: THandleCallingEvent): void => {
+      const handleList = this.eventSubsribes.get(eventName)
+      handleList.push(cb)
+
+      this.sendMessage({
+        type: "ModulesService",
+        action: {
+          type: "ListenEvent",
+          event: {
+            name: eventName
+          },
+          module: {
+            uid: moduleUid
+          }
+        }
+      })
+    })
   }
 
   private calledEvent (event: IEvent): void {

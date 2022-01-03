@@ -6,13 +6,17 @@ export type TEventAction = TDEFINE | TLISTEN | TCALL
 type REGISTER_MODULE = 'RegisterNewModule'
 export type TActionModule = REGISTER_MODULE
 
-type MODULES_SERVICE_TYPE = 'ModulesService'
-export type EVENTS_SERVICE = 'EventsService'
-export type TMessageType = MODULES_SERVICE_TYPE | EVENTS_SERVICE
+export type TMODULES_SERVICE = 'ModulesService'
+export type TEVENTS_SERVICE = 'EventsService'
+export type TMessageType = TMODULES_SERVICE | TEVENTS_SERVICE
 
 export interface IEvent {
   name: string,
   payload?: object
+}
+
+export interface IModule {
+  uid: string
 }
 
 export interface IAction {
@@ -20,11 +24,23 @@ export interface IAction {
   event: IEvent
 }
 
+export interface IModuleAction {
+  type: TEventAction,
+  event: IEvent,
+  module: IModule
+}
+
 export interface IActionMessage {
-  type: EVENTS_SERVICE,
+  type: TEVENTS_SERVICE,
   action: IAction
 }
 
-export type TEventMessage = IActionMessage
+export interface IModuleMessage {
+  type: TMODULES_SERVICE,
+  action: IModuleAction
+}
+
+export type TMessage = IActionMessage
+export type THandleSentEventMessage = (message: IModuleMessage) => void
 
 export type THandleCallingEvent = (data: Object) => void

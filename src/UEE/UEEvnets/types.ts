@@ -1,4 +1,4 @@
-import { TCALL, EVENTS_SERVICE, IAction, IEvent } from '../UEEnvironment/types'
+import { TCALL, TEVENTS_SERVICE, IAction, IEvent } from '../UEEnvironment/types'
 
 export interface IEventMessage {
   action: IAction,
@@ -11,7 +11,7 @@ export interface ICallAction {
 }
 
 export interface ICallMessage {
-  type: EVENTS_SERVICE,
+  type: TEVENTS_SERVICE,
   action: ICallAction
 }
 

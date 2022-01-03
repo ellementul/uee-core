@@ -5,7 +5,7 @@ import EventEmitter from 'events'
 const enum MessageType {
   CONNECTION_TYPE = 'Connection',
   NODES_SERVICE_TYPE = 'ModulesService',
-  EVENTS_SERVICE = 'EventsService'
+  TEVENTS_SERVICE = 'EventsService'
 }
 
 interface Message {
