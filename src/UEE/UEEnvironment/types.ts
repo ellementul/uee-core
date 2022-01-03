@@ -1,35 +1,30 @@
-type DEFINE = 'DefineEvent'
-type LISTEN = 'ListenEvent'
-type CALL = 'CallEvent'
-export type TEventAction = DEFINE | LISTEN | CALL
+type TDEFINE = 'DefineEvent'
+type TLISTEN = 'ListenEvent'
+export type TCALL = 'CallEvent'
+export type TEventAction = TDEFINE | TLISTEN | TCALL
 
 type REGISTER_MODULE = 'RegisterNewModule'
 export type TActionModule = REGISTER_MODULE
 
 type MODULES_SERVICE_TYPE = 'ModulesService'
-type EVENTS_SERVICE = 'EventsService'
+export type EVENTS_SERVICE = 'EventsService'
 export type TMessageType = MODULES_SERVICE_TYPE | EVENTS_SERVICE
 
-export interface ICalledEvent {
+export interface IEvent {
+  name: string,
+  payload?: object
+}
+
+export interface IAction {
+  type: TEventAction,
+  event: IEvent
+}
+
+export interface IActionMessage {
   type: EVENTS_SERVICE,
-  action: CALL,
-  data: {
-    data: {
-      name: string
-      data: object
-    }
-  }
+  action: IAction
 }
 
-export interface IRegisterMessage {
-  type: MODULES_SERVICE_TYPE,
-  data: {
-    action: REGISTER_MODULE,
-    data: {
-      name: string,
-      uuid: string,
-    }
-  }
-}
+export type TEventMessage = IActionMessage
 
-export type THandlerRegister = (message: IRegisterMessage) => void
+export type THandleCallingEvent = (data: Object) => void

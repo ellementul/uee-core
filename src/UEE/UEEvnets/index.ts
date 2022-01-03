@@ -1,3 +1,4 @@
+import { IEvent } from '../UEEnvironment/types'
 import { IEventMessage, handlerUpdateEventsType, handlerCallEventsType } from './types'
 
 import EventEmitter from 'events'
@@ -34,24 +35,26 @@ class Events {
 
   private emitter = new EventEmitter
 
-  public receiveMessage({ action, name, module }: IEventMessage): void {
+  public receiveMessage({ action: { type, event }, module }: IEventMessage): void {
 
-    switch (action) {
+    switch (type) {
       case "DefineEvent":
-        this.createEvent(name)
+        this.createEvent(event)
         break
       case "ListenEvent":
-        this.addListenerModule(name, module)
+        this.addListenerModule(event, module)
         break
       case "CallEvent":
-        this.callEvent(name)
+        this.callEvent(event)
         break
       default:
-        throw new EventError(`Unknowed action in message: ${action}`)
+        throw new EventError(`Unknowed action type in message: ${type}`)
     }
   }
 
-  private createEvent(name:string): void {
+  private createEvent(event: IEvent): void {
+    const name = event.name
+
     if (this.eventList.has(name)) {
       console.warn(`Repeat defined event with name "${name}"`)
       return
@@ -63,23 +66,33 @@ class Events {
     console.info(`Defined new event "${name}"`)
   }
 
-  private addListenerModule(eventName, moduleUid): void {
+  private addListenerModule(messageEvent: IEvent, moduleUid: string): void {
+    const eventName = messageEvent.name
+
     const event = this.eventList.get(eventName)
 
     if(!event)
-      throw new  UndefinedEventError(eventName)
+      throw new UndefinedEventError(eventName)
 
     event.modules.add(moduleUid)
     console.info(`New listaner "${eventName}" for event "${moduleUid}"`)
   }
 
-  private callEvent(name: string) {
+  private callEvent({ name, payload }: IEvent) {
     const event = this.eventList.get(name)
 
     if(!event)
       throw new UndefinedEventError(name)
 
-    this.emitter.emit(callingEvent, { name, modules: [...event.modules] })
+    const message = {
+      type: "EventsService",
+      action: { 
+        type: "CallEvent", 
+        event: { name, payload } 
+      }
+    }
+
+    this.emitter.emit(callingEvent, { message, modules: [...event.modules] })
   }
 
   // Add listeners for js event
