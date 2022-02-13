@@ -4,14 +4,13 @@ United Events Environment
 YOURModule extend UEEModule {
 
   need methods: {
-    init {
-      setting callbacks for events
-    }
-    callbacks methods...
+    defineEvents
+    run
+    callbacks methods with names events...
   }
 
   portotype(UEEModule's methods): {
-    set callaback for event
+    define event and check method for this event
     send event
   }
 }
