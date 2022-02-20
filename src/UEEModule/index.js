@@ -1,15 +1,17 @@
 class UEEModule {
-
   constructor (dispatcherEvents) {
-    const events = this.defineEvents()
-
-    events.forEach(event => {
-      // define event
+    const events = this.defineListenerEvents()
+    
+    events.forEach(({ name }) => {
+      dispatcherEvents.defineListenerEvent({ name })
     });
+
+    dispatcherEvents.onRecieveEvent(event => this.recieveEvent(event))
+    this.sendEvent = event => dispatcherEvents.sendEvent(event)
   }
 
-  sendEvent (eventName, payload) {
-
+  recieveEvent ({ name, payload }) {
+    this[name](payload)
   }
 }
 

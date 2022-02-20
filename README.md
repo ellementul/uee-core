@@ -4,9 +4,9 @@ United Events Environment
 YOURModule extend UEEModule {
 
   need methods: {
-    defineEvents
+    defineListenerEvents
     run
-    callbacks methods with names events...
+    callbacks methods for listener events...
   }
 
   portotype(UEEModule's methods): {

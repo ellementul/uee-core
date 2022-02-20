@@ -1,5 +1,7 @@
-import Dispatcher from "./UEEDispatcher";
-import YourModule from "./tests";
+import Dispatcher from "./UEEDispatcher/index.js";
+import YourModule from "./tests/index.js";
 const dispatcher = new Dispatcher()
-new YourModule(dispatcher)
+const yourModule = new YourModule(dispatcher)
+
+yourModule.run()
 // Need fabric: UEE.connect(YourModule)

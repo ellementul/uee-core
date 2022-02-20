@@ -2,8 +2,10 @@
   "name": "uee",
   "version": "0.0.1",
   "description": "United Environment Events",
+  "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
