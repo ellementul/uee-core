@@ -5,3 +5,4 @@ const yourModule = new YourModule(dispatcher)
 
 yourModule.run()
 // Need fabric: UEE.connect(YourModule)
+// Move test in tests!
