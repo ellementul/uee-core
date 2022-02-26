@@ -12,6 +12,7 @@ class TestModuleOne extends UEEModule {
 
   message (payload) {
     console.log('Message Event: ', payload)
+    this.sendEvent({ name: 'answer', payload: 'It is sent Module One' })
   }
 }
 
