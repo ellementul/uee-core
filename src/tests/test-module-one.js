@@ -1,6 +1,7 @@
 import UEEModule from "../UEEModule/index.js"
 
 class TestModule extends UEEModule {
+  
   defineListenerEvents () {
     return [{ name: 'message' }]
   }

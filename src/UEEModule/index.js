@@ -1,5 +1,10 @@
 class UEEModule {
   constructor (dispatcherEvents) {
+    
+    //Get name module
+    this.name = this.constructor.name
+
+    //Get events waht is this module listener
     const events = this.defineListenerEvents()
     
     events.forEach(({ name }) => {
@@ -14,7 +19,17 @@ class UEEModule {
   }
 
   recieveEvent ({ name, payload }) {
-    this[name](payload)
+    try {
+      this[name](payload)
+    }
+    catch (error) {
+
+      if(typeof this[name] !== "function")
+        throw new Error(`Callback don't define for this listenered event: ${ name }`)
+
+      error.message = `The error of calling callback for '${name}' event : ${error.message}`
+      throw error
+    }
   }
 }
 
