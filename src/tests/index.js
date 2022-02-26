@@ -1,4 +1,5 @@
 import UEEModule from "../UEEModule/index.js"
+import Dispatcher from "../UEEDispatcher/index.js";
 
 class YourModule extends UEEModule {
   defineListenerEvents () {
@@ -16,4 +17,7 @@ class YourModule extends UEEModule {
   }
 }
 
-export default YourModule
+
+const dispatcher = new Dispatcher()
+const yourModule = new YourModule(dispatcher)
+yourModule.run()

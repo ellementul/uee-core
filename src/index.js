@@ -1,8 +1,4 @@
 import Dispatcher from "./UEEDispatcher/index.js";
-import YourModule from "./tests/index.js";
-const dispatcher = new Dispatcher()
-const yourModule = new YourModule(dispatcher)
+import Module from "../UEEModule/index.js"
 
-yourModule.run()
-// Need fabric: UEE.connect(YourModule)
-// Move test in tests!
+export { Dispatcher, Module }
