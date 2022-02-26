@@ -1,16 +1,17 @@
 # UEE
 United Events Environment
 
-YOURModule extend UEEModule {
+Your module should to extend UEEModule.
 
-  need methods: {
-    defineListenerEvents
-    run
-    callbacks methods for listener events...
-  }
+```javascript
+class YourModule extends UEEModule {
 
-  portotype(UEEModule's methods): {
-    define event and check method for this event
-    send event
-  }
 }
+```
+
+And your module send UEEManager to run
+```javascript
+import YourModule from 'your-module.js'
+const manager = new UEEManager
+manager.run(YourModule)
+```

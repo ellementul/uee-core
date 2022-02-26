@@ -1,7 +1,8 @@
 import UEEModule from "../UEEModule/index.js"
 import Dispatcher from "../UEEDispatcher/index.js";
+import Manager from "../UEEManager/index.js";
 
-class YourModule extends UEEModule {
+class TestModule extends UEEModule {
   defineListenerEvents () {
     return [{ name: 'message' }]
   }
@@ -19,5 +20,5 @@ class YourModule extends UEEModule {
 
 
 const dispatcher = new Dispatcher()
-const yourModule = new YourModule(dispatcher)
-yourModule.run()
+const manager = new Manager(dispatcher)
+manager.run(TestModule)
