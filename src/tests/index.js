@@ -8,7 +8,8 @@ const manager = new Manager(dispatcher)
 
 console.log('-----------------TEST--------------------')
 
-manager.run(TestModuleOne)
-manager.run(TestModuleTwo)
+await manager.initModule(TestModuleOne)
+await manager.initModule(TestModuleTwo)
+manager.run()
 
 //TODO Make to run module or modules

@@ -1,6 +1,6 @@
 import UEEModule from "../UEEModule/index.js"
 
-class TestModule extends UEEModule {
+class TestModuleTwo extends UEEModule {
   defineListenerEvents () {
     return [{ name: 'ping' }]
   }
@@ -14,4 +14,4 @@ class TestModule extends UEEModule {
   }
 }
 
-export default TestModule
+export default TestModuleTwo

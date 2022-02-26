@@ -1,6 +1,6 @@
 import UEEModule from "../UEEModule/index.js"
 
-class TestModule extends UEEModule {
+class TestModuleOne extends UEEModule {
   
   defineListenerEvents () {
     return [{ name: 'message' }]
@@ -15,4 +15,4 @@ class TestModule extends UEEModule {
   }
 }
 
-export default TestModule
+export default TestModuleOne
