@@ -2,6 +2,15 @@ class UEEDispatcher {
   constructor () {
     this.listenerEventsSignatures = new Set
     this.recieveEvent = () => { throw new Error("The recieve callback isn't function!") }
+
+    this.server = {
+      send: () => {},
+    }
+  }
+
+  connectServer ({ send, onRecieve }) {
+    this.server.send = event => send(event)
+    onRecieve( event => this.recieveEvent(event) )
   }
 
   calculateEventSignature ({ name, payloadType, payload }) {
@@ -14,6 +23,9 @@ class UEEDispatcher {
   }
 
   sendEvent({ name, payload }) {
+
+    this.server.send({ name, payload })
+
     const eventSignature =  this.calculateEventSignature({ name, payload })
     if(this.listenerEventsSignatures.has(eventSignature))
       this.recieveEvent({ name, payload })
