@@ -2,7 +2,7 @@ import UEEModule from "../UEEModule/index.js"
 
 class TestModule extends UEEModule {
   defineListenerEvents () {
-    return [{ name: 'ping' }]
+    return [{ name: 'message' }]
   }
 
   run () {
@@ -10,9 +10,7 @@ class TestModule extends UEEModule {
   }
 
   message (payload) {
-    console.log('-----------------TEST--------------------')
-    console.log('Paylod of message: ')
-    console.log(payload)
+    console.log('Message Event: ', payload)
   }
 }
 

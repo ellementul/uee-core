@@ -2,17 +2,15 @@ import UEEModule from "../UEEModule/index.js"
 
 class TestModule extends UEEModule {
   defineListenerEvents () {
-    return [{ name: 'message' }]
+    return [{ name: 'ping' }]
   }
 
   run () {
     this.sendEvent({ name: 'message', payload: 'It send Module Two' })
   }
 
-  message (payload) {
-    console.log('-----------------TEST--------------------')
-    console.log('Paylod of message: ')
-    console.log(payload)
+  ping (payload) {
+    console.log('Ping Event: ', payload)
   }
 }
 

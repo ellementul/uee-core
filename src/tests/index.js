@@ -6,6 +6,8 @@ import Manager from "../UEEManager/index.js";
 const dispatcher = new Dispatcher()
 const manager = new Manager(dispatcher)
 
+console.log('-----------------TEST--------------------')
+
 manager.run(TestModuleOne)
 manager.run(TestModuleTwo)
 
