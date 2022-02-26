@@ -1,5 +1,9 @@
+import { v4 as uuidv4 } from 'uuid'
+
 class UEEDispatcher {
   constructor () {
+    this.uuid = uuidv4()
+
     this.listenerEventsSignatures = new Set
     this.recieveEvent = () => { throw new Error("The recieve callback isn't function!") }
 
@@ -9,8 +13,16 @@ class UEEDispatcher {
   }
 
   connectServer ({ send, onRecieve }) {
-    this.server.send = event => send(event)
-    onRecieve( event => this.recieveEvent(event) )
+    this.server.send = event => {
+      event.from = this.uuid 
+      send(event)
+    }
+    onRecieve( event => {
+      if(event.from === this.uuid)
+        return
+        
+      this.recieveEvent(event) 
+    })
   }
 
   calculateEventSignature ({ name, payloadType, payload }) {
