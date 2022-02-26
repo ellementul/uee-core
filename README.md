@@ -1,6 +1,8 @@
 # UEE
 United Events Environment
 
+TODO Connect Parcel!!!
+
 Your module should to extend UEEModule.
 
 ```javascript
@@ -13,5 +15,6 @@ And your module send UEEManager to run
 ```javascript
 import YourModule from 'your-module.js'
 const manager = new UEEManager
-manager.run(YourModule)
+manager.initModule(YourModule)
+manager.run()
 ```
