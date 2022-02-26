@@ -1,3 +1,14 @@
-import Http from 'http'
 import { Server } from "socket.io"
-export default new Server(Http.createServer())
+class UEEServer {
+  constructor (server) {
+
+    const io = new Server(server)
+    io.on("connection", socket => this.connection(socket))
+  }
+
+  connection (socket) {
+    console.log(socket.id);
+  }
+}
+
+export default UEEServer
