@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
+    "node-static": "^0.7.11",
     "socket.io": "^4.4.1",
     "uuid": "^8.3.2"
   }
