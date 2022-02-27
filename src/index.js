@@ -15,15 +15,8 @@ class UEEFabric {
     }
 
     const manager = new Manager(dispatcher)
-    this.initModule = module => manager.initModule(module)
+    this.initModules = module => manager.initModules(module)
     this.run = () => manager.run()
-  }
-
-  async initModules (modules) {
-    const promises =  modules.map(module => {
-      return this.initModule(module)
-    });
-    await Promise.all(promises)
   } 
 }
 

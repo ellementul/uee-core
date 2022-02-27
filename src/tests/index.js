@@ -6,5 +6,7 @@ import { UEE } from "../index.js"
 console.log('-----------------TEST--------------------')
 
 const envariament = new UEE
-await envariament.initModules([TestModuleOne, TestModuleTwo])
 envariament.run()
+await envariament.initModules([TestModuleOne, TestModuleTwo])
+
+
