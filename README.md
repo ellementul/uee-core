@@ -1,7 +1,6 @@
 # UEE
 United Events Environment
 
-TODO CLinet for websocket on node!!!
 TODO Connect Parcel!!!
 
 Your module should to extend UEEModule.
