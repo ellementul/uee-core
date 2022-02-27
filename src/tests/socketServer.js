@@ -7,7 +7,9 @@ class UEEServer {
   }
 
   connection (socket) {
-    console.log(socket.id);
+    socket.on("sendEvent", event => { 
+      socket.emit("sendEvent", event)
+    })
   }
 }
 
