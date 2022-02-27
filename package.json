@@ -1,6 +1,6 @@
 {
   "name": "uee",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "United Environment Events",
   "type": "module",
   "main": "src/index.js",
@@ -20,9 +20,6 @@
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
-    "node-static": "^0.7.11",
-    "socket.io": "^4.4.1",
-    "socket.io-client": "^4.4.1",
     "uuid": "^8.3.2"
   }
 }
