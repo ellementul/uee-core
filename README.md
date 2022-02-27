@@ -29,7 +29,7 @@ manager.run()
 1. Count server widget
 
 ### Chat
-2. Chat without history
+1. Chat without history
 2. Chat show module(recive message)
 2. Create new message module(only send message, in message count server and time)
 2. Realtime chat(show message what other person write)
@@ -46,4 +46,4 @@ manager.run()
 4. Create several chats
 
 ### First game
-4. Zero-cross game
+1. Zero-cross game
