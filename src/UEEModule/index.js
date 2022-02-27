@@ -9,9 +9,10 @@ class UEEModule {
       throw Error('Not valid dispatcher')
 
     //Get events waht is this module listener
-    let events = this. events || []
-    if(typeof this.defEvents === 'function')
-      events = this.defEvents()
+    if(typeof this.defEvents !== 'function')
+      throw new Error('The defEvents method should be define!')
+
+    const events = this.defEvents()
     
     events.forEach(({ name }) => {
       if(typeof this[name] !== "function")
