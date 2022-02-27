@@ -1,6 +1,7 @@
 # UEE
 United Events Environment
 
+TODO: event faster then running module(accamulate events)
 TODO: Added TestDispatcher and TestTransport
 
 ```javascript
