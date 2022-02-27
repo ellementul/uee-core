@@ -1,8 +1,13 @@
 class UEEModule {
   constructor (dispatcherEvents) {
-    
     //Get name module
     this.name = this.constructor.name
+  }
+
+  setDispatcher (dispatcherEvents) {
+    // TODO Abstract dispatcher instance check
+    if(!dispatcherEvents || typeof dispatcherEvents !== "object")
+      throw Error('Not valid dispatcher')
 
     //Get events waht is this module listener
     let events = this. events || []

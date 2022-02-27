@@ -19,7 +19,9 @@ class UEEManager {
     }
     
     const dispatcherForThisModule = this.generateDispatherForModule(nameModule)
-    const module = new ModuleClass(dispatcherForThisModule)
+    const module = new ModuleClass()
+    module.setDispatcher(dispatcherForThisModule)
+
     this.modules.set(nameModule, module)
 
     return module
