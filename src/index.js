@@ -4,7 +4,7 @@ import Manager from "./UEEManager/index.js"
 import AbstractTransport from "./UEETransport/abstract-class.js";
 
 class UEEFabric {
-  constructor ({ transport } = {}) {
+  constructor ({ transport, modules = [], isRun = false } = {}) {
     const dispatcher = new Dispatcher()
 
     if (transport) {
@@ -17,6 +17,15 @@ class UEEFabric {
     const manager = new Manager(dispatcher)
     this.initModules = module => manager.initModules(module)
     this.run = () => manager.run()
+
+    if(!Array.isArray(modules))
+      throw new Error("Not valid modules!")  
+
+    if(modules.length)
+      this.initModules(modules)
+
+    if(isRun)
+      this.run()
   } 
 }
 
