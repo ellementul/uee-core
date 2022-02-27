@@ -1,9 +1,7 @@
 # UEE
 United Events Environment
 
-TODO Connect Parcel!!!
-
-Your module should to extend UEEModule.
+TODO: Added TestDispatcher and TestTransport
 
 ```javascript
 class YourModule extends UEEModule {
