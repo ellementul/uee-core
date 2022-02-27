@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo No test"
+    "test": "node src/tests/index.js"
   },
   "repository": {
     "type": "git",
