@@ -5,7 +5,7 @@ class UEEModule {
     this.name = this.constructor.name
 
     //Get events waht is this module listener
-    let events
+    let events = this. events || []
     if(typeof this.defEvents === 'function')
       events = this.defEvents()
     
