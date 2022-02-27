@@ -1,7 +1,7 @@
 import UEEModule from "../UEEModule/index.js"
 
 class TestModuleTwo extends UEEModule {
-  defineListenerEvents () {
+  defEvents () {
     return [{ name: 'ping' }, { name: 'answer' }]
   }
 

@@ -5,7 +5,7 @@ class UEEModule {
     this.name = this.constructor.name
 
     //Get events waht is this module listener
-    const events = this.defineListenerEvents()
+    const events = this.defEvents()
     
     events.forEach(({ name }) => {
       if(typeof this[name] !== "function")
