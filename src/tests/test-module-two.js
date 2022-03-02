@@ -10,11 +10,11 @@ class TestModuleTwo extends UEEModule {
   }
 
   ping (payload) {
-    console.log('Ping Event: ', payload)
+    console.log('ModuleTwo get Ping Event: ', payload)
   }
 
   answer (payload) {
-    console.log('Answer Event: ', payload)
+    console.log('ModuleTwo get Answer Event: ', payload)
   }
 }
 

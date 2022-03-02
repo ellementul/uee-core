@@ -12,17 +12,18 @@ class UEEDispatcher {
     }
   }
 
-  connectServer ({ send, onRecieve }) {
-    this.server.send = event => {
-      event.from = this.uuid 
-      send(event)
-    }
-    onRecieve( event => {
+  connectServer (server) {
+    server.onRecieve( event => {
       if(event.from === this.uuid)
         return
         
       this.recieveEvent(event) 
     })
+
+    this.server.send = event => {
+      event.from = this.uuid 
+      server.send(event)
+    }
   }
 
   calculateEventSignature ({ name, payloadType, payload }) {
@@ -31,16 +32,20 @@ class UEEDispatcher {
 
   defineListenerEvent({ name, payloadType }) {
     const eventSignature = this.calculateEventSignature({ name, payloadType })
-    this.listenerEventsSignatures.set(eventSignature, { lastVersion: 0 })
+    this.listenerEventsSignatures.set(eventSignature, { recieveLastVersion: 0, sendLastVersion: 0 })
   }
 
   sendEvent({ name, payload }) {
     const eventSignature =  this.calculateEventSignature({ name, payload })
+
+    if(!this.listenerEventsSignatures.has(eventSignature))
+      this.listenerEventsSignatures.set(eventSignature, { recieveLastVersion: 0, sendLastVersion: 0 })
+
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
-    const version = eventsParam.lastVersion + 1
+
+    const version = eventsParam.sendLastVersion = eventsParam.sendLastVersion + 1
 
     this.server.send({ name, payload, version })
-
     this.recieveEvent({ name, payload, version })
   }
 
@@ -56,8 +61,8 @@ class UEEDispatcher {
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
     // We don't need old version or unlistenered event
-    if(eventsParam && version > eventsParam.lastVersion) {
-      eventsParam.lastVersion = version
+    if(eventsParam && version > eventsParam.recieveLastVersion) {
+      eventsParam.recieveLastVersion = version
       this.sendModules({ name, payload })
     }
   }

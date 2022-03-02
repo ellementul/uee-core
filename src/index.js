@@ -15,17 +15,13 @@ class UEEFabric {
     }
 
     const manager = new Manager(dispatcher)
-    this.initModules = module => manager.initModules(module)
-    this.run = () => manager.run()
+    this.initModules = (modules, isRun) => manager.initModules(modules, isRun)
 
     if(!Array.isArray(modules))
       throw new Error("Not valid modules!")  
 
     if(modules.length)
-      this.initModules(modules)
-
-    if(isRun)
-      this.run()
+      this.initModules(modules, isRun)
   } 
 }
 

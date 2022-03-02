@@ -7,8 +7,6 @@ class UEEManager {
 
     this.modules = new Map
     this.events = new Map
-
-    this._isRan = false
   }
 
   async initModule (ModuleClass) {
@@ -28,20 +26,19 @@ class UEEManager {
     return module
   }
 
-  async initModules (Modules) {
+  async initModules (Modules, isRun = false) {
     const promises =  Modules.map(Module => {
       return this.initModule(Module)
     });
     const modules = await Promise.all(promises)
 
-    if(this._isRan)
+    if(isRun)
       this.run(modules)
   }
 
   run (modules) {
     modules = modules || this.modules
     Array.from(this.modules.values()).forEach( ({ module }) => module.run())
-    this._isRan = true
   }
 
   // async checkExistModule(module) {
