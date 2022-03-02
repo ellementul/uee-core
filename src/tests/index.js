@@ -7,6 +7,6 @@ console.log('-----------------TEST--------------------')
 
 const envariament = new UEE
 envariament.run()
-await envariament.initModules([TestModuleOne, TestModuleTwo])
+await envariament.initModules([TestModuleOne, TestModuleTwo, TestModuleTwo])
 
 

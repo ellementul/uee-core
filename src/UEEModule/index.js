@@ -1,8 +1,6 @@
 class UEEModule {
 
   setDispatcher (dispatcherEvents) {
-    //Get name module
-    this.name = this.constructor.name
 
     // TODO Abstract dispatcher instance check
     if(!dispatcherEvents || typeof dispatcherEvents !== "object")

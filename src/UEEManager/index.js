@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 class UEEManager {
   constructor (dispatcher) {
     this.dispatcher = dispatcher
@@ -10,19 +12,18 @@ class UEEManager {
   }
 
   async initModule (ModuleClass) {
-    const nameModule = ModuleClass.name
-    const existModule = await this.checkExistModule(nameModule)
+    const uuid = uuidv4()
+    const type = ModuleClass.name
+    const dispatcher = this.generateDispatherForModule(uuid)
 
-    if(existModule) {
-      console.warn(`Reapeted running this module: ${nameModule}`)
-      return
-    }
-    
-    const dispatcherForThisModule = this.generateDispatherForModule(nameModule)
     const module = new ModuleClass()
-    module.setDispatcher(dispatcherForThisModule)
+    module.setDispatcher(dispatcher)
 
-    this.modules.set(nameModule, module)
+    this.modules.set(uuid, {
+      type,
+      uuid,
+      module,
+    })
 
     return module
   }
@@ -39,21 +40,21 @@ class UEEManager {
 
   run (modules) {
     modules = modules || this.modules
-    Array.from(this.modules.values()).forEach( module => module.run())
+    Array.from(this.modules.values()).forEach( ({ module }) => module.run())
     this._isRan = true
   }
 
-  async checkExistModule(nameModule) {
-    // TODO Check it on server
-    return this.modules.has(nameModule)
-  }
+  // async checkExistModule(module) {
+  //   // TODO Check it on server
+  //   return this.modules.has(nameModule)
+  // }
 
-  generateDispatherForModule (moduleName) {
+  generateDispatherForModule (moduleUuid) {
 
     // Bind methods dispatcher to current module
-    const defineListenerEvent = this.wrapDefineListenerEvent(moduleName)
-    const sendEvent = this.wrapSendEvent(moduleName)
-    const onRecieveEvent = this.wrapOnRecieveEvent(moduleName)
+    const defineListenerEvent = this.wrapDefineListenerEvent(moduleUuid)
+    const sendEvent = this.wrapSendEvent(moduleUuid)
+    const onRecieveEvent = this.wrapOnRecieveEvent(moduleUuid)
 
     return {
       defineListenerEvent,
@@ -62,29 +63,29 @@ class UEEManager {
     }
   }
 
-  wrapDefineListenerEvent (moduleName) {
+  wrapDefineListenerEvent (moduleUuid) {
     return event => {
-      this.bindEventAndModule(moduleName, event)
+      this.bindEventAndModule(moduleUuid, event)
       this.dispatcher.defineListenerEvent(event)
     }
   }
 
-  wrapSendEvent (moduleName) {
+  wrapSendEvent (moduleUuid) {
     return event => {
       this.dispatcher.sendEvent(event)
     }
   }
 
-  wrapOnRecieveEvent (moduleName) {
+  wrapOnRecieveEvent (moduleUuid) {
     return callback => {
-      this.onRecieveEvent(moduleName, callback)
+      this.onRecieveEvent(moduleUuid, callback)
     }
   }
 
-  onRecieveEvent (moduleName, recieveEvent) {
+  onRecieveEvent (moduleUuid, recieveEvent) {
 
     if(typeof recieveEvent === "function") {
-      const moduleEvents = this.getModuleByName(moduleName)
+      const moduleEvents = this.getModuleByName(moduleUuid)
       moduleEvents.eventsCallback = recieveEvent
     }
     else
@@ -102,19 +103,19 @@ class UEEManager {
     return modules.filter(module => module.events.has(eventSignature))
   }
 
-  bindEventAndModule (moduleName, event) {
-    const { events } = this.getModuleByName(moduleName)
+  bindEventAndModule (moduleUuid, event) {
+    const { events } = this.getModuleByName(moduleUuid)
     const eventSignature = this.dispatcher.calculateEventSignature(event)
 
     if(!events.has(eventSignature))
       events.add(eventSignature)
   }
 
-  getModuleByName (moduleName) {
-    if(!this.events.has(moduleName))
-        this.events.set(moduleName, { events: new Set, eventsCallback: () => { throw new Error('Not defined callback') } })
+  getModuleByName (moduleUuid) {
+    if(!this.events.has(moduleUuid))
+        this.events.set(moduleUuid, { events: new Set, eventsCallback: () => { throw new Error('Not defined callback') } })
 
-    return this.events.get(moduleName)
+    return this.events.get(moduleUuid)
   }
 }
 
