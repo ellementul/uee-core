@@ -38,7 +38,6 @@ class UEEDispatcher {
     const eventSignature =  this.calculateEventSignature({ name, payload })
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
     const version = eventsParam.lastVersion + 1
-    eventsParam.lastVersion = version
 
     this.server.send({ name, payload, version })
 
@@ -57,7 +56,7 @@ class UEEDispatcher {
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
     // We don't need old version or unlistenered event
-    if(eventsParam && version >= eventsParam.lastVersion) {
+    if(eventsParam && version > eventsParam.lastVersion) {
       eventsParam.lastVersion = version
       this.sendModules({ name, payload })
     }
