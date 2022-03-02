@@ -1,6 +1,7 @@
 # UEE
 United Events Environment
 
+TODO: Ping between Managers, there are list modules in ping for checking avalibility modules
 TODO: event faster then running module(accamulate events)
 TODO: Added TestDispatcher and TestTransport
 
