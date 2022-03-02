@@ -4,8 +4,8 @@ class UEEDispatcher {
   constructor () {
     this.uuid = uuidv4()
 
-    this.listenerEventsSignatures = new Set
-    this.recieveEvent = () => { throw new Error("The recieve callback isn't function!") }
+    this.listenerEventsSignatures = new Map
+    this.sendModules = () => { throw new Error("The recieve callback isn't function!") }
 
     this.server = {
       send: () => {},
@@ -31,23 +31,36 @@ class UEEDispatcher {
 
   defineListenerEvent({ name, payloadType }) {
     const eventSignature = this.calculateEventSignature({ name, payloadType })
-    this.listenerEventsSignatures.add(eventSignature)
+    this.listenerEventsSignatures.set(eventSignature, { lastVersion: 0 })
   }
 
   sendEvent({ name, payload }) {
-
-    this.server.send({ name, payload })
-
     const eventSignature =  this.calculateEventSignature({ name, payload })
-    if(this.listenerEventsSignatures.has(eventSignature))
-      this.recieveEvent({ name, payload })
+    const eventsParam = this.listenerEventsSignatures.get(eventSignature)
+    const version = eventsParam.lastVersion + 1
+    eventsParam.lastVersion = version
+
+    this.server.send({ name, payload, version })
+
+    this.recieveEvent({ name, payload, version })
   }
 
-  onRecieveEvent(recieveEvent) {
-    if(typeof recieveEvent === "function")
-      this.recieveEvent = recieveEvent
+  onRecieveEvent (eventCallback) {
+    if(typeof eventCallback === "function")
+      this.sendModules = eventCallback
     else
       throw new Error("The recieve callback isn't function!")
+  }
+
+  recieveEvent ({ name, payload, version }) {
+    const eventSignature =  this.calculateEventSignature({ name, payload })
+    const eventsParam = this.listenerEventsSignatures.get(eventSignature)
+
+    // We don't need old version or unlistenered event
+    if(eventsParam && version >= eventsParam.lastVersion) {
+      eventsParam.lastVersion = version
+      this.sendModules({ name, payload })
+    }
   }
 }
 
