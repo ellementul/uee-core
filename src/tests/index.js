@@ -31,7 +31,7 @@ new UEE({
 })
 
 new UEE({
-  modules: [TestModuleTwo],
+  modules: [TestModuleOne, TestModuleTwo],
   transport,
   isRun: true 
 })
