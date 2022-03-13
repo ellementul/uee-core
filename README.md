@@ -1,23 +1,29 @@
 # UEE
 United Events Environment
 
+TODO: Don't run constructor in fabric 
 TODO: Ping between Managers, there are list modules in ping for checking avalibility modules
 TODO: event faster then running module(accamulate events)
 TODO: Added TestDispatcher and TestTransport
 
 ```javascript
 class YourModule extends UEEModule {
+  constructor (yourModuleParams) {
 
+  }
 }
 ```
 
 And your module send UEEManager to run
 ```javascript
+import { UEE } from 'uee'
 import YourModule from 'your-module.js'
-const dispatcher = new UEEDispatcher()
-const manager = new UEEManager(dispatcher)
-manager.initModule(YourModule)
-manager.run()
+import YourTransport from 'your-transport.js'
+new UEE({
+  transport: new YourTransport(transportParams),
+  modules: [new YourModule(yourModuleParams)],
+  isRun: true,
+})
 ```
 
 ## Plans
