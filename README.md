@@ -2,7 +2,8 @@
 United Events Environment
 
 TODO: Don't run constructor in fabric 
-TODO: Ping between Managers, there are list modules in ping for checking avalibility modules
+TODO: Signature for properties "System", "Entity"
+TODO: Ping between Managers by ServerTime, there are list modules in ping for checking avalibility modules
 TODO: event faster then running module(accamulate events)
 TODO: Added TestDispatcher and TestTransport
 
