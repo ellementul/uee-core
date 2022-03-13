@@ -32,21 +32,17 @@ class UEEDispatcher {
 
   defineListenerEvent({ name, payloadType }) {
     const eventSignature = this.calculateEventSignature({ name, payloadType })
-    this.listenerEventsSignatures.set(eventSignature, { recieveLastVersion: 0, sendLastVersion: 0 })
+    this.listenerEventsSignatures.set(eventSignature, {})
   }
 
   sendEvent({ name, payload }) {
     const eventSignature =  this.calculateEventSignature({ name, payload })
 
     if(!this.listenerEventsSignatures.has(eventSignature))
-      this.listenerEventsSignatures.set(eventSignature, { recieveLastVersion: 0, sendLastVersion: 0 })
+      this.listenerEventsSignatures.set(eventSignature, {})
 
-    const eventsParam = this.listenerEventsSignatures.get(eventSignature)
-
-    const version = eventsParam.sendLastVersion = eventsParam.sendLastVersion + 1
-
-    this.server.send({ name, payload, version })
-    this.recieveEvent({ name, payload, version })
+    this.server.send({ name, payload })
+    this.recieveEvent({ name, payload })
   }
 
   onRecieveEvent (eventCallback) {
@@ -61,8 +57,7 @@ class UEEDispatcher {
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
     // We don't need old version or unlistenered event
-    if(eventsParam && version > eventsParam.recieveLastVersion) {
-      eventsParam.recieveLastVersion = version
+    if(eventsParam) {
       this.sendModules({ name, payload })
     }
   }
