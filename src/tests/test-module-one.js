@@ -3,7 +3,7 @@ import UEEModule from "../UEEModule/index.js"
 class TestModuleOne extends UEEModule {
   
   defEvents () {
-    return [{ name: 'message' }]
+    return [{ name: 'message', payloadType: { system: "Testing" } }]
   }
 
   run () {

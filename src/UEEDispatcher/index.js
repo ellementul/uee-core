@@ -27,7 +27,20 @@ class UEEDispatcher {
   }
 
   calculateEventSignature ({ name, payloadType, payload }) {
-    return name
+
+    let signature = name
+
+    if (payloadType || payload) {
+      const { system, entity } = payloadType || payload
+
+      if(system)
+        signature += system
+
+      if(entity)
+        signature += entity
+    }
+
+    return signature
   }
 
   defineListenerEvent({ name, payloadType }) {
@@ -52,7 +65,7 @@ class UEEDispatcher {
       throw new Error("The recieve callback isn't function!")
   }
 
-  recieveEvent ({ name, payload, version }) {
+  recieveEvent ({ name, payload }) {
     const eventSignature =  this.calculateEventSignature({ name, payload })
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 

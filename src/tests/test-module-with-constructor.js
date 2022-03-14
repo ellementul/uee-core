@@ -11,7 +11,13 @@ class TestModuleTwo extends UEEModule {
   }
 
   run () {
-    this.sendEvent({ name: 'message', payload: `It send ${this.name}` })
+    this.sendEvent({ 
+      name: 'message', 
+      payload: { 
+        system: "Testing", 
+        message: `It send ${this.name}`
+      } 
+    })
   }
 
   ping (payload) {

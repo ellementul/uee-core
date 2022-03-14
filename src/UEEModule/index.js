@@ -12,11 +12,11 @@ class UEEModule {
 
     const events = this.defEvents()
     
-    events.forEach(({ name }) => {
+    events.forEach(({ name, payloadType }) => {
       if(typeof this[name] !== "function")
         throw new Error(`Callback don't define for this listenered event: ${ name }`)
 
-      dispatcherEvents.defineListenerEvent({ name })
+      dispatcherEvents.defineListenerEvent({ name, payloadType })
     });
 
     dispatcherEvents.onRecieveEvent(event => this.recieveEvent(event))
