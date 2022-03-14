@@ -1,12 +1,17 @@
 import UEEModule from "../UEEModule/index.js"
 
 class TestModuleTwo extends UEEModule {
+  constructor (moduleName = "Module Two") {
+    super()
+
+    this.name = moduleName
+  }
   defEvents () {
     return [{ name: 'ping' }, { name: 'answer' }]
   }
 
   run () {
-    this.sendEvent({ name: 'message', payload: 'It send Module Two' })
+    this.sendEvent({ name: 'message', payload: `It send ${this.name}` })
   }
 
   ping (payload) {

@@ -9,12 +9,11 @@ class UEEManager {
     this.events = new Map
   }
 
-  async initModule (ModuleClass) {
+  async initModule (module) {
     const uuid = uuidv4()
-    const type = ModuleClass.name
+    const type = module.constructor.name
     const dispatcher = this.generateDispatherForModule(uuid)
 
-    const module = new ModuleClass()
     module.setDispatcher(dispatcher)
 
     this.modules.set(uuid, {
@@ -26,14 +25,14 @@ class UEEManager {
     return module
   }
 
-  async initModules (Modules, isRun = false) {
-    const promises =  Modules.map(Module => {
-      return this.initModule(Module)
+  async initModules (modules, isRun = false) {
+    const promises =  modules.map(module => {
+      return this.initModule(module)
     });
-    const modules = await Promise.all(promises)
+    const forRunModules = await Promise.all(promises)
 
     if(isRun)
-      this.run(modules)
+      this.run(forRunModules)
   }
 
   run (modules) {

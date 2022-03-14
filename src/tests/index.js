@@ -1,5 +1,5 @@
 import TestModuleOne from "./test-module-one.js"
-import TestModuleTwo from "./test-module-two.js"
+import TestModuleTwo from "./test-module-with-constructor.js"
 import { AbstractTransport, UEE } from "../index.js"
 
 class TestTransport extends AbstractTransport {
@@ -10,7 +10,7 @@ class TestTransport extends AbstractTransport {
   }
 
   send (event) {
-    console.log('Serever got event with name: ', event.name, ' with version: ', event.version)
+    console.log('Serever got event with name: ', event.name, ' with server time: ', event.time)
     this.eventCallbacks.forEach(eventCallback => eventCallback(event))
   }
 
@@ -25,13 +25,13 @@ console.log('-----------------TEST--------------------')
 const transport = new TestTransport
 
 new UEE({
-  modules: [TestModuleOne, TestModuleTwo],
+  modules: [new TestModuleOne, new TestModuleTwo],
   transport,
   isRun: true 
 })
 
 new UEE({
-  modules: [TestModuleOne, TestModuleTwo],
+  modules: [new TestModuleOne, new TestModuleTwo("Module with constractor")],
   transport,
   isRun: true 
 })
