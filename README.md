@@ -1,9 +1,8 @@
 # UEE
 United Events Environment
-TODO: Added TestDispatcher and TestTransport
-  
+TODO: Move ticker module
 
-TODO: Added ticker module
+TODO: Added Meta Module
 TODO: Ping between Managers by ServerTime, there are list modules in ping for checking avalibility modules
 TODO: event faster then running module(accamulate events)
 
