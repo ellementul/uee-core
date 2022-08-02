@@ -1,4 +1,4 @@
-import UEEModule from "../UEEModule/index.js"
+import UEEModule from "../../UEEModule/index.js"
 
 class TestModuleTwo extends UEEModule {
   constructor (moduleName = "Module Two") {
@@ -21,11 +21,11 @@ class TestModuleTwo extends UEEModule {
   }
 
   ping (payload) {
-    console.log('ModuleTwo get Ping Event: ', payload)
+    expect(payload).toBe("It is sent Module One")
   }
 
   answer (payload) {
-    console.log('ModuleTwo get Answer Event: ', payload)
+    expect(payload).toBe("It is sent Module One")
   }
 }
 

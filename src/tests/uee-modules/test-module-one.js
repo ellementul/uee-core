@@ -1,4 +1,4 @@
-import UEEModule from "../UEEModule/index.js"
+import UEEModule from "../../UEEModule/index.js"
 
 class TestModuleOne extends UEEModule {
   
@@ -11,7 +11,7 @@ class TestModuleOne extends UEEModule {
   }
 
   message (payload) {
-    console.log('ModuleOne get Message Event: ', payload)
+    expect(payload).toEqual({ system: 'Testing', message: `It send Module Two` });
     this.sendEvent({ name: 'answer', payload: 'It is sent Module One' })
   }
 }
