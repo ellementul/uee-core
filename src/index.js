@@ -3,6 +3,8 @@ import Module from "./UEEModule/index.js"
 import Manager from "./UEEManager/index.js"
 import AbstractTransport from "./UEETransport/abstract-class.js";
 import TestTransport from "./UEETransport/test-class.js";
+import SocketIOServer from "./UEETransport/server-socket.io-class.js";
+import SocketIOTransport from "./UEETransport/socket.io-class.js";
 
 class UEEFabric {
   constructor ({ transport, modules = [], isRun = false } = {}) {
@@ -26,4 +28,4 @@ class UEEFabric {
   } 
 }
 
-export { AbstractTransport, TestTransport,  Module, UEEFabric as UEE }
+export { AbstractTransport, TestTransport, SocketIOServer, SocketIOTransport,  Module, UEEFabric as UEE }

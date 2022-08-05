@@ -1,11 +1,12 @@
 {
   "name": "uee",
-  "version": "0.6.0",
+  "version": "0.7",
   "description": "United Environment Events",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:w": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,8 @@
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
     "jest": "^28.1.3",
+    "socket.io": "^4.5.1",
+    "socket.io-client": "^4.5.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
