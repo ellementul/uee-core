@@ -10,12 +10,12 @@ class UEEManager {
   }
 
   async initModule (module) {
-    const uuid = uuidv4()
+    const uuid = module.uuid
     const type = module.constructor.name
     const dispatcher = this.generateDispatherForModule(uuid)
-
+    
     module.setDispatcher(dispatcher)
-
+    
     this.modules.set(uuid, {
       type,
       uuid,

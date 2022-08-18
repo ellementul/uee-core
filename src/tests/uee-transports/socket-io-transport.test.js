@@ -1,4 +1,4 @@
-import TestModuleOne from "../uee-modules/test-module-one"
+import TestModuleOne from "../uee-fabric/test-module-one.js"
 import TestModuleTwo from "./test-module-two.js"
 import { SocketIOServer, SocketIOTransport, UEE } from "../../index.js"
 import { jest } from '@jest/globals';

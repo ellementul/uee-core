@@ -1,36 +1,12 @@
-import TestModuleOne from "./test-module-one.js"
-import TestModuleTwo from "./test-module-two.js"
-import TestModuleOneWithParams from "./test-module-one-with-params.js"
-import { TestTransport, UEE } from "../../index.js"
+import { EVENT_NAME_CONSTATS } from "../../UEEManager/constants.js";
+import { UEEStateModule } from "../../UEEModule/state-module.js";
 
+describe("State Module Test", () => {
+  let stateModule
+  it("Constructor", () => {
+    stateModule = new UEEStateModule()
 
-
-describe('Test create Modules', () => {
-
-  it('Test create Module', () => {
-    const transport = new TestTransport()
-
-    expect.assertions(3)
-
-    new UEE({
-      modules: [new TestModuleOne, new TestModuleTwo],
-      transport,
-      isRun: true 
-    })
-  })
-
-  it('Test create Module with params', () => {
-    const moduleName = 'Module with params'
-    const transport = new TestTransport()
-
-    expect.assertions(3)
-
-    new UEE({
-      modules: [new TestModuleOneWithParams(moduleName), new TestModuleTwo(moduleName)],
-      transport,
-      isRun: true 
-    })
+    expect(stateModule).toBeDefined()
+    expect(stateModule.state).toBeDefined()
   })
 })
-
-

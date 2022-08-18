@@ -1,4 +1,9 @@
+import { v4 as uuidv4 } from 'uuid'
 class UEEModule {
+
+  constructor() {
+    this.uuid = uuidv4()
+  }
 
   setDispatcher (dispatcherEvents) {
 

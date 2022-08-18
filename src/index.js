@@ -1,5 +1,5 @@
 import Dispatcher from "./UEEDispatcher/index.js";
-import Module from "./UEEModule/index.js"
+import Module from "./UEEModule/abstaract-module.js"
 import Manager from "./UEEManager/index.js"
 import AbstractTransport from "./UEETransport/abstract-class.js";
 import TestTransport from "./UEETransport/test-class.js";

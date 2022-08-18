@@ -1,4 +1,4 @@
-import UEEModule from "../../UEEModule/index.js"
+import UEEModule from "../../UEEModule/abstaract-module.js"
 
 class TestModuleOne extends UEEModule {
   

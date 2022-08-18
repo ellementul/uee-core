@@ -1,5 +1,5 @@
-import TestModuleOne from "../uee-modules/test-module-one.js"
-import TestModuleTwo from "../uee-modules/test-module-two.js"
+import TestModuleOne from "../uee-fabric/test-module-one.js"
+import TestModuleTwo from "../uee-fabric/test-module-two.js"
 import { TestTransport, UEE } from "../../index.js"
 import { jest } from '@jest/globals';
 
