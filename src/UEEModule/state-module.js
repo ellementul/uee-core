@@ -4,35 +4,33 @@ import { State, STATES_CONSTATS } from "./state.js";
 
 export class UEEStateModule extends UEEModule {
 
-  constructor(...args) {
-    super(...args);
+  constructor({ isSaveEventsAfterBuild=false,  ...args } = {}) {
+    super({...args});
+
+    this.isSaveEventsAfterBuild = isSaveEventsAfterBuild;
+    
+    if(isSaveEventsAfterBuild)
+      this.savedEvents = [];
 
     this.state = new State
-  }
 
-  defEvents () {
-    return [
+    this.defEvents([
       { name: EVENT_NAME_CONSTATS.BUILD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.LOAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.RUN, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.ONLYREAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.SLEEP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } }
-    ]
+    ])
   }
 
-  sendEvent ({ name, payload: { system } }) {
+  sendEvent ({ name, payload }) {
     if(payload.system === manageModuleSystem) {
       super.sendEvent({ name, payload })
       return
     }
     
     if(this.state.getValue() === STATES_CONSTATS.RUNNING) {
-      super.sendEvent({ name, payload })
-      return
-    }
-
-    if(this.state.getValue() === STATES_CONSTATS.READONLY) {
       super.sendEvent({ name, payload })
       return
     }
@@ -43,23 +41,18 @@ export class UEEStateModule extends UEEModule {
   recieveEvent ({ name, payload }) {
     if(payload.system === manageModuleSystem) {
       super.recieveEvent({ name, payload })
-
       return
     }
     
-    if(this.state.getValue() === STATES_CONSTATS.RUNNING) {
+    if(this.state.getValue() === STATES_CONSTATS.RUNNING || this.state.getValue() === STATES_CONSTATS.READONLY) {
       super.recieveEvent({ name, payload })
       return
     }
 
-    if (this.state.getValue() === STATES_CONSTATS.READONLY) {
-      if (name === EVENT_NAME_CONSTATS.SAVE_MODULE_STORE) {
-        super.recieveEvent({ name, payload })
-        return
-      }
-    }
-
-    throw new Error("Module isn't running!")
+    if(this.isSaveEventsAfterBuild)
+      this.savedEvents.push({ name, payload })
+    else
+      throw new Error("Module isn't running!")
   }
 
   sendUpdateStateEvent () {
@@ -68,7 +61,8 @@ export class UEEStateModule extends UEEModule {
       payload: {
         system: manageModuleSystem, 
         action: updateModuleStateAction, 
-        entity: this.state.getValue() 
+        entity: this.uuid, 
+        state: this.state.getValue() 
       } 
     })
   }
@@ -94,6 +88,9 @@ export class UEEStateModule extends UEEModule {
 
     if(typeof this.onStart === 'function')
       this.onStart()
+
+    if(this.isSaveEventsAfterBuild) 
+      this.savedEvents.forEach( event => super.recieveEvent(event))
 
     this.sendUpdateStateEvent()
   }

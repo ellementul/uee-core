@@ -9,16 +9,22 @@ describe("State Module Test", () => {
   const reciveEvent = jest.fn()
 
   class TestModule extends UEEStateModule {
-      constructor () {
-        super();
+      constructor ({ ...args }) {
+        super({ ...args });
         this.onBuild = jest.fn()
         this.onLoad = jest.fn()
         this.onStart = jest.fn()
+
+        this.testEvent = jest.fn()
+
+        this.defEvents([
+          { name: "testEvent", payloadType: { system: "Testing" }}
+        ])
       }
   }
 
   it("Constructor", () => {
-    stateModule = new TestModule()
+    stateModule = new TestModule({ isSaveEventsAfterBuild: true })
 
     expect(stateModule).toBeDefined()
     expect(stateModule.state).toBeDefined()
@@ -30,6 +36,18 @@ describe("State Module Test", () => {
   })
 
   describe("Change state", () => {
+    it("Saved messages", () => {
+      stateModule.testEvent.mockImplementation(event => expect(event).toEqual(
+        { system: "Testing" }
+      ))
+
+      stateModule.recieveEvent({
+        name: "testEvent",
+        payload: {
+          system: "Testing"
+        }
+      })
+    })
 
     it("Building", () => {
       reciveEvent.mockImplementationOnce(event => expect(event).toEqual({ 
@@ -37,7 +55,8 @@ describe("State Module Test", () => {
         payload: { 
           system: manageModuleSystem, 
           action: updateModuleStateAction, 
-          entity: "BUILDED"
+          entity: stateModule.uuid,
+          state: "BUILDED",
         }
       }))
 
@@ -58,8 +77,9 @@ describe("State Module Test", () => {
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: manageModuleSystem, 
-          action: updateModuleStateAction, 
-          entity: "LOADED"
+          action: updateModuleStateAction,
+          entity: stateModule.uuid,
+          state: "LOADED"
         }
       }))
 
@@ -82,8 +102,9 @@ describe("State Module Test", () => {
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: manageModuleSystem, 
-          action: updateModuleStateAction, 
-          entity: "RUNNING"
+          action: updateModuleStateAction,
+          entity: stateModule.uuid,
+          state: "RUNNING"
         }
       }))
 
