@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-class UEEModule {
+export class UEEModule {
 
   constructor() {
     this.uuid = uuidv4()
@@ -42,5 +42,3 @@ class UEEModule {
     }
   }
 }
-
-export default UEEModule

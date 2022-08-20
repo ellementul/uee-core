@@ -1,4 +1,4 @@
-import UEEModule from "./abstaract-module.js";
+import { UEEModule } from "./abstaract-module.js";
 import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, saveModuleStoreAction, updateModuleStateAction } from "../UEEManager/constants.js";
 import { State, STATES_CONSTATS } from "./state.js";
 
