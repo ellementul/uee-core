@@ -41,11 +41,6 @@ class UEEManager {
     });
   }
 
-  // async checkExistModule(module) {
-  //   // TODO Check it on server
-  //   return this.modules.has(nameModule)
-  // }
-
   generateDispatherForModule (moduleUuid) {
 
     // Bind methods dispatcher to current module
