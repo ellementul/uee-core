@@ -72,7 +72,6 @@ export class UEEDispatcher {
     const eventSignature =  this.calculateEventSignature({ name, payload })
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
-    // We don't need old version or unlistenered event
     if(eventsParam) {
       this.sendModules({ name, payload })
     }
