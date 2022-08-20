@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, updateModuleStateAction } from "../../UEEManager/constants.js"
-import { UEEStateModule } from "../../UEEModule/state-module.js"
-import UEEDispatcher from "../../UEEDispatcher/index.js"
+import { UEEStateModule } from "../state-module.js"
+import { UEEDispatcher } from "../../UEEDispatcher/index.js"
 
 describe("State Module Test", () => {
   let stateModule
@@ -12,7 +12,7 @@ describe("State Module Test", () => {
       constructor () {
         super();
         this.onBuild = jest.fn()
-        this.onLoadStore = jest.fn()
+        this.onLoad = jest.fn()
         this.onStart = jest.fn()
       }
   }
@@ -68,11 +68,13 @@ describe("State Module Test", () => {
         payload: {
           system: manageModuleSystem,
           action: changeStateOfModuleAction,
-          entity: stateModule.uuid
+          entity: stateModule.uuid,
+          data: "Somethin Store"
         }
       })
 
-      expect(stateModule.onLoadStore.mock.calls.length).toBe(1)
+      expect(stateModule.onLoad.mock.calls.length).toBe(1)
+      expect(stateModule.onLoad.mock.lastCall).toEqual([{ data: "Somethin Store" }])
     })
 
     it("Running", () => {
@@ -110,29 +112,6 @@ describe("State Module Test", () => {
         })
       ).toThrow('Uncorrectly state')
       
-    })
-
-    it("Saving", () => {
-      reciveEvent.mockImplementationOnce(event => expect(event).toEqual({ 
-        name: EVENT_NAME_CONSTATS.SAVE_MODULE_STORE, 
-        payload: { 
-          system: 'SomeSystem',
-          action: 'SomeSaveActon', 
-          entity: stateModule.uuid
-        }
-      }))
-
-      stateModule.recieveEvent({
-        name: EVENT_NAME_CONSTATS.SAVE,
-        payload: {
-          system: 'SomeSystem',
-          action: changeStateOfModuleAction,
-          saveAction: 'SomeSaveActon',
-          entity: stateModule.uuid
-        }
-      })
-
-      expect(stateModule.onStart.mock.calls.length).toBe(1)
     })
   })
 })

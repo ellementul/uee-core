@@ -8,7 +8,6 @@ export class UEEStateModule extends UEEModule {
     super(...args);
 
     this.state = new State
-    this.store = {}
   }
 
   defEvents () {
@@ -18,9 +17,7 @@ export class UEEStateModule extends UEEModule {
       { name: EVENT_NAME_CONSTATS.RUN, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.ONLYREAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.SLEEP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-
-      { name: EVENT_NAME_CONSTATS.SAVE, payloadType: { action: saveModuleStoreAction, entity: this.uuid } }
+      { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } }
     ]
   }
 
@@ -76,22 +73,18 @@ export class UEEStateModule extends UEEModule {
     })
   }
 
-  build (payload) {
+  build ({ moduleType }) {
     if(typeof this.onBuild === 'function')
-      this.store = this.onBuild(payload.store)
-    else
-      this.store = payload.store
+      this.onBuild({ moduleType })
 
     this.sendUpdateStateEvent()
   }
 
-  load (payload) {
+  load ({ data }) {
     this.state.load()
 
-    if(typeof this.onLoadStore === 'function')
-      this.store = this.onLoadStore(payload.store)
-    else
-      this.store = payload.store
+    if(typeof this.onLoad === 'function')
+      this.onLoad({ data })
 
     this.sendUpdateStateEvent()
   }
@@ -110,17 +103,6 @@ export class UEEStateModule extends UEEModule {
 
     if(typeof this.onOnlyRead === 'function')
       this.onOnlyRead()
-  }
-
-  save (payload) {
-    this.sendEvent({ 
-      name: EVENT_NAME_CONSTATS.SAVE_MODULE_STORE, 
-      payload: { 
-        system: payload.system || manageModuleSystem, 
-        action: payload.saveAction || saveModuleStoreAction, 
-        entity: this.uuid
-      } 
-    })
   }
 
   sleep () {

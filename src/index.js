@@ -1,31 +1,28 @@
 import Dispatcher from "./UEEDispatcher/index.js";
-import Module from "./UEEModule/abstaract-module.js"
+import { UEEStateModule } from "./UEEModule/state-module.js"
 import Manager from "./UEEManager/index.js"
 import AbstractTransport from "./UEETransport/abstract-class.js";
 import TestTransport from "./UEETransport/test-class.js";
 import SocketIOServer from "./UEETransport/server-socket.io-class.js";
 import SocketIOTransport from "./UEETransport/socket.io-class.js";
 
-class UEEFabric {
-  constructor ({ transport, modules = [], isRun = false } = {}) {
-    const dispatcher = new Dispatcher()
+function UEEFabric ({ transport, modules = [] } = {}) {
+  const dispatcher = new Dispatcher()
 
-    if (transport) {
-      if(transport instanceof AbstractTransport)
-        dispatcher.connectServer(transport)
-      else
-        throw new Error("The transport doesn't extend AbstractTransport")
-    }
+  if (transport) {
+    if(transport instanceof AbstractTransport)
+      dispatcher.connectServer(transport)
+    else
+      throw new Error("The transport doesn't extend AbstractTransport")
+  }
 
-    const manager = new Manager(dispatcher)
-    this.initModules = (modules, isRun) => manager.initModules(modules, isRun)
+  const manager = new Manager(dispatcher)
 
-    if(!Array.isArray(modules))
-      throw new Error("Not valid modules!")  
+  if(!Array.isArray(modules) || modules.some(module => !(module instanceof UEEStateModule) ))
+    throw new Error("Not valid modules!")  
 
-    if(modules.length)
-      this.initModules(modules, isRun)
-  } 
+  if(modules.length)
+    this.initModules(modules)
 }
 
-export { AbstractTransport, TestTransport, SocketIOServer, SocketIOTransport,  Module, UEEFabric as UEE }
+export { AbstractTransport, TestTransport, SocketIOServer, SocketIOTransport,  UEEStateModule as Module, UEEFabric as UEE }

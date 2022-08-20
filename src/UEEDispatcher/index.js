@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
-class UEEDispatcher {
+export class UEEDispatcher {
   constructor () {
     this.uuid = uuidv4()
 
@@ -75,5 +75,3 @@ class UEEDispatcher {
     }
   }
 }
-
-export default UEEDispatcher

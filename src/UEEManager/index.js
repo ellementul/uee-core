@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
+import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem } from './constants'
 
 class UEEManager {
   constructor (dispatcher) {
@@ -22,22 +23,22 @@ class UEEManager {
       module,
     })
 
+    stateModule.recieveEvent({
+      name: EVENT_NAME_CONSTATS.BUILD,
+      payload: {
+        system: manageModuleSystem,
+        action: changeStateOfModuleAction,
+        entity: uuid
+      }
+    })
+
     return module
   }
 
-  async initModules (modules, isRun = false) {
+  async initModules (modules) {
     const promises =  modules.map(module => {
       return this.initModule(module)
     });
-    const forRunModules = await Promise.all(promises)
-
-    if(isRun)
-      this.run(forRunModules)
-  }
-
-  run (modules) {
-    modules = modules || this.modules
-    Array.from(this.modules.values()).forEach( ({ module }) => module.run())
   }
 
   // async checkExistModule(module) {

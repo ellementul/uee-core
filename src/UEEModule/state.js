@@ -2,15 +2,14 @@ export const STATES_CONSTATS = {
   BUILDED: 'BUILDED',
   LOADED: 'LOADED',
   RUNNING: 'RUNNING',
-  SLEEPED: 'SLEEPED',
   READONLY: 'READONLY',
 }
 
 export class State {
   constructor () {
     this._state = STATES_CONSTATS.BUILDED
-    this._preLoadState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.SLEEPED]
-    this._preRunState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.READONLY]
+    this._preLoadState = [STATES_CONSTATS.BUILDED]
+    this._preRunState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.LOADED, STATES_CONSTATS.READONLY]
     this._preReadState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.RUNNING]
     this._preSleepState = [STATES_CONSTATS.READONLY, STATES_CONSTATS.RUNNING]
   }
@@ -43,6 +42,6 @@ export class State {
 
   sleep () {
     this.checkState(this._preSleepState)
-    this._state = STATES_CONSTATS.SLEEPED
+    this._state = STATES_CONSTATS.BUILDED
   }
 }
