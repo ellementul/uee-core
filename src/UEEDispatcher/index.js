@@ -31,10 +31,13 @@ export class UEEDispatcher {
     let signature = name
 
     if (payloadType || payload) {
-      const { system, entity } = payloadType || payload
+      const { system, entity, action } = payloadType || payload
 
       if(system)
         signature += system
+
+      if(system)
+        signature += action
 
       if(entity)
         signature += entity
