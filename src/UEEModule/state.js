@@ -10,7 +10,7 @@ export class State {
   constructor () {
     this._state = STATES_CONSTATS.BUILDED
     this._preLoadState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.SLEEPED]
-    this._preRunState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.READONLY]
+    this._preRunState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.READONLY]
     this._preReadState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.RUNNING]
     this._preSleepState = [STATES_CONSTATS.READONLY, STATES_CONSTATS.RUNNING]
   }
@@ -20,8 +20,8 @@ export class State {
   }
 
   checkState (allowStates) {
-    if(!allowStates.includes(this.state))
-      throw new Error(`Uncorrectly state: ${this.state} allowStates: ${allowStates}`)
+    if(!allowStates.includes(this._state))
+      throw new Error(`Uncorrectly state: ${this._state} allowStates: ${allowStates}`)
     else
       return true
   }

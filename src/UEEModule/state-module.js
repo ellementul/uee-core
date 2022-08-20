@@ -18,7 +18,9 @@ export class UEEStateModule extends UEEModule {
       { name: EVENT_NAME_CONSTATS.RUN, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.ONLYREAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
       { name: EVENT_NAME_CONSTATS.SLEEP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } }
+      { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
+
+      { name: EVENT_NAME_CONSTATS.SAVE, payloadType: { action: saveModuleStoreAction, entity: this.uuid } }
     ]
   }
 
@@ -41,9 +43,10 @@ export class UEEStateModule extends UEEModule {
     throw new Error("Module isn't running!")
   }
 
-  recieveEvent ({ name, payload: { system } }) {
-    if(system === manageModuleSystem) {
+  recieveEvent ({ name, payload }) {
+    if(payload.system === manageModuleSystem) {
       super.recieveEvent({ name, payload })
+
       return
     }
     
@@ -65,12 +68,21 @@ export class UEEStateModule extends UEEModule {
   sendUpdateStateEvent () {
     this.sendEvent({ 
       name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
-      payloadType: { 
+      payload: {
         system: manageModuleSystem, 
         action: updateModuleStateAction, 
         entity: this.state.getValue() 
       } 
     })
+  }
+
+  build (payload) {
+    if(typeof this.onBuild === 'function')
+      this.store = this.onBuild(payload.store)
+    else
+      this.store = payload.store
+
+    this.sendUpdateStateEvent()
   }
 
   load (payload) {
@@ -103,7 +115,7 @@ export class UEEStateModule extends UEEModule {
   save (payload) {
     this.sendEvent({ 
       name: EVENT_NAME_CONSTATS.SAVE_MODULE_STORE, 
-      payloadType: { 
+      payload: { 
         system: payload.system || manageModuleSystem, 
         action: payload.saveAction || saveModuleStoreAction, 
         entity: this.uuid

@@ -3,12 +3,13 @@ export const changeStateOfModuleAction = 'Change module state';
 export const updateModuleStateAction = 'Updated module state';
 export const saveModuleStoreAction = 'Save Module Store';
 export const EVENT_NAME_CONSTATS = {
-  BUILD: 'Build',
-  LOAD: 'Load',
-  RUN: 'Run',
-  SLEEP: 'Sleep',
-  ONLYREAD: 'OnlyRead',
-  STOP: 'Stop',
-  UPDATE_MODULE_STATE: 'Update module state',
-  SAVE_MODULE_STORE: 'Save module store'
+  BUILD: 'build',
+  LOAD: 'load',
+  SAVE: 'save',
+  RUN: 'run',
+  SLEEP: 'sleep',
+  ONLYREAD: 'onlyRead',
+  STOP: 'stop',
+  UPDATE_MODULE_STATE: 'updateModuleState',
+  SAVE_MODULE_STORE: 'saveModuleStore'
 }
