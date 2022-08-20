@@ -52,10 +52,10 @@ export class UEEDispatcher {
   }
 
   sendEvent({ name, payload }) {
-    const eventSignature =  this.calculateEventSignature({ name, payload })
+    // const eventSignature =  this.calculateEventSignature({ name, payload })
 
-    if(!this.listenerEventsSignatures.has(eventSignature))
-      this.listenerEventsSignatures.set(eventSignature, {})
+    // if(!this.listenerEventsSignatures.has(eventSignature))
+    //   this.listenerEventsSignatures.set(eventSignature, {})
 
     this.server.send({ name, payload })
     this.recieveEvent({ name, payload })
