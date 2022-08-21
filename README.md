@@ -11,10 +11,7 @@ United Events Environment
 
 ## Задачи:
 
-- SystemInterface
-  - Events
-  - EventNames
-  - ModuleTypeNames
+- Remake system module for system interface
 - Create modules system interface
   
 - Fixing module's tests
