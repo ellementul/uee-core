@@ -10,11 +10,6 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
-- Make test for abstract module
-
-- DefEventOn in Abstract Module
-  - Event
-  - Callback
 
 - SystemInterface
   - Events

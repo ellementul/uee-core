@@ -23,8 +23,8 @@ export class UEEModule {
     if(!dispatcherEvents || typeof dispatcherEvents !== "object")
       throw Error('Not valid dispatcher')
     
-    this.events.forEach(({ name, payloadType }) => {
-      dispatcherEvents.defineListenerEvent({ name, payloadType })
+    this.events.forEach(({ name, payloadType, tags }) => {
+      dispatcherEvents.defineListenerEvent({ name, payloadType, tags })
     });
 
     this._dispatcher = dispatcherEvents
@@ -33,19 +33,29 @@ export class UEEModule {
     this.sendEvent = event => dispatcherEvents.sendEvent(event)
   }
 
-  defEventNow ({ name, payloadType }, callback) {
+  defEventNow ({ name, payloadType, tags }, callback) {
 
     if(!this._dispatcher)
-      this.events.push({ name, payloadType })
+      this.events.push({ name, payloadType, tags })
     else
-      this._dispatcher.defineListenerEvent({ name, payloadType })
+      this._dispatcher.defineListenerEvent({ name, payloadType, tags })
 
-    this.callbacks[name] = env => callback(env)
+    this.callbacks[name] = payload => callback(payload)
   }
 
   recieveEvent ({ name, payload }) {
     try {
-      typeof this[name] == "function" ? this[name](payload) : this.callbacks[name]()
+      if(typeof this.callbacks[name] == "function") {
+        this.callbacks[name](payload)
+
+        if(typeof this[name] == "function") {
+          this[name](payload)
+        }
+      }
+      else {
+        this[name](payload)
+      }
+      
     }
     catch (error) {
 

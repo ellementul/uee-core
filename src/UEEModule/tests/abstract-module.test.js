@@ -18,7 +18,8 @@ describe("Abstract Module Test", () => {
             name: "testEvent",
             payloadType: {
               system: "Testing"
-            }
+            },
+            tags: ["system"]
           }
         ])
       }
@@ -45,7 +46,8 @@ describe("Abstract Module Test", () => {
         name: "testEvent",
         payload: {
           system: "Testing"
-        }
+        },
+        tags: ["system"]
       })
 
       expect(mockTestEvent).toHaveBeenCalled()
@@ -56,10 +58,11 @@ describe("Abstract Module Test", () => {
       ueeModule.defEventNow({ name: "testTwoEvent" }, callback)
 
       dispatcher.recieveEvent({
-        name: "testTwoEvent"
+        name: "testTwoEvent",
+        payload: "Somethig payload"
       })
 
-      expect(callback).toHaveBeenCalled()
+      expect(callback).toHaveBeenCalledWith("Somethig payload")
     })
   })
 })

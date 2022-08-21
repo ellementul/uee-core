@@ -26,28 +26,25 @@ export class UEEDispatcher {
     }
   }
 
-  calculateEventSignature ({ name, payloadType, payload }) {
+  calculateEventSignature ({ name, payloadType, payload, tags = [] }) {
 
-    let signature = name
+    const signatures = [name]
+    const data = payloadType || payload
 
-    if (payloadType || payload) {
-      const { system, entity, action } = payloadType || payload
-
-      if(system)
-        signature += system
-
-      if(action)
-        signature += action
-
-      if(entity)
-        signature += entity
+    if(tags.length > 0) {
+      tags.forEach(tag => {
+        if(!data[tag])
+          throw new Error(`Invalidate event: tag ${tag} isn't found in event data ${JSON.stringify(payloadType)}`)
+        
+        signatures.push(data[tag])
+      })
     }
 
-    return signature
+    return signatures.join(':')
   }
 
-  defineListenerEvent({ name, payloadType }) {
-    const eventSignature = this.calculateEventSignature({ name, payloadType })
+  defineListenerEvent({ name, payloadType, tags }) {
+    const eventSignature = this.calculateEventSignature({ name, payloadType, tags })
     this.listenerEventsSignatures.set(eventSignature, {})
   }
 
@@ -57,8 +54,8 @@ export class UEEDispatcher {
     // if(!this.listenerEventsSignatures.has(eventSignature))
     //   this.listenerEventsSignatures.set(eventSignature, {})
 
-    this.server.send({ name, payload })
-    this.recieveEvent({ name, payload })
+    this.server.send({ name, payload, tags })
+    this.recieveEvent({ name, payload, tags })
   }
 
   onRecieveEvent (eventCallback) {
@@ -68,12 +65,12 @@ export class UEEDispatcher {
       throw new Error("The recieve callback isn't function!")
   }
 
-  recieveEvent ({ name, payload }) {
-    const eventSignature =  this.calculateEventSignature({ name, payload })
+  recieveEvent ({ name, payload, tags }) {
+    const eventSignature =  this.calculateEventSignature({ name, payload, tags })
     const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
     if(eventsParam) {
-      this.sendModules({ name, payload })
+      this.sendModules({ name, payload, tags })
     }
   }
 }
