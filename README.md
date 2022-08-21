@@ -10,6 +10,27 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
+- SystemInterface
+  - Events
+  - EventNames
+  - ModuleTypes name
+- DefSystem method in System Module
+  - Args
+    - Systems: Array
+      - SystemInterface
+      - SystemInterface
+    - Events: Array
+      - Event name
+      - Event
+    - eventsCallbacks: Object (not required)
+      - [ Event Name ] : callback 
+      - [ Event ] : callback
+    
+- DefEventOn in Abstract Module
+  - Event
+  - Callback
+
+- Make test for abstract module
 - Make async onBuild, onLoad, onStart in state module(if promise then wait, esle sync call)
 - Create DB module
 - Test connect to base while building
