@@ -50,5 +50,16 @@ describe("Abstract Module Test", () => {
 
       expect(mockTestEvent).toHaveBeenCalled()
     })
+
+    it("DefEventOn method", () => {
+      const callback = jest.fn()
+      ueeModule.defEventNow({ name: "testTwoEvent" }, callback)
+
+      dispatcher.recieveEvent({
+        name: "testTwoEvent"
+      })
+
+      expect(callback).toHaveBeenCalled()
+    })
   })
 })

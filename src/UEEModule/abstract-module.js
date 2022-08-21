@@ -4,6 +4,9 @@ export class UEEModule {
   constructor () {
     this.uuid = uuidv4()
     this.events = []
+    this.callbacks = []
+
+    this.sendEvent = () => { throw new Error(`This module with uuid: ${this.uuid} don't have defined dispatcher!`) }
   }
 
   defEvents (events) {
@@ -19,22 +22,30 @@ export class UEEModule {
     // TODO Abstract dispatcher instance check
     if(!dispatcherEvents || typeof dispatcherEvents !== "object")
       throw Error('Not valid dispatcher')
-
-    //Get events waht is this module listener
-    if(typeof this.defEvents !== 'function')
-      throw new Error('The defEvents method should be define!')
     
     this.events.forEach(({ name, payloadType }) => {
       dispatcherEvents.defineListenerEvent({ name, payloadType })
     });
 
+    this._dispatcher = dispatcherEvents
+
     dispatcherEvents.onRecieveEvent(event => this.recieveEvent(event))
     this.sendEvent = event => dispatcherEvents.sendEvent(event)
   }
 
+  defEventNow ({ name, payloadType }, callback) {
+
+    if(!this._dispatcher)
+      this.events.push({ name, payloadType })
+    else
+      this._dispatcher.defineListenerEvent({ name, payloadType })
+
+    this.callbacks[name] = env => callback(env)
+  }
+
   recieveEvent ({ name, payload }) {
     try {
-      this[name](payload)
+      typeof this[name] == "function" ? this[name](payload) : this.callbacks[name]()
     }
     catch (error) {
 
