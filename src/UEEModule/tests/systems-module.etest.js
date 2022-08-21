@@ -4,9 +4,9 @@ import { UEESystemsModule } from "../systems-module.js"
 import { UEEDispatcher } from "../../UEEDispatcher/index.js"
 
 describe("System Module Test", () => {
-  let stateModule
+  let systemModule
   const dispatcher = new UEEDispatcher()
-  const reciveEvent = jest.fn()
+  const mockSendEvent = jest.fn()
 
   const testSystem = "SomethingSystem"
   const testEvent = { name: "testEvent", payloadType: { system: testSystem } }
@@ -22,33 +22,32 @@ describe("System Module Test", () => {
   }
 
   it("Constructor", () => {
-    stateModule = new TestModule
+    systemModule = new TestModule
 
-    expect(stateModule).toBeDefined()
-    expect(stateModule.state).toBeDefined()
-    expect(stateModule.onStart).toBeDefined()
-
-    stateModule.setDispatcher(dispatcher)
+    expect(systemModule).toBeDefined()
+    expect(systemModule.state).toBeDefined()
+    expect(systemModule.onStart).toBeDefined()
 
     // Mocking recive events
-    dispatcher.onRecieveEvent(reciveEvent)
+    systemModule.setDispatcher(dispatcher)
+    dispatcher.sendEvent = mockSendEvent
   })
 
   describe("Change state", () => {
 
     it("Saved events", () => {
-      stateModule.testEvent.mockImplementation(event => expect(event).toEqual(
+      systemModule.testEvent.mockImplementation(event => expect(event).toEqual(
         { system: "SomethingSystem" }
       ))
 
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: testEvent.name,
         payload: testEvent.payloadType
       })
     })
 
     it("Running", () => {
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: SYSTEN_READY_EVENT_NAME,
         payload: {
           system: manageModuleSystem, 
@@ -56,7 +55,7 @@ describe("System Module Test", () => {
         }
       })
 
-      expect(stateModule.onStart).toHaveBeenCalled()
+      expect(systemModule.onStart).toHaveBeenCalled()
     })
   })
 })

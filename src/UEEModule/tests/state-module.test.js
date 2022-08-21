@@ -6,7 +6,7 @@ import { UEEDispatcher } from "../../UEEDispatcher/index.js"
 describe("State Module Test", () => {
   let stateModule
   const dispatcher = new UEEDispatcher()
-  const reciveEvent = jest.fn()
+  const mockSendEvent = jest.fn()
 
   class TestModule extends UEEStateModule {
       constructor ({ ...args }) {
@@ -29,10 +29,9 @@ describe("State Module Test", () => {
     expect(stateModule).toBeDefined()
     expect(stateModule.state).toBeDefined()
 
-    stateModule.setDispatcher(dispatcher)
-
     // Mocking recive events
-    dispatcher.onRecieveEvent(reciveEvent)
+    stateModule.setDispatcher(dispatcher)
+    dispatcher.sendEvent = mockSendEvent
   })
 
   describe("Change state", () => {
@@ -41,7 +40,7 @@ describe("State Module Test", () => {
         { system: "Testing" }
       ))
 
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: "testEvent",
         payload: {
           system: "Testing"
@@ -50,7 +49,7 @@ describe("State Module Test", () => {
     })
 
     it("Building", () => {
-      reciveEvent.mockImplementationOnce(event => expect(event).toEqual({ 
+      mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: manageModuleSystem, 
@@ -60,7 +59,7 @@ describe("State Module Test", () => {
         }
       }))
 
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: EVENT_NAME_CONSTATS.BUILD,
         payload: {
           system: manageModuleSystem,
@@ -73,7 +72,7 @@ describe("State Module Test", () => {
     })
 
     it("Loading", () => {
-      reciveEvent.mockImplementationOnce(event => expect(event).toEqual({ 
+      mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: manageModuleSystem, 
@@ -83,7 +82,7 @@ describe("State Module Test", () => {
         }
       }))
 
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: EVENT_NAME_CONSTATS.LOAD,
         payload: {
           system: manageModuleSystem,
@@ -98,7 +97,7 @@ describe("State Module Test", () => {
     })
 
     it("Running", () => {
-      reciveEvent.mockImplementationOnce(event => expect(event).toEqual({ 
+      mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: manageModuleSystem, 
@@ -108,7 +107,7 @@ describe("State Module Test", () => {
         }
       }))
 
-      stateModule.recieveEvent({
+      dispatcher.recieveEvent({
         name: EVENT_NAME_CONSTATS.RUN,
         payload: {
           system: manageModuleSystem,
@@ -123,7 +122,7 @@ describe("State Module Test", () => {
     it("Repeat run (expect error)", () => {
 
       expect(() =>
-        stateModule.recieveEvent({
+        dispatcher.recieveEvent({
           name: EVENT_NAME_CONSTATS.RUN,
           payload: {
             system: manageModuleSystem,
