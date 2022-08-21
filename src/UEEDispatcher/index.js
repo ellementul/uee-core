@@ -36,7 +36,7 @@ export class UEEDispatcher {
       if(system)
         signature += system
 
-      if(system)
+      if(action)
         signature += action
 
       if(entity)
