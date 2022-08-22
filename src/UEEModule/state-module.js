@@ -1,6 +1,6 @@
 import { UEEModule } from "./abstract-module.js";
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, saveModuleStoreAction, updateModuleStateAction } from "../UEEManager/constants.js";
 import { State, STATES_CONSTATS } from "./state.js";
+import { EVENT_NAME_CONSTATS, moduleManagerSystem } from "../UEESystems/modules-manager-system.js";
 
 export class UEEStateModule extends UEEModule {
 
@@ -14,18 +14,19 @@ export class UEEStateModule extends UEEModule {
 
     this.state = new State
 
-    this.defEvents([
-      { name: EVENT_NAME_CONSTATS.BUILD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.LOAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.RUN, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.ONLYREAD, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.SLEEP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } },
-      { name: EVENT_NAME_CONSTATS.STOP, payloadType: { system: manageModuleSystem, action: changeStateOfModuleAction, entity: this.uuid } }
-    ])
+    const stateEvents = Object.values(moduleManagerSystem.events)
+    .filter( event => event.name !== EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE)
+    .map( ({ name, payloadType, tags }) => {
+      tags.push("entity")
+      payloadType.entity = this.uuid
+
+      return { name, payloadType, tags }
+    })
+    this.defEvents(stateEvents)
   }
 
   sendEvent ({ name, payload }) {
-    if(payload?.system === manageModuleSystem) {
+    if(payload?.system === moduleManagerSystem.name) {
       super.sendEvent({ name, payload })
       return
     }
@@ -39,7 +40,7 @@ export class UEEStateModule extends UEEModule {
   }
 
   recieveEvent ({ name, payload }) {
-    if(payload?.system === manageModuleSystem) {
+    if(payload?.system === moduleManagerSystem.name) {
       super.recieveEvent({ name, payload })
       return
     }
@@ -55,26 +56,24 @@ export class UEEStateModule extends UEEModule {
       throw new Error("Module isn't running!")
   }
 
+  //EVENTS
   sendUpdateStateEvent () {
-    this.sendEvent({ 
-      name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
-      payload: {
-        system: manageModuleSystem, 
-        action: updateModuleStateAction, 
-        entity: this.uuid, 
-        state: this.state.getValue() 
-      } 
+    const newEvent = moduleManagerSystem.createNewEvent({
+      event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE],
+      payload: { state: this.state.getValue(), entity: this.uuid}
     })
+
+    this.sendEvent(newEvent)
   }
 
-  build ({ moduleType }) {
+  _build ({ moduleType }) {
     if(typeof this.onBuild === 'function')
       this.onBuild({ moduleType })
 
     this.sendUpdateStateEvent()
   }
 
-  load ({ data }) {
+  _load ({ data }) {
     this.state.load()
 
     if(typeof this.onLoad === 'function')
@@ -87,7 +86,7 @@ export class UEEStateModule extends UEEModule {
     return (this.state.getValue() === STATES_CONSTATS.RUNNING || this.state.getValue() === STATES_CONSTATS.READONLY)
   }
 
-  run () {
+  _run () {
     this.state.run()
 
     if(typeof this.onStart === 'function')
@@ -99,14 +98,14 @@ export class UEEStateModule extends UEEModule {
     this.sendUpdateStateEvent()
   }
 
-  onlyRead () {
+  _onlyRead () {
     this.state.onlyread()
 
     if(typeof this.onOnlyRead === 'function')
       this.onOnlyRead()
   }
 
-  sleep () {
+  _sleep () {
     this.state.sleep()
 
     if(typeof this.onSleep === 'function')
@@ -115,7 +114,7 @@ export class UEEStateModule extends UEEModule {
     this.sendUpdateStateEvent()
   }
 
-  stop () {
+  _stop () {
     delete this.store
     if(typeof this.onStop === 'function')
       this.onStop()

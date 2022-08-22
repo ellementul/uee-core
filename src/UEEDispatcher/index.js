@@ -52,11 +52,11 @@ export class UEEDispatcher {
         if(!data[tag])
           throw new Error(`Invalidate event: tag ${tag} isn't found in event data ${JSON.stringify(payloadType)}`)
         
-        signatures.push(data[tag])
+        signatures.push(`${tag}:${data[tag]}`)
       })
     }
 
-    return signatures.join(':')
+    return signatures.join(';')
   }
 
   defineListenerEvent({ name, payloadType, tags }) {

@@ -22,8 +22,18 @@ export class SystemInterface {
 
   get events() {
     const events = {}
-    this._events.forEach(event => events[event.name] = event)
+    this._events.forEach(event => events[event.name] = JSON.parse(JSON.stringify(event)) )
     return events
+  }
+
+  createNewEvent({ event: { name }, payload }) {
+    if(!this.events[name])
+      throw new Error(`This event ${name} isn't contented any defined system!`)
+
+    const { payloadType, tags } = this.events[name]
+    const newEvent = { name, payload: { ...payload, ...payloadType }, tags }
+
+    return newEvent
   }
 
   get moduleNames() {
@@ -42,6 +52,6 @@ export class SystemInterface {
   }
 
   isContentingEvent(event) {
-    return this._events.includes(event)
+    return this._events.map( eventOfSystem => JSON.stringify(eventOfSystem) ).includes(JSON.stringify(event))
   }
 }

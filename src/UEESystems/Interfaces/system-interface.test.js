@@ -98,4 +98,31 @@ describe("SystemInterface", () => {
     })
     expect(system.isContentingEvent(system.events.testEventTwo)).toBe(true)
   })
+
+  it("Create event from template", () => {
+    const system = new SystemInterface({
+      name: "TestSystem",
+      events: [
+        { 
+          name: "testEventTwo"
+        }
+      ]
+    })
+
+    const newEvent = system.createNewEvent({
+      event: { name: "testEventTwo" }
+    })
+
+    expect(newEvent).toEqual({
+      name: "testEventTwo",
+      payload: {
+        system: "TestSystem"
+      },
+      tags: ["system"]
+    })
+
+    expect(() => system.createNewEvent({
+      event: { name: "testTipyEventTwo" }
+    })).toThrow('contented')
+  })
 })

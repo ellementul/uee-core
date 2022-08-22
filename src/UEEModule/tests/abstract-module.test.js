@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals'
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, updateModuleStateAction } from "../../UEEManager/constants.js"
 import { UEEModule } from "../abstract-module.js"
 import { UEEDispatcher } from "../../UEEDispatcher/index.js"
 

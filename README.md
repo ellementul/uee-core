@@ -10,13 +10,18 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
-- Create modules system interface    
 
 - Make async onBuild, onLoad, onStart in state module(if promise then wait, esle sync call)
+- Create Store system
 - Create DB module
 - Test connect to base while building
 - Connect to base while running
-- Ticking time event generate 
+- Send event about Store system to be ready
+- Ticking time event generate
+
+- Make test for Manager
+- replace event create event in module manager
+
 
 - Создать мета модуль из системного и определить в нем существование двух систем: Modules, Store
 - Первую систему объявляет о готовности Менеджер
@@ -25,7 +30,6 @@ United Events Environment
 - Присуствие модуля в системе должно быть обязательным, иначе модуль не часть этой системы.
 - Готовность системы объявляется только тогда когда все модули
 - Статус всех систем должен отслеживать сам метамодуль, в том числе пинговать каждого менеджера и модули в каждой системе(часть их он может не пинговать, а просто ловить от них сообщения)
-- 
 
 - Фабрика больше не принимает готовые объекты, а только конструторы
 - Фабрика принимает мета модуль отдельно и опционально

@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, updateModuleStateAction } from "../../UEEManager/constants.js"
 import { UEEStateModule } from "../state-module.js"
 import { UEEDispatcher } from "../../UEEDispatcher/index.js"
+import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } from "../../UEESystems/modules-manager-system.js";
 
 describe("State Module Test", () => {
   let stateModule
@@ -46,28 +46,26 @@ describe("State Module Test", () => {
           system: "Testing"
         }
       })
+      expect(stateModule.isRun()).toBe(false)
     })
 
     it("Building", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
-          system: manageModuleSystem, 
+          system: moduleManagerSystem.name, 
           action: updateModuleStateAction, 
           entity: stateModule.uuid,
           state: "BUILDED",
-        }
+        },
+        tags: ["action", "system"]
       }))
-      expect(stateModule.isRun()).toBe(false)
-
-      dispatcher.recieveEvent({
-        name: EVENT_NAME_CONSTATS.BUILD,
-        payload: {
-          system: manageModuleSystem,
-          action: changeStateOfModuleAction,
-          entity: stateModule.uuid
-        }
+      const event = moduleManagerSystem.createNewEvent({
+        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.BUILD]
       })
+      event.tags.push("entity")
+      event.payload.entity = stateModule.uuid
+      dispatcher.recieveEvent(event)
 
       expect(stateModule.onBuild.mock.calls.length).toBe(1)
       expect(stateModule.isRun()).toBe(false)
@@ -77,22 +75,20 @@ describe("State Module Test", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
-          system: manageModuleSystem, 
+          system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
           entity: stateModule.uuid,
           state: "LOADED"
-        }
+        },
+        tags: ["action", "system"]
       }))
-
-      dispatcher.recieveEvent({
-        name: EVENT_NAME_CONSTATS.LOAD,
-        payload: {
-          system: manageModuleSystem,
-          action: changeStateOfModuleAction,
-          entity: stateModule.uuid,
-          data: "Somethin Store"
-        }
+      const event = moduleManagerSystem.createNewEvent({
+        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.LOAD]
       })
+      event.tags.push("entity")
+      event.payload.entity = stateModule.uuid
+      event.payload.data = "Somethin Store"
+      dispatcher.recieveEvent(event)
 
       expect(stateModule.onLoad.mock.calls.length).toBe(1)
       expect(stateModule.onLoad.mock.lastCall).toEqual([{ data: "Somethin Store" }])
@@ -103,21 +99,19 @@ describe("State Module Test", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
         name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
-          system: manageModuleSystem, 
+          system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
           entity: stateModule.uuid,
           state: "RUNNING"
-        }
+        },
+        tags: ["action", "system"]
       }))
-
-      dispatcher.recieveEvent({
-        name: EVENT_NAME_CONSTATS.RUN,
-        payload: {
-          system: manageModuleSystem,
-          action: changeStateOfModuleAction,
-          entity: stateModule.uuid
-        }
+      const event = moduleManagerSystem.createNewEvent({
+        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.RUN]
       })
+      event.tags.push("entity")
+      event.payload.entity = stateModule.uuid
+      dispatcher.recieveEvent(event)
 
       expect(stateModule.onStart.mock.calls.length).toBe(1)
       expect(stateModule.isRun()).toBe(true)
@@ -125,16 +119,14 @@ describe("State Module Test", () => {
 
     it("Repeat run (expect error)", () => {
 
-      expect(() =>
-        dispatcher.recieveEvent({
-          name: EVENT_NAME_CONSTATS.RUN,
-          payload: {
-            system: manageModuleSystem,
-            action: changeStateOfModuleAction,
-            entity: stateModule.uuid
-          }
+      expect(() => {
+        const event = moduleManagerSystem.createNewEvent({
+          event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.RUN]
         })
-      ).toThrow('Uncorrectly state')
+        event.tags.push("entity")
+        event.payload.entity = stateModule.uuid
+        dispatcher.recieveEvent(event)
+      }).toThrow('Uncorrectly state')
       
     })
   })
