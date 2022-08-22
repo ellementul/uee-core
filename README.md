@@ -10,8 +10,35 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
+- Add type in abstract module
+- Clear type module from building of module
+- Add crash event in ModuleManageSytem
+- Add crash event in state module
+- Make test for crashing module 
+
+- Create SystemManagerModule (extends abstarct module)
+  - list modules with status
+  - list system witn status and required instances of module type
+  - events
+    - Update state of modules
+    - Update state of system
+    - Crashing module
+    - Log events(server will listener them)
+
+- Test ModuleManagerModules with Manager
+- Manager recieve this module as argument for constructor
+
 - Create Store system
-- Create DB module
+  - Events
+    - requestToUpdateEntityInDB
+    - UpdateEntityInDB
+    - requestToLoadEntity(if entity doesn't exist then create)
+    - LoadEntityInModule
+  - Modules
+    - Store module type
+  
+- Create abstract module with Store type(extend SystemModule, system ManageModule )
+- Create abstract adapter DB
 - Test connect to base while building
 - Connect to base while running
 - Send event about Store system to be ready
@@ -21,9 +48,8 @@ United Events Environment
 - replace event create event in module manager
 
 
-- Создать мета модуль из системного и определить в нем существование двух систем: Modules, Store
+- Создать мета модуль из state module
 - Первую систему объявляет о готовности Менеджер
-- Вторая система включает в себя DB Module
 - Так же менеджер передает мета модулю список систем, и типов модулей которые в них участвуют.
 - Присуствие модуля в системе должно быть обязательным, иначе модуль не часть этой системы.
 - Готовность системы объявляется только тогда когда все модули
