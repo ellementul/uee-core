@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals'
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, manageModuleSystem, SYSTEN_READY_EVENT_NAME, updateModuleStateAction } from "../../UEEManager/constants.js"
 import { UEESystemsModule } from "../systems-module.js"
 import { UEEDispatcher } from "../../UEEDispatcher/index.js"
-import { SystemInterface } from '../../UEESystems/Interfaces/system-interface.js'
+import { SystemInterface } from "../../UEESystems/Interfaces/system-interface.js"
+import { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } from "../../UEESystems/modules-manager-system.js"
 
 describe("System Module Test", () => {
   let systemModule
@@ -20,7 +20,7 @@ describe("System Module Test", () => {
     ]
   })
   const anotherTestSystem = new SystemInterface({
-    name: "TestSystem",
+    name: "AnotherTestSystem",
     events: [
       { name: "testSystemEventOne" },
       { name: "testSystemEventTwo" },
@@ -30,6 +30,7 @@ describe("System Module Test", () => {
   class TestModule extends UEESystemsModule {
       constructor ({...args}) {
         super({...args})
+        this.type = "TestSsytemModule"
 
         this.onStart = jest.fn()
       }
@@ -86,14 +87,13 @@ describe("System Module Test", () => {
     it("Running", () => {
       expect(systemModule.isRun()).toBe(false)
 
-      dispatcher.recieveEvent({
-        name: SYSTEN_READY_EVENT_NAME,
-        payload: {
-          system: manageModuleSystem,
-          entity: testSystem.name 
-        },
-        tags: ["system", "entity"]
-      })
+      const event = moduleManagerSystem.createNewEvent({ event: { name: SYSTEN_READY_EVENT_NAME } })
+      event.tags.push("entity")
+      event.payload.entity = testSystem.name 
+
+      dispatcher.recieveEvent(event)
+      event.payload.entity = anotherTestSystem.name
+      dispatcher.recieveEvent(event) 
 
       expect(systemModule.onStart).toHaveBeenCalled()
     })

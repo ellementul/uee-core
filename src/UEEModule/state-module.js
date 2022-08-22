@@ -1,6 +1,6 @@
 import { UEEModule } from "./abstract-module.js";
 import { State, STATES_CONSTATS } from "./state.js";
-import { EVENT_NAME_CONSTATS, moduleManagerSystem } from "../UEESystems/modules-manager-system.js";
+import { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } from "../UEESystems/modules-manager-system.js";
 
 export class UEEStateModule extends UEEModule {
 
@@ -15,7 +15,10 @@ export class UEEStateModule extends UEEModule {
     this.state = new State
 
     const stateEvents = Object.values(moduleManagerSystem.events)
-    .filter( event => event.name !== EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE)
+    .filter( event => 
+      Object.values(STATE_EVENT_NAME_CONSTATS).includes(event.name)
+      && event.name !==STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE
+    )
     .map( ({ name, payloadType, tags }) => {
       tags.push("entity")
       payloadType.entity = this.uuid
@@ -63,7 +66,7 @@ export class UEEStateModule extends UEEModule {
   //EVENTS
   sendUpdateStateEvent () {
     const newEvent = moduleManagerSystem.createNewEvent({
-      event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE],
+      event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE],
       payload: { state: this.state.getValue(), entity: this.uuid}
     })
 
@@ -84,8 +87,8 @@ export class UEEStateModule extends UEEModule {
     }
   }
 
-  _build ({ moduleType }) {
-    this._wrapAyncOn("onBuild", { moduleType }, "sendUpdateStateEvent")
+  _build () {
+    this._wrapAyncOn("onBuild", {}, "sendUpdateStateEvent")
   }
 
   _load ({ data }) {

@@ -19,8 +19,9 @@ export class UEEModule {
   }
 
   setDispatcher (dispatcherEvents) {
+    if(!this.type)
+      throw new Error(`The type module isn't defined!`)
 
-    // TODO Abstract dispatcher instance check
     if(!dispatcherEvents || typeof dispatcherEvents !== "object")
       throw Error('Not valid dispatcher')
     

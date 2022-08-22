@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 import { UEEStateModule } from "../state-module.js"
 import { UEEDispatcher } from "../../UEEDispatcher/index.js"
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } from "../../UEESystems/modules-manager-system.js";
+import {STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } from "../../UEESystems/modules-manager-system.js";
 
 describe("State Module Test", () => {
   let stateModule
@@ -11,7 +11,7 @@ describe("State Module Test", () => {
   class TestModule extends UEEStateModule {
       constructor ({ ...args }) {
         super({ ...args });
-        this.onBuild = jest.fn(async ({ moduleType }) => moduleType)
+        this.onBuild = jest.fn(async () => "Promise")
         this.onLoad = jest.fn()
         this.onStart = jest.fn()
 
@@ -20,6 +20,10 @@ describe("State Module Test", () => {
         this.defEvents([
           { name: "testEvent", payloadType: { system: "Testing" }}
         ])
+      }
+
+      get type () {
+        return "TestStateType"
       }
   }
 
@@ -51,7 +55,7 @@ describe("State Module Test", () => {
 
     it("Building", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
-        name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
+        name: STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: moduleManagerSystem.name, 
           action: updateModuleStateAction, 
@@ -62,7 +66,7 @@ describe("State Module Test", () => {
       }))
 
       const event = moduleManagerSystem.createNewEvent({
-        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.BUILD]
+        event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.BUILD]
       })
       event.tags.push("entity")
       event.payload.entity = stateModule.uuid
@@ -74,7 +78,7 @@ describe("State Module Test", () => {
 
     it("Loading", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
-        name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
+        name:STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
@@ -84,7 +88,7 @@ describe("State Module Test", () => {
         tags: ["action", "system"]
       }))
       const event = moduleManagerSystem.createNewEvent({
-        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.LOAD]
+        event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.LOAD]
       })
       event.tags.push("entity")
       event.payload.entity = stateModule.uuid
@@ -98,7 +102,7 @@ describe("State Module Test", () => {
 
     it("Running", () => {
       mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
-        name: EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
+        name:STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
         payload: { 
           system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
@@ -108,7 +112,7 @@ describe("State Module Test", () => {
         tags: ["action", "system"]
       }))
       const event = moduleManagerSystem.createNewEvent({
-        event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.RUN]
+        event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.RUN]
       })
       event.tags.push("entity")
       event.payload.entity = stateModule.uuid
@@ -122,7 +126,7 @@ describe("State Module Test", () => {
 
       expect(() => {
         const event = moduleManagerSystem.createNewEvent({
-          event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.RUN]
+          event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.RUN]
         })
         event.tags.push("entity")
         event.payload.entity = stateModule.uuid

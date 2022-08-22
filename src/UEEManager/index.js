@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { changeStateOfModuleAction, EVENT_NAME_CONSTATS, moduleManagerSystem } from '../UEESystems/modules-manager-system.js'
+import { changeStateOfModuleAction,STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } from '../UEESystems/modules-manager-system.js'
 
 class UEEManager {
   constructor (dispatcher) {
@@ -24,7 +24,7 @@ class UEEManager {
     })
 
     stateModule.recieveEvent({
-      name: EVENT_NAME_CONSTATS.BUILD,
+      name:STATE_EVENT_NAME_CONSTATS.BUILD,
       payload: {
         system: moduleManagerSystem.name,
         action: changeStateOfModuleAction,

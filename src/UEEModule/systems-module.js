@@ -1,4 +1,4 @@
-import { manageModuleSystem, SYSTEN_READY_EVENT_NAME } from "../UEEManager/constants.js";
+import { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } from "../UEESystems/modules-manager-system.js";
 import { SystemInterface } from "../UEESystems/Interfaces/system-interface.js";
 import { UEEStateModule } from "./state-module.js";
 
@@ -23,8 +23,8 @@ export class UEESystemsModule extends UEEStateModule {
   defDependensSystemEventAboutReady(systemInterfaces) {
     return systemInterfaces.map(system => {
       this._dependsOnSystems.push(system.name)
-      const event = { name: SYSTEN_READY_EVENT_NAME, payloadType: { system: manageModuleSystem, entity: system.name }, tags: ["system", "entity"]}
-      this.defEventNow({ event, callback: payload => this.systemIsReady(payload)})
+      const event = { name: SYSTEN_READY_EVENT_NAME, payloadType: { system: moduleManagerSystem.name, entity: system.name }, tags: ["system", "entity"]}
+      this.defEventNow({ event, callback: payload => this.__systemIsReady(payload)})
     })
   }
 
@@ -47,10 +47,10 @@ export class UEESystemsModule extends UEEStateModule {
     return this._dependsOnSystems.every(system => this._systemsIsReady.includes(system))
   }
 
-  systemIsReady({ entity: system }) {
+  __systemIsReady({ entity: system }) {
     this._systemsIsReady.push(system)
 
     if(this.areReadyAllSystems())
-      super.run();
+      super._run();
   }
 }

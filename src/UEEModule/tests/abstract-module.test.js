@@ -8,25 +8,36 @@ describe("Abstract Module Test", () => {
   
   const mockSendEvent = jest.fn()
   const mockTestEvent = jest.fn()
+  class IncorrectModule extends UEEModule {}
   class TestModule extends UEEModule {
-      constructor ({ ...args }) {
-        super({ ...args });
+    constructor ({ ...args }) {
+      super({ ...args });
+      this.defEvents([
+        {
+          name: "testEvent",
+          payloadType: {
+            system: "Testing"
+          },
+          tags: ["system"]
+        }
+      ])
+    }
 
-        this.defEvents([
-          {
-            name: "testEvent",
-            payloadType: {
-              system: "Testing"
-            },
-            tags: ["system"]
-          }
-        ])
-      }
+    get type() {
+      return "TestType"
+    }
 
-      testEvent () {
-        mockTestEvent();
-      }
+    testEvent () {
+      mockTestEvent();
+    }
   }
+
+  it("Inccorect extends", () => {
+    const inccorectModule = new IncorrectModule
+    expect(() => {
+      inccorectModule.setDispatcher(dispatcher)
+    }).toThrow("type")
+  })
 
   it("Constructor", () => {
     ueeModule = new TestModule({ isSaveEventsAfterBuild: true })
