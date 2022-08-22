@@ -56,45 +56,46 @@ describe("SystemInterface", () => {
       name: "TestSystem",
       events: [
         { 
-          name: "TestEvent",
+          name: "testEvent",
           payloadType: { sometag: "somevalue" },
           tags: ["sometag"]
         },
         { 
-          name: "TestEventWithoutTags",
+          name: "testEventWithoutTags",
           payloadType: { someprop: "somevalue" },
         },
         { 
-          name: "TestEventTwo"
+          name: "testEventTwo"
         }
       ]
     })
 
     expect(system.name).toBe("TestSystem")
     expect(system.events).toEqual({
-      TestEvent: { 
-        name: "TestEvent",
+      testEvent: { 
+        name: "testEvent",
         payloadType: {
           sometag: "somevalue",
           system: "TestSystem" 
         },
         tags: ["sometag", "system"]
       },
-      TestEventWithoutTags: { 
-        name: "TestEventWithoutTags",
+      testEventWithoutTags: { 
+        name: "testEventWithoutTags",
         payloadType: {
           someprop: "somevalue",
           system: "TestSystem"
         },
         tags: ["system"]
       },
-      TestEventTwo: { 
-        name: "TestEventTwo",
+      testEventTwo: { 
+        name: "testEventTwo",
         payloadType: {
           system: "TestSystem"
         },
         tags: ["system"]
       }
     })
+    expect(system.isContentingEvent(system.events.testEventTwo)).toBe(true)
   })
 })

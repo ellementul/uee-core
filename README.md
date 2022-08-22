@@ -10,23 +10,7 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
-
-- Remake system module for system interface
-- Create modules system interface
-  
-- Fixing module's tests
-- DefSystem method in System Module
-  - Args
-    - Systems: Array
-      - SystemInterface
-      - SystemInterface
-    - Events: Array
-      - Event name
-      - Event
-    - eventsCallbacks: Object (not required)
-      - [ Event Name ] : callback 
-      - [ Event ] : callback
-    
+- Create modules system interface    
 
 - Make async onBuild, onLoad, onStart in state module(if promise then wait, esle sync call)
 - Create DB module

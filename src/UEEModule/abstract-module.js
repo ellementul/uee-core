@@ -11,7 +11,8 @@ export class UEEModule {
 
   defEvents (events) {
     events.forEach(({ name }) => {
-      if(typeof this[name] !== "function") throw new Error(`Callback don't define for this listenered event: ${ name }`)
+      if(typeof this[name] !== "function") 
+        throw new Error(`Callback don't define for this listenered event: ${ name }`)
     })
 
     this.events.push(...events)
@@ -33,7 +34,7 @@ export class UEEModule {
     this.sendEvent = event => dispatcherEvents.sendEvent(event)
   }
 
-  defEventNow ({ name, payloadType, tags }, callback) {
+  defEventNow ({ event: { name, payloadType, tags }, callback }) {
 
     if(!this._dispatcher)
       this.events.push({ name, payloadType, tags })
@@ -59,7 +60,7 @@ export class UEEModule {
     }
     catch (error) {
 
-      if(typeof this[name] !== "function")
+      if(typeof this[name] !== "function" && typeof this.callbacks[name] !== "function")
         throw new Error(`Callback don't define for this listenered event: ${ name }`)
 
       error.message = `The error of calling callback for '${name}' event : ${error.message}`

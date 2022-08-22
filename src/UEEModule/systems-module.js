@@ -1,25 +1,46 @@
-import { manageModuleSystem, SYSTEN_READY_EVENT_NAME } from "../UEEManager/constants";
-import { UEEStateModule } from "./state-module";
+import { manageModuleSystem, SYSTEN_READY_EVENT_NAME } from "../UEEManager/constants.js";
+import { SystemInterface } from "../UEESystems/Interfaces/system-interface.js";
+import { UEEStateModule } from "./state-module.js";
 
 export class UEESystemsModule extends UEEStateModule {
-  constructor({ ...args } = {}) {
-    super({isSaveEventsAfterBuild: true, ...args});
+  constructor({ systemInterfaces, systemEvents = [], ...args } = {}) {
+    super({ isSaveEventsAfterBuild: true, ...args})
 
-    this._dependsOnSystems = [];
-    this._systemsIsReady = [];
+    if(!Array.isArray(systemInterfaces) || systemInterfaces.length === 0)
+      throw new Error("The systems isn't defined!")
 
-    const defindingEvents = this._dependsOnSystems.map(system => {
-      return { name: SYSTEN_READY_EVENT_NAME, payloadType: { system: manageModuleSystem, entity: system }}
-    });
+    if(systemInterfaces.some( system => !(system instanceof SystemInterface) ))
+      throw new Error(`The systems have to extend SystemInterface!`)
 
-    this.defEvents(defindingEvents)
+    this._dependsOnSystems = []
+    this._systemsIsReady = []
+    this.defDependensSystemEventAboutReady(systemInterfaces)
+    const envetsWithoutCallback = this.checkAndDefSystemEvents(systemInterfaces, systemEvents)
+
+    this.defEvents(envetsWithoutCallback)
   }
 
-  addDependsOnSystems(dependsOnSystems = []) {
-    if(dependsOnSystems.every(system => this._dependsOnSystems.includes(system)))
-      throw new Error(`This ${system} system is defined as depenedice in this module`)
+  defDependensSystemEventAboutReady(systemInterfaces) {
+    return systemInterfaces.map(system => {
+      this._dependsOnSystems.push(system.name)
+      const event = { name: SYSTEN_READY_EVENT_NAME, payloadType: { system: manageModuleSystem, entity: system.name }, tags: ["system", "entity"]}
+      this.defEventNow({ event, callback: payload => this.systemIsReady(payload)})
+    })
+  }
 
-    this._dependsOnSystems.push(...dependsOnSystems)
+  checkAndDefSystemEvents(systemInterfaces, systemEvents) {
+    return systemEvents.filter(event => {
+      const isCallback = (typeof event.callback === "function")
+      const systemsOfEvent = systemInterfaces.filter(system => system.isContentingEvent(isCallback ? event.event : event))
+
+      if(systemsOfEvent.length === 0)
+        throw new Error(`This event ${event.name} isn't contented any defined system!`)
+
+      if(isCallback)
+        this.defEventNow(event)
+
+      return !isCallback
+    })
   }
 
   areReadyAllSystems() {

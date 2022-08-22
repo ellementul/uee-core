@@ -1,5 +1,21 @@
 import { v4 as uuidv4 } from 'uuid'
 
+export function checkToBeValidEvent({ name, payloadType, tags }) {
+
+  if(!name)
+    throw new Error('Event name is undefined!')
+
+  if(tags && !payloadType)
+    throw new Error('Event payloadType is undefined when tags is defind!')
+
+  if(Array.isArray(tags) && tags.length > 0) {
+    tags.forEach(tag => {
+      if(!payloadType[tag])
+        throw new Error(`Invalidate event: tag ${tag} isn't found in event data ${JSON.stringify(payloadType)}`)
+    })
+  }
+}
+
 export class UEEDispatcher {
   constructor () {
     this.uuid = uuidv4()

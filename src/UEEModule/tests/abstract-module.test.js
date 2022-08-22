@@ -55,7 +55,7 @@ describe("Abstract Module Test", () => {
 
     it("DefEventOn method", () => {
       const callback = jest.fn()
-      ueeModule.defEventNow({ name: "testTwoEvent" }, callback)
+      ueeModule.defEventNow({ event: { name: "testTwoEvent" }, callback })
 
       dispatcher.recieveEvent({
         name: "testTwoEvent",

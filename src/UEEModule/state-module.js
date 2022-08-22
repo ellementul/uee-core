@@ -25,7 +25,7 @@ export class UEEStateModule extends UEEModule {
   }
 
   sendEvent ({ name, payload }) {
-    if(payload.system === manageModuleSystem) {
+    if(payload?.system === manageModuleSystem) {
       super.sendEvent({ name, payload })
       return
     }
@@ -39,7 +39,7 @@ export class UEEStateModule extends UEEModule {
   }
 
   recieveEvent ({ name, payload }) {
-    if(payload.system === manageModuleSystem) {
+    if(payload?.system === manageModuleSystem) {
       super.recieveEvent({ name, payload })
       return
     }

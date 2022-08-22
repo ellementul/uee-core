@@ -13,4 +13,4 @@ export const EVENT_NAME_CONSTATS = {
   UPDATE_MODULE_STATE: 'updateModuleState',
   SAVE_MODULE_STORE: 'saveModuleStore'
 }
-export const SYSTEN_READY_EVENT_NAME = "systemIsReady";
+export const SYSTEN_READY_EVENT_NAME = "systemIsReadyEvent";
