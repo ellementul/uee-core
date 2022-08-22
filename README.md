@@ -10,8 +10,6 @@ United Events Environment
 - Позволяет создать зависимый от опредленных систем модуль, который стартует или загрузится как только эти системы будут готовы.
 
 ## Задачи:
-
-- Make async onBuild, onLoad, onStart in state module(if promise then wait, esle sync call)
 - Create Store system
 - Create DB module
 - Test connect to base while building

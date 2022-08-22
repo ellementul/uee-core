@@ -11,7 +11,7 @@ describe("State Module Test", () => {
   class TestModule extends UEEStateModule {
       constructor ({ ...args }) {
         super({ ...args });
-        this.onBuild = jest.fn()
+        this.onBuild = jest.fn(async ({ moduleType }) => moduleType)
         this.onLoad = jest.fn()
         this.onStart = jest.fn()
 
@@ -60,6 +60,7 @@ describe("State Module Test", () => {
         },
         tags: ["action", "system"]
       }))
+
       const event = moduleManagerSystem.createNewEvent({
         event: moduleManagerSystem.events[EVENT_NAME_CONSTATS.BUILD]
       })

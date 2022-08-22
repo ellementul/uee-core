@@ -56,6 +56,10 @@ export class UEEStateModule extends UEEModule {
       throw new Error("Module isn't running!")
   }
 
+  isRun () {
+    return (this.state.getValue() === STATES_CONSTATS.RUNNING || this.state.getValue() === STATES_CONSTATS.READONLY)
+  }
+
   //EVENTS
   sendUpdateStateEvent () {
     const newEvent = moduleManagerSystem.createNewEvent({
@@ -66,58 +70,56 @@ export class UEEStateModule extends UEEModule {
     this.sendEvent(newEvent)
   }
 
-  _build ({ moduleType }) {
-    if(typeof this.onBuild === 'function')
-      this.onBuild({ moduleType })
+  _wrapAyncOn (method, args, finishedMethod) {
+    if(typeof this[method] === 'function') {
+      const res = this[method](args)
 
-    this.sendUpdateStateEvent()
+      if(res instanceof Promise)
+        res.then(() => this[finishedMethod]()).catch(error => { throw error })
+      else
+        this[finishedMethod]()
+    }
+    else {
+      this[finishedMethod]()
+    }
+  }
+
+  _build ({ moduleType }) {
+    this._wrapAyncOn("onBuild", { moduleType }, "sendUpdateStateEvent")
   }
 
   _load ({ data }) {
     this.state.load()
-
-    if(typeof this.onLoad === 'function')
-      this.onLoad({ data })
-
-    this.sendUpdateStateEvent()
-  }
-
-  isRun () {
-    return (this.state.getValue() === STATES_CONSTATS.RUNNING || this.state.getValue() === STATES_CONSTATS.READONLY)
+    this._wrapAyncOn("onLoad", { data }, "sendUpdateStateEvent")
   }
 
   _run () {
     this.state.run()
-
-    if(typeof this.onStart === 'function')
-      this.onStart()
-
-    if(this.isSaveEventsAfterBuild) 
-      this.savedEvents.forEach( event => super.recieveEvent(event))
-
-    this.sendUpdateStateEvent()
+    this._wrapAyncOn("onStart", {}, "_afterRun")
   }
 
   _onlyRead () {
     this.state.onlyread()
-
-    if(typeof this.onOnlyRead === 'function')
-      this.onOnlyRead()
+    this._wrapAyncOn("onOnlyRead", {}, "_afterRun")
   }
 
-  _sleep () {
-    this.state.sleep()
-
-    if(typeof this.onSleep === 'function')
-      this.onSleep()
+  _afterRun () {
+    if(this.isSaveEventsAfterBuild) {
+      this.savedEvents.forEach( event => super.recieveEvent(event))
+      this.savedEvents = []
+    }
 
     this.sendUpdateStateEvent()
   }
 
+  _sleep () {
+    this.state.sleep()
+    this._wrapAyncOn("onOnlyRead", {}, "sendUpdateStateEvent")
+  }
+
   _stop () {
-    delete this.store
-    if(typeof this.onStop === 'function')
-      this.onStop()
+    this.state.stop()
+    this._wrapAyncOn("onStop", {}, "sendUpdateStateEvent")
   }
 
 }
