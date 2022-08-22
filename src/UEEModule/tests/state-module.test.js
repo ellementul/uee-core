@@ -58,6 +58,7 @@ describe("State Module Test", () => {
           state: "BUILDED",
         }
       }))
+      expect(stateModule.isRun()).toBe(false)
 
       dispatcher.recieveEvent({
         name: EVENT_NAME_CONSTATS.BUILD,
@@ -69,6 +70,7 @@ describe("State Module Test", () => {
       })
 
       expect(stateModule.onBuild.mock.calls.length).toBe(1)
+      expect(stateModule.isRun()).toBe(false)
     })
 
     it("Loading", () => {
@@ -94,6 +96,7 @@ describe("State Module Test", () => {
 
       expect(stateModule.onLoad.mock.calls.length).toBe(1)
       expect(stateModule.onLoad.mock.lastCall).toEqual([{ data: "Somethin Store" }])
+      expect(stateModule.isRun()).toBe(false)
     })
 
     it("Running", () => {
@@ -117,6 +120,7 @@ describe("State Module Test", () => {
       })
 
       expect(stateModule.onStart.mock.calls.length).toBe(1)
+      expect(stateModule.isRun()).toBe(true)
     })
 
     it("Repeat run (expect error)", () => {

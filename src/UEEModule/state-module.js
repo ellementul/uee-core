@@ -83,6 +83,10 @@ export class UEEStateModule extends UEEModule {
     this.sendUpdateStateEvent()
   }
 
+  isRun () {
+    return (this.state.getValue() === STATES_CONSTATS.RUNNING || this.state.getValue() === STATES_CONSTATS.READONLY)
+  }
+
   run () {
     this.state.run()
 
