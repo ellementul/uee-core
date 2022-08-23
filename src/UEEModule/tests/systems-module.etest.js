@@ -1,8 +1,7 @@
-import { jest } from '@jest/globals'
-import { UEESystemsModule } from "../systems-module.js"
-import { UEEDispatcher } from "../../UEEDispatcher/index.js"
-import { SystemInterface } from "../../UEESystems/Interfaces/system-interface.js"
-import { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } from "../../UEESystems/modules-manager-system.js"
+const { UEESystemsModule } = require("../systems-module")
+const { UEEDispatcher } = require("../../UEEDispatcher")
+const { SystemInterface } = require("../../UEESystems/Interfaces/system-interface")
+const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("../../UEESystems/modules-manager-system")
 
 describe("System Module Test", () => {
   let systemModule

@@ -1,8 +1,8 @@
-import { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } from "../UEESystems/modules-manager-system.js";
-import { SystemInterface } from "../UEESystems/Interfaces/system-interface.js";
-import { UEEStateModule } from "./state-module.js";
+const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("../UEESystems/modules-manager-system.js")
+const { SystemInterface } = require("../UEESystems/Interfaces/system-interface.js")
+const { UEEStateModule } = require("./state-module.js")
 
-export class UEESystemsModule extends UEEStateModule {
+class UEESystemsModule extends UEEStateModule {
   constructor({ systemInterfaces, systemEvents = [], ...args } = {}) {
     super({ isSaveEventsAfterBuild: true, ...args})
 
@@ -54,3 +54,5 @@ export class UEESystemsModule extends UEEStateModule {
       super._run();
   }
 }
+
+module.exports = { UEESystemsModule }

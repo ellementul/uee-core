@@ -1,6 +1,6 @@
-import { checkToBeValidEvent } from "../../UEEDispatcher/index.js"
+const { checkToBeValidEvent } = require("../../UEEDispatcher")
 
-export class SystemInterface {
+class SystemInterface {
   constructor({ name, events, modules }) {
     if(!name)
       throw new Error('System name is undefined!')
@@ -55,3 +55,5 @@ export class SystemInterface {
     return this._events.map( eventOfSystem => JSON.stringify(eventOfSystem) ).includes(JSON.stringify(event))
   }
 }
+
+module.exports = { SystemInterface }

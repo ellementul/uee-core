@@ -1,4 +1,4 @@
-import { SystemInterface } from './system-interface.js'
+const { SystemInterface } = require('./system-interface')
 
 describe("SystemInterface", () => {
   it("Incorrect calls constructor", () => {

@@ -1,7 +1,7 @@
-import { SystemInterface } from "./Interfaces/system-interface";
-export const changeStateOfModuleAction = 'Change module state';
-export const updateModuleStateAction = 'Updated module state';
-export const STATE_EVENT_NAME_CONSTATS = {
+const { SystemInterface } = require("./Interfaces/system-interface")
+const changeStateOfModuleAction = 'Change module state';
+const updateModuleStateAction = 'Updated module state';
+const STATE_EVENT_NAME_CONSTATS = {
   BUILD: '_build',
   LOAD: '_load',
   RUN: '_run',
@@ -10,7 +10,7 @@ export const STATE_EVENT_NAME_CONSTATS = {
   STOP: '_stop',
   UPDATE_MODULE_STATE: '_updateModuleState',
 }
-export const SYSTEN_READY_EVENT_NAME = "_systemIsReady";
+const SYSTEN_READY_EVENT_NAME = "_systemIsReady";
 
 const stateEvents = Object.values(STATE_EVENT_NAME_CONSTATS).map(
   name => {
@@ -24,10 +24,18 @@ const stateEvents = Object.values(STATE_EVENT_NAME_CONSTATS).map(
 )
 
 const systemName = "moduleManageSystem"
-export const moduleManagerSystem = new SystemInterface({
+const moduleManagerSystem = new SystemInterface({
   name: systemName,
   events: [
     ...stateEvents,
     { name: SYSTEN_READY_EVENT_NAME }
   ]
 })
+
+module.exports = {
+  changeStateOfModuleAction,
+  updateModuleStateAction,
+  STATE_EVENT_NAME_CONSTATS,
+  SYSTEN_READY_EVENT_NAME,
+  moduleManagerSystem
+}

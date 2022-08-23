@@ -1,8 +1,8 @@
-import { UEEModule } from "./abstract-module.js";
-import { State, STATES_CONSTATS } from "./state.js";
-import { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } from "../UEESystems/modules-manager-system.js";
+const { UEEModule } = require("./abstract-module.js")
+const { State, STATES_CONSTATS } = require("./state.js")
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require("../UEESystems/modules-manager-system.js")
 
-export class UEEStateModule extends UEEModule {
+class UEEStateModule extends UEEModule {
 
   constructor({ isSaveEventsAfterBuild=false,  ...args } = {}) {
     super({...args});
@@ -130,3 +130,5 @@ export class UEEStateModule extends UEEModule {
   }
 
 }
+
+module.exports = { UEEStateModule }

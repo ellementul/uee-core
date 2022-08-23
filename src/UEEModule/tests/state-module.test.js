@@ -1,7 +1,6 @@
-import { jest } from '@jest/globals'
-import { UEEStateModule } from "../state-module.js"
-import { UEEDispatcher } from "../../UEEDispatcher/index.js"
-import {STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } from "../../UEESystems/modules-manager-system.js";
+const { UEEStateModule } = require("../state-module")
+const { UEEDispatcher } = require("../../UEEDispatcher")
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("../../UEESystems/modules-manager-system")
 
 describe("State Module Test", () => {
   let stateModule

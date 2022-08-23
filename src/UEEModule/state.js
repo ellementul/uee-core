@@ -1,11 +1,11 @@
-export const STATES_CONSTATS = {
+const STATES_CONSTATS = {
   BUILDED: 'BUILDED',
   LOADED: 'LOADED',
   RUNNING: 'RUNNING',
   READONLY: 'READONLY',
 }
 
-export class State {
+class State {
   constructor () {
     this._state = STATES_CONSTATS.BUILDED
     this._preLoadState = [STATES_CONSTATS.BUILDED]
@@ -45,3 +45,5 @@ export class State {
     this._state = STATES_CONSTATS.BUILDED
   }
 }
+
+module.exports = { State, STATES_CONSTATS }

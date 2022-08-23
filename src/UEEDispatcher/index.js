@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from 'uuid'
+const { v4: uuidv4 } = require('uuid')
 
-export function checkToBeValidEvent({ name, payloadType, tags }) {
+function checkToBeValidEvent({ name, payloadType, tags }) {
 
   if(!name)
     throw new Error('Event name is undefined!')
@@ -16,7 +16,7 @@ export function checkToBeValidEvent({ name, payloadType, tags }) {
   }
 }
 
-export class UEEDispatcher {
+class UEEDispatcher {
   constructor () {
     this.uuid = uuidv4()
 
@@ -90,3 +90,5 @@ export class UEEDispatcher {
     }
   }
 }
+
+module.exports = { UEEDispatcher, checkToBeValidEvent }

@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid'
-export class UEEModule {
+const { v4: uuidv4 } = require('uuid')
+class UEEModule {
 
   constructor () {
     this.uuid = uuidv4()
@@ -69,3 +69,5 @@ export class UEEModule {
     }
   }
 }
+
+module.exports = { UEEModule }

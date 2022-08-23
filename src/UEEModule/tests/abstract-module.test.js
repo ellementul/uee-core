@@ -1,6 +1,5 @@
-import { jest } from '@jest/globals'
-import { UEEModule } from "../abstract-module.js"
-import { UEEDispatcher } from "../../UEEDispatcher/index.js"
+const { UEEModule } =  require("../abstract-module")
+const { UEEDispatcher } =  require("../../UEEDispatcher")
 
 describe("Abstract Module Test", () => {
   let ueeModule
