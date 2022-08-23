@@ -61,6 +61,7 @@ describe("State Module Test", () => {
           action: updateModuleStateAction, 
           entity: stateModule.uuid,
           state: "BUILDED",
+          typeModule: "TestStateType"
         },
         tags: ["action", "system"]
       }))
@@ -83,7 +84,8 @@ describe("State Module Test", () => {
           system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
           entity: stateModule.uuid,
-          state: "LOADED"
+          state: "LOADED",
+          typeModule: "TestStateType"
         },
         tags: ["action", "system"]
       }))
@@ -107,7 +109,8 @@ describe("State Module Test", () => {
           system: moduleManagerSystem.name, 
           action: updateModuleStateAction,
           entity: stateModule.uuid,
-          state: "RUNNING"
+          state: "RUNNING",
+          typeModule: "TestStateType"
         },
         tags: ["action", "system"]
       }))

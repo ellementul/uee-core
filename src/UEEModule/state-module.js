@@ -67,7 +67,11 @@ export class UEEStateModule extends UEEModule {
   sendUpdateStateEvent () {
     const newEvent = moduleManagerSystem.createNewEvent({
       event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE],
-      payload: { state: this.state.getValue(), entity: this.uuid}
+      payload: { 
+        state: this.state.getValue(), 
+        entity: this.uuid,
+        typeModule: this.type,
+      }
     })
 
     this.sendEvent(newEvent)
