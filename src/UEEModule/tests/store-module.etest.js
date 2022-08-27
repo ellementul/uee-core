@@ -11,6 +11,7 @@ describe("State Module Test", () => {
       constructor ({ ...args }) {
         super({ ...args });
         this.onBuild = jest.fn(async () => "Promise")
+        this.onLoad = jest.fn()
         this.onStart = jest.fn()
 
         this.testEvent = jest.fn()
@@ -29,6 +30,7 @@ describe("State Module Test", () => {
     stateModule = new TestModule({ isSaveEventsAfterBuild: true })
 
     expect(stateModule).toBeDefined()
+    expect(stateModule.state).toBeDefined()
 
     // Mocking recive events
     stateModule.setDispatcher(dispatcher)
@@ -71,6 +73,31 @@ describe("State Module Test", () => {
       dispatcher.recieveEvent(event)
 
       expect(stateModule.onBuild.mock.calls.length).toBe(1)
+      expect(stateModule.isRun()).toBe(false)
+    })
+
+    it("Loading", () => {
+      mockSendEvent.mockImplementationOnce(event => expect(event).toEqual({ 
+        name:STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE, 
+        payload: { 
+          system: moduleManagerSystem.name, 
+          action: updateModuleStateAction,
+          entity: stateModule.uuid,
+          state: "LOADED",
+          moduleType: "TestStateType"
+        },
+        tags: ["action", "system"]
+      }))
+      const event = moduleManagerSystem.createNewEvent({
+        event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.LOAD]
+      })
+      event.tags.push("entity")
+      event.payload.entity = stateModule.uuid
+      event.payload.data = "Somethin Store"
+      dispatcher.recieveEvent(event)
+
+      expect(stateModule.onLoad.mock.calls.length).toBe(1)
+      expect(stateModule.onLoad.mock.lastCall).toEqual([{ data: "Somethin Store" }])
       expect(stateModule.isRun()).toBe(false)
     })
 

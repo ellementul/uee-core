@@ -8,9 +8,8 @@ const STATES_CONSTATS = {
 class State {
   constructor () {
     this._state = STATES_CONSTATS.BUILDED
-    this._preLoadState = [STATES_CONSTATS.BUILDED]
-    this._preRunState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.LOADED, STATES_CONSTATS.READONLY]
-    this._preReadState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.RUNNING]
+    this._preRunState = [STATES_CONSTATS.BUILDED, STATES_CONSTATS.READONLY]
+    this._preReadState = [STATES_CONSTATS.RUNNING]
     this._preSleepState = [STATES_CONSTATS.READONLY, STATES_CONSTATS.RUNNING]
   }
 
@@ -46,4 +45,19 @@ class State {
   }
 }
 
-module.exports = { State, STATES_CONSTATS }
+class StateWithLoading extends State {
+  constructor () {
+    super()
+
+    this._preLoadState = [STATES_CONSTATS.BUILDED]
+    this._preRunState = [STATES_CONSTATS.LOADED]
+    this._preReadState = [STATES_CONSTATS.LOADED, STATES_CONSTATS.RUNNING]
+  }
+
+  load () {
+    this.checkState(this._preLoadState)
+    this._state = STATES_CONSTATS.LOADED
+  }
+}
+
+module.exports = { State, StateWithLoading, STATES_CONSTATS }

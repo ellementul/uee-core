@@ -12,21 +12,11 @@ United Events Environment
 
 ## Задачи:
 
-- Create Store system
-  - Events
-    - requestToUpdateEntityInDB
-    - UpdateEntityInDB
-    - requestToLoadEntity(if entity doesn't exist then create)
-    - LoadEntityInModule
-  - Modules
-    - Store module type
-
 - Create abstract module with Store type(extend SystemModule, system ManageModule )
 - Create abstract adapter DB
-- Test connect to base while building
-- Connect to base while running
-- Send event about Store system to be ready
-- Ticking time event generate
+- Test connect to base while loading
+
+
 
 Перейти на [https://parceljs.org/getting-started/webapp/]
 Определить UI модуль
