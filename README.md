@@ -12,29 +12,6 @@ United Events Environment
 
 ## Задачи:
 
-
-Перейти на [https://parceljs.org/getting-started/webapp/]
-Определить UI модуль
-
-
-- Create SystemManagerModule
-  - Определить события для отслеживания состояние модулей
-  - Сделать тест с одним модулем которым мы стратуем сообщением вручную
-  - Написать тест с тестовой системой которая содержит один тип модуля, и написать это тестовый модуль
-  - Написать метод для определения системы внутри мета модуля
-  - Написать триггер который создат сообщение о смене статуса ситемы когда все модули внутри нее достигнут определеного статуса
-    - в данном случае если наш модуль запущен
-    - потом добавить в тестовую систему еще один модуль который сам зависит от другой фейковой системы
-    - запустить это модуль так же вручную, послав сообщение о том что фейковая система готова
-  - Вынести все определения тестовых сущностей в отдельный файл, чтобы вызов всей цепочки событий можно было запустить одним вызовом функции
-    - добить функцию так чтобы она принимала список событий, которые последовательно отсылает через диспетчер
-    - сделать несколько одинаковых тестов где события посылаются в разном порядке
-  - Передать мета модуль как аргумент Менеджеру
-  - Написать другой тест(тест для Менеджера) который убедится что с менедежером все работает так же
-
-- Test ModuleManagerModules with Manager
-- Manager recieve this module as argument for constructor
-
 - Create Store system
   - Events
     - requestToUpdateEntityInDB
@@ -43,7 +20,7 @@ United Events Environment
     - LoadEntityInModule
   - Modules
     - Store module type
-  
+
 - Create abstract module with Store type(extend SystemModule, system ManageModule )
 - Create abstract adapter DB
 - Test connect to base while building
@@ -51,8 +28,8 @@ United Events Environment
 - Send event about Store system to be ready
 - Ticking time event generate
 
-- Make test for Manager
-- replace event create event in module manager
+Перейти на [https://parceljs.org/getting-started/webapp/]
+Определить UI модуль
 
 
 - Создать мета модуль из state module
