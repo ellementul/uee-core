@@ -51,6 +51,12 @@ class SystemInterface {
     return modules
   }
 
+  get modulesByTypes () {
+    const modules = {}
+    this._modules.forEach(module => modules[module.type] = JSON.parse(JSON.stringify(module)) )
+    return modules
+  }
+
   defineSystemTag({ name, payloadType = {}, tags = []}) {
     tags.push("system")
     payloadType.system = this._name

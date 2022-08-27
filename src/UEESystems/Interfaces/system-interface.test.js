@@ -116,6 +116,10 @@ describe("SystemInterface", () => {
     expect(system.modules).toEqual({
       TestModuleName: { name: "TestModuleName", type: "TestModuleType" }
     })
+
+    expect(system.modulesByTypes).toEqual({
+      TestModuleType: { name: "TestModuleName", type: "TestModuleType" }
+    })
   })
 
   it("Create event from template", () => {
