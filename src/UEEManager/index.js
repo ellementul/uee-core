@@ -1,16 +1,31 @@
-import { v4 as uuidv4 } from 'uuid'
-import { changeStateOfModuleAction,STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } from '../UEESystems/modules-manager-system.js'
+const { UEEDispatcher } = require('../UEEDispatcher/index.js')
+const { SystemInterface } = require('../UEESystems/Interfaces/system-interface.js')
+const { changeStateOfModuleAction,STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-manager-system.js')
 
 class UEEManager {
-  constructor (dispatcher) {
+  constructor ({ dispatcher, systems }) {
+
+    if( !(dispatcher instanceof UEEDispatcher) )
+      throw new Error("The dispatcher has to extend UEEDispatcher!")
+
     this.dispatcher = dispatcher
     dispatcher.onRecieveEvent( event => this.recieveEvent(event) )
 
     this.modules = new Map
     this.events = new Map
+
+    if(!Array.isArray(systems))
+      throw new Error("The systems have to be defined!")
+
+    if(systems.some(system => !(system instanceof SystemInterface)))
+      throw new Error("Every system has to extend SystemInterface!")
   }
 
-  async initModule (module) {
+  initRootModule (RootModuleClass) {
+    this.rootModule = new RootModuleClass
+  }
+
+  initModule (module) {
     const uuid = module.uuid
     const type = module.constructor.name
     const dispatcher = this.generateDispatherForModule(uuid)
@@ -23,7 +38,7 @@ class UEEManager {
       module,
     })
 
-    stateModule.recieveEvent({
+    module.recieveEvent({
       name:STATE_EVENT_NAME_CONSTATS.BUILD,
       payload: {
         system: moduleManagerSystem.name,
@@ -33,12 +48,6 @@ class UEEManager {
     })
 
     return module
-  }
-
-  async initModules (modules) {
-    const promises =  modules.map(module => {
-      return this.initModule(module)
-    });
   }
 
   generateDispatherForModule (moduleUuid) {
@@ -111,4 +120,4 @@ class UEEManager {
   }
 }
 
-export default UEEManager
+module.exports = { UEEManager }
