@@ -1,9 +1,8 @@
 const { UEEDispatcher } = require('../UEEDispatcher/index.js')
-const { SystemInterface } = require('../UEESystems/Interfaces/system-interface.js')
-const { changeStateOfModuleAction,STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-manager-system.js')
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-manager-system.js')
 
 class UEEManager {
-  constructor ({ dispatcher, systems }) {
+  constructor ({ dispatcher }) {
 
     if( !(dispatcher instanceof UEEDispatcher) )
       throw new Error("The dispatcher has to extend UEEDispatcher!")
@@ -13,41 +12,38 @@ class UEEManager {
 
     this.modules = new Map
     this.events = new Map
-
-    if(!Array.isArray(systems))
-      throw new Error("The systems have to be defined!")
-
-    if(systems.some(system => !(system instanceof SystemInterface)))
-      throw new Error("Every system has to extend SystemInterface!")
   }
 
-  initRootModule (RootModuleClass) {
-    this.rootModule = new RootModuleClass
+  initRootModule (rootModule) {
+    this.setDispatcherForModule(rootModule)
   }
 
   initModule (module) {
+    this.setDispatcherForModule(module)
+
+    const { name, payload, tags } = moduleManagerSystem.createNewEvent({
+      event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.BUILD]
+    })
+
+    module.recieveEvent({
+      name,
+      payload: { entity: module.uuid, ...payload },
+      tags: [ "entity", ...tags ]
+    })
+
+    return module
+  }
+
+  setDispatcherForModule(module) {
     const uuid = module.uuid
-    const type = module.constructor.name
     const dispatcher = this.generateDispatherForModule(uuid)
     
     module.setDispatcher(dispatcher)
     
     this.modules.set(uuid, {
-      type,
       uuid,
       module,
     })
-
-    module.recieveEvent({
-      name:STATE_EVENT_NAME_CONSTATS.BUILD,
-      payload: {
-        system: moduleManagerSystem.name,
-        action: changeStateOfModuleAction,
-        entity: uuid
-      }
-    })
-
-    return module
   }
 
   generateDispatherForModule (moduleUuid) {
@@ -71,7 +67,7 @@ class UEEManager {
     }
   }
 
-  wrapSendEvent (moduleUuid) {
+  wrapSendEvent () {
     return event => {
       this.dispatcher.sendEvent(event)
     }

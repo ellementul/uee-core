@@ -48,7 +48,8 @@ class UEEDispatcher {
     const data = payloadType || payload
 
     if(tags.length > 0) {
-      tags.forEach(tag => {
+      const sortedTags = tags.sort() 
+      sortedTags.forEach(tag => {
         if(!data[tag])
           throw new Error(`Invalidate event: tag ${tag} isn't found in event data ${JSON.stringify(payloadType)}`)
         
