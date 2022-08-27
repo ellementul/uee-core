@@ -49,6 +49,20 @@ describe("SystemInterface", () => {
         ]
       })
     }).toThrow("sometag")
+
+    expect(() => {
+      new SystemInterface({
+        name: "TestSystem",
+        events: [
+          { 
+            name: "TestEvent",
+            payloadType: { someprop: "somevalue" },
+            tags: ["someprop"]
+          }
+        ],
+        modules: [{}]
+      })
+    }).toThrow("incorrect module")
   })
 
   it("Corrrect call constructor", () => {
@@ -67,7 +81,8 @@ describe("SystemInterface", () => {
         { 
           name: "testEventTwo"
         }
-      ]
+      ],
+      modules: [{ name: "TestModuleName", type: "TestModuleType" }]
     })
 
     expect(system.name).toBe("TestSystem")
@@ -97,6 +112,10 @@ describe("SystemInterface", () => {
       }
     })
     expect(system.isContentingEvent(system.events.testEventTwo)).toBe(true)
+
+    expect(system.modules).toEqual({
+      TestModuleName: { name: "TestModuleName", type: "TestModuleType" }
+    })
   })
 
   it("Create event from template", () => {

@@ -1,7 +1,7 @@
 const { checkToBeValidEvent } = require("../../UEEDispatcher")
 
 class SystemInterface {
-  constructor({ name, events, modules }) {
+  constructor({ name, events, modules = [] }) {
     if(!name)
       throw new Error('System name is undefined!')
     this._name = name
@@ -14,6 +14,15 @@ class SystemInterface {
     this._events = events.map(event => this.defineSystemTag(event))
 
     this._modules = modules
+    .filter( module => {
+      if(!module.name)
+        throw new Error(`There is incorrect module: ${JSON.stringify(module)} with undefined name`)
+
+      if(!module.type)
+        throw new Error(`There is incorrect module: ${JSON.stringify(module)} with undefined type`)
+      
+      return true
+    })
   }
 
   get name() {
@@ -36,12 +45,10 @@ class SystemInterface {
     return newEvent
   }
 
-  get moduleNames() {
-    return this._modules.map( module => module.name )
-  }
-
-  get moduleTypes() {
-    return this._modules.map( module => module.type )
+  get modules () {
+    const modules = {}
+    this._modules.forEach(module => modules[module.name] = JSON.parse(JSON.stringify(module)) )
+    return modules
   }
 
   defineSystemTag({ name, payloadType = {}, tags = []}) {
