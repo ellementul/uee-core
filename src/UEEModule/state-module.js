@@ -70,7 +70,7 @@ class UEEStateModule extends UEEModule {
       payload: { 
         state: this.state.getValue(), 
         entity: this.uuid,
-        typeModule: this.type,
+        moduleType: this.type,
       }
     })
 
