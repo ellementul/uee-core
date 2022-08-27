@@ -1,7 +1,7 @@
-const { UEESystemsModule } = require("../systems-module")
+const { UEESystemsModule } = require("./systems-module")
 const { UEEDispatcher } = require("../../UEEDispatcher")
-const { SystemInterface } = require("../../UEESystems/Interfaces/system-interface")
-const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("../../UEESystems/modules-manager-system")
+const { SystemInterface } = require("../Interfaces/system-interface")
+const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("./modules-manager-system")
 
 describe("System Module Test", () => {
   let systemModule

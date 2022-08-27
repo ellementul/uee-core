@@ -1,5 +1,5 @@
-const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("../UEESystems/modules-manager-system.js")
-const { SystemInterface } = require("../UEESystems/Interfaces/system-interface.js")
+const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("./modules-manager-system.js")
+const { SystemInterface } = require("../Interfaces/system-interface.js")
 const { UEEStateModule } = require("./state-module.js")
 
 class UEESystemsModule extends UEEStateModule {

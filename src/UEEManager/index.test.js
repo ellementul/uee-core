@@ -1,7 +1,7 @@
 const { UEEDispatcher } = require("../UEEDispatcher")
-const { UEERootModule } = require("../UEEModule/root-module")
-const { UEEStateModule } = require("../UEEModule/state-module")
-const { UEESystemsModule } = require("../UEEModule/systems-module")
+const { UEERootModule } = require("../UEESystems/modules-system/root-module")
+const { UEEStateModule } = require("../UEESystems/modules-system/state-module")
+const { UEESystemsModule } = require("../UEESystems/modules-system/systems-module")
 const { SystemInterface } = require("../UEESystems/Interfaces/system-interface")
 const { UEEManager } = require("./index")
 

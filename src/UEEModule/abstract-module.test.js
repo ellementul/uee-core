@@ -1,5 +1,5 @@
-const { UEEModule } =  require("../abstract-module")
-const { UEEDispatcher } =  require("../../UEEDispatcher")
+const { UEEModule } =  require("./abstract-module")
+const { UEEDispatcher } =  require("../UEEDispatcher")
 
 describe("Abstract Module Test", () => {
   let ueeModule

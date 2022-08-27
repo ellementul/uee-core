@@ -1,4 +1,4 @@
-const { SystemInterface } = require("./Interfaces/system-interface")
+const { SystemInterface } = require("../Interfaces/system-interface")
 
 const SavingOfModuleAction = "Saving module..."
 const LoadingOfModuleAction = "Saving module..."

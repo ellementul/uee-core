@@ -1,6 +1,6 @@
-const { UEEStateModule } = require("../state-module")
+const { UEEStateModule } = require("./state-module")
 const { UEEDispatcher } = require("../../UEEDispatcher")
-const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("../../UEESystems/modules-manager-system")
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("./modules-manager-system")
 
 describe("State Module Test", () => {
   let stateModule

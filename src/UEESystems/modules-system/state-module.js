@@ -1,6 +1,6 @@
-const { UEEModule } = require("./abstract-module.js")
+const { UEEModule } = require("../../UEEModule/abstract-module.js")
 const { State, STATES_CONSTATS } = require("./state.js")
-const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require("../UEESystems/modules-manager-system.js")
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require("./modules-manager-system")
 
 class UEEStateModule extends UEEModule {
 

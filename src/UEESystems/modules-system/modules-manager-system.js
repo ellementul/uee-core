@@ -1,4 +1,4 @@
-const { SystemInterface } = require("./Interfaces/system-interface")
+const { SystemInterface } = require("../Interfaces/system-interface")
 const changeStateOfModuleAction = 'Change module state';
 const updateModuleStateAction = 'Updated module state';
 const STATE_EVENT_NAME_CONSTATS = {

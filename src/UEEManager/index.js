@@ -1,5 +1,5 @@
-const { UEEDispatcher } = require('../UEEDispatcher/index.js')
-const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-manager-system.js')
+const { UEEDispatcher } = require('../UEEDispatcher')
+const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-system/modules-manager-system')
 
 class UEEManager {
   constructor ({ dispatcher }) {
