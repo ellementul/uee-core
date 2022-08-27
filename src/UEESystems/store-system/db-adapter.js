@@ -1,4 +1,4 @@
-class UEEAdapterDB {
+class UEEDBAdapter {
 
   constructor () {}
 
@@ -19,4 +19,4 @@ class UEEAdapterDB {
   }
 }
 
-module.exports = { UEEAdapterDB }
+module.exports = { UEEDBAdapter }

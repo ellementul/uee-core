@@ -1,7 +1,8 @@
 const { UEEDispatcher } = require("../../UEEDispatcher")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("../modules-system/modules-manager-system")
 const { UEEDBModule } = require("./db-module")
-const { UEEAdapterDB } = require("./db-adapter")
+const { UEEDBAdapter } = require("./db-adapter")
+const { storeSystem, STORE_EVENT_NAMES } = require("./store-system")
 
 describe("Test for DB Module", () => {
 
@@ -10,7 +11,7 @@ describe("Test for DB Module", () => {
   const mockConnection = jest.fn()
   const mockSendEvent = jest.fn()
 
-  class FakeDB extends UEEAdapterDB {
+  class FakeDB extends UEEDBAdapter {
 
     constructor () {
       super()
@@ -110,6 +111,34 @@ describe("Test for DB Module", () => {
     dispatcher.recieveEvent(event)
 
     expect(dbModule.isRun()).toBe(true)
+  })
+
+  const entity = {
+    uuid: "SomethigUUID",
+    data: "SomethingData"
+  }
+
+  it("Save Entity", () => {
+    const savingEvent = storeSystem.createNewEvent({ 
+      event: { name: STORE_EVENT_NAMES.saveModuleInDB },
+      payload: { entity }
+    })
+    dispatcher.recieveEvent(savingEvent)
+
+    const eventResult = moduleManagerSystem.createNewEvent({
+      event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.LOAD]
+    })
+    eventResult.tags.push("entity")
+    eventResult.payload.entity = entity.uuid
+    eventResult.payload.data = entity
+
+    mockSendEvent.mockImplementationOnce(event => expect(event).toEqual(eventResult))
+
+    const loadingEvent = storeSystem.createNewEvent({ 
+      event: { name: STORE_EVENT_NAMES.requestToLoadModule },
+      payload: { entity: entity.uuid }
+    })
+    dispatcher.recieveEvent(loadingEvent)
   })
 
 })
