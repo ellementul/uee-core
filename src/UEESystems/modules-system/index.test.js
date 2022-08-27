@@ -1,9 +1,9 @@
-const { UEEDispatcher } = require("../UEEDispatcher")
-const { UEERootModule } = require("../UEESystems/modules-system/root-module")
-const { UEEStateModule } = require("../UEESystems/modules-system/state-module")
-const { UEESystemsModule } = require("../UEESystems/modules-system/systems-module")
-const { SystemInterface } = require("../UEESystems/Interfaces/system-interface")
-const { UEEManager } = require("./index")
+const { UEEDispatcher } = require("../../UEEDispatcher")
+const { UEERootModule } = require("./root-module")
+const { UEEStateModule } = require("./state-module")
+const { UEESystemsModule } = require("./systems-module")
+const { SystemInterface } = require("../Interfaces/system-interface")
+const { UEEManager } = require("../../UEEManager/index")
 
 describe("", () => {
   const dispatcher = new UEEDispatcher
