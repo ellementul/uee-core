@@ -1,6 +1,7 @@
 const { UEEDispatcher } = require("../../UEEDispatcher")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("../modules-system/modules-manager-system")
 const { UEEDBModule } = require("./db-module")
+const { UEEAdapterDB } = require("./db-adapter")
 
 describe("Test for DB Module", () => {
 
@@ -8,9 +9,11 @@ describe("Test for DB Module", () => {
   const dispatcher = new UEEDispatcher
   const mockConnection = jest.fn()
   const mockSendEvent = jest.fn()
-  class FakeDB {
+
+  class FakeDB extends UEEAdapterDB {
 
     constructor () {
+      super()
       this.DB = {}
     }
 
