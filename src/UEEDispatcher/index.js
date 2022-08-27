@@ -64,14 +64,9 @@ class UEEDispatcher {
     this.listenerEventsSignatures.set(eventSignature, {})
   }
 
-  sendEvent({ name, payload }) {
-    // const eventSignature =  this.calculateEventSignature({ name, payload })
-
-    // if(!this.listenerEventsSignatures.has(eventSignature))
-    //   this.listenerEventsSignatures.set(eventSignature, {})
-
-    this.server.send({ name, payload, tags })
-    this.recieveEvent({ name, payload, tags })
+  sendEvent(event) {
+    this.server.send(event)
+    this.recieveEvent(event)
   }
 
   onRecieveEvent (eventCallback) {

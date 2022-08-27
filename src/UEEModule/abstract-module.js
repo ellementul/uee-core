@@ -3,8 +3,8 @@ class UEEModule {
 
   constructor () {
     this.uuid = uuidv4()
-    this.events = []
-    this.callbacks = []
+    this._events = []
+    this._callbacks = []
 
     this.sendEvent = () => { throw new Error(`This module with uuid: ${this.uuid} don't have defined dispatcher!`) }
   }
@@ -15,7 +15,7 @@ class UEEModule {
         throw new Error(`Callback don't define for this listenered event: ${ name }`)
     })
 
-    this.events.push(...events)
+    this._events.push(...events)
   }
 
   setDispatcher (dispatcherEvents) {
@@ -25,7 +25,7 @@ class UEEModule {
     if(!dispatcherEvents || typeof dispatcherEvents !== "object")
       throw Error('Not valid dispatcher')
     
-    this.events.forEach(({ name, payloadType, tags }) => {
+    this._events.forEach(({ name, payloadType, tags }) => {
       dispatcherEvents.defineListenerEvent({ name, payloadType, tags })
     });
 
@@ -38,17 +38,17 @@ class UEEModule {
   defEventNow ({ event: { name, payloadType, tags }, callback }) {
 
     if(!this._dispatcher)
-      this.events.push({ name, payloadType, tags })
+      this._events.push({ name, payloadType, tags })
     else
       this._dispatcher.defineListenerEvent({ name, payloadType, tags })
 
-    this.callbacks[name] = payload => callback(payload)
+    this._callbacks[name] = payload => callback(payload)
   }
 
   recieveEvent ({ name, payload }) {
     try {
-      if(typeof this.callbacks[name] == "function") {
-        this.callbacks[name](payload)
+      if(typeof this._callbacks[name] == "function") {
+        this._callbacks[name](payload)
 
         if(typeof this[name] == "function") {
           this[name](payload)
@@ -61,7 +61,7 @@ class UEEModule {
     }
     catch (error) {
 
-      if(typeof this[name] !== "function" && typeof this.callbacks[name] !== "function")
+      if(typeof this[name] !== "function" && typeof this._callbacks[name] !== "function")
         throw new Error(`Callback don't define for this listenered event: ${ name }`)
 
       error.message = `The error of calling callback for '${name}' event : ${error.message}`
