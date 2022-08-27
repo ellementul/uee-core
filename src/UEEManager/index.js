@@ -34,6 +34,18 @@ class UEEManager {
     return module
   }
 
+  runModule ({ uuid }) {
+    const { name, payload, tags } = moduleManagerSystem.createNewEvent({
+      event: moduleManagerSystem.events[STATE_EVENT_NAME_CONSTATS.RUN]
+    })
+
+    this.recieveEvent({
+      name,
+      payload: { entity: uuid, ...payload },
+      tags: [ "entity", ...tags ]
+    })
+  }
+
   setDispatcherForModule(module) {
     const uuid = module.uuid
     const dispatcher = this.generateDispatherForModule(uuid)

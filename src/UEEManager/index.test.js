@@ -70,9 +70,6 @@ describe("", () => {
   })
 
   it("Constructor Root Module", () => {
-    mockTestSystemEventThree.mockImplementation(event => expect(event).toEqual(
-      { system: "Testing" }
-    ))
 
     manager.initRootModule(new UEERootModule({ systems: [testSystem] }))
     manager.initModule(testModule)
@@ -80,7 +77,7 @@ describe("", () => {
   })
 
   it("Run module", () => {
-    testModule._run()
+    manager.runModule(testModule)
 
     expect(mockSystemModuleOnStart).toHaveBeenCalled()
   })
