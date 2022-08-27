@@ -23,9 +23,8 @@ const stateEvents = Object.values(STATE_EVENT_NAME_CONSTATS).map(
   }
 )
 
-const systemName = "moduleManageSystem"
 const moduleManagerSystem = new SystemInterface({
-  name: systemName,
+  name: "moduleManageSystem",
   events: [
     ...stateEvents,
     { name: SYSTEN_READY_EVENT_NAME }
