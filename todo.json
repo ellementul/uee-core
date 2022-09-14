@@ -1,0 +1,89 @@
+{
+  "UEE": {
+    "TODO": {
+      "StoreSystem": {
+        "DbModule": {
+          "Module": true,
+          "Test": true
+        },
+        "StoreModule": {
+          "Module": false,
+          "Test": false
+        },
+        "Interface": true,
+        "Test": {
+          "Load DB Module": false,
+          "Ready Store System": false,
+          "Ready Store module": false,
+          "Save Store": false,
+          "Remake Store module(Check saved data)": false
+        }
+      },
+      "UEEManager": {
+        "Changes": {
+          "Load Module method": false,
+          "Move private method in abstract class": false,
+          "Event Logging": false
+        }
+      },
+      "UEEFactory": {
+        "Changes": {
+
+        },
+        "Comment": {
+          "Args": {
+            "Root module": "Constructor",
+            "Systems": {
+              "System": {
+                "Modules": {
+                  "Module": [
+                    "Type",
+                    "Constructor",
+                    "Init State",
+                    "Config{ArgKey:JSONKey}(If module need values from JSON Config)"
+                  ]
+                }
+              }
+            },
+            "Begin modules states": {
+              "State": {
+                "Module": "Constructor",
+                "OtherModule": "Constructor"
+              },
+              "OtherState": {
+                "Module": "Constructor",
+                "OtherModule": "Constructor"
+              }
+            },
+            "Config": "JSON File(Git doesn't track it)"
+          },
+          "Default adapter DB": "NoDB"
+        }
+      },
+      "UEEDispatcher": {
+        "Changes": {
+          "Event Logging": false
+        }
+      },
+      "LoggingSystem": {
+        "Interface": false,
+        "Test": false,
+        "Dispatcher Event Logging": false,
+        "Manager Event Logging": false,
+        "Logging Module": {
+          "Module": false,
+          "Test": false
+        },
+        "Comment": {
+          "Events": [
+            "Module got Event",
+            "Module sent Event",
+            "Dispatcher register new event Signature",
+            "Dispatcher got Event with uknown Signature",
+            "Transport Server got Event"
+          ]
+        }
+      }
+    }
+  }
+}
