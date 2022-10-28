@@ -1,9 +1,9 @@
-const { UEEModule } = require ("../../UEEModule/abstract-module.js")
+const { BaseMember } = require ("../../BaseMember/base-member.js")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("./modules-manager-system.js");
 const { SystemInterface } = require("../Interfaces/system-interface.js");
 const { STATES_CONSTATS } = require("./state.js");
 
-class UEERootModule extends UEEModule {
+class UEERootModule extends BaseMember {
 
   constructor({ systems, ...args } = {}) {
     super({...args});

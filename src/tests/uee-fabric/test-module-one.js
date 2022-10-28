@@ -1,6 +1,6 @@
-import UEEModule from "../../UEEModule/abstaract-module.js"
+import BaseMember from "../../BaseMember/abstaract-module.js"
 
-class TestModuleOne extends UEEModule {
+class TestModuleOne extends BaseMember {
   
   defEvents () {
     return [{ name: 'message', payloadType: { system: "Testing" } }]

@@ -1,8 +1,8 @@
-const { UEEModule } = require("../../UEEModule/abstract-module.js")
+const { BaseMember } = require("../../BaseMember/base-member.js")
 const { State, STATES_CONSTATS } = require("./state.js")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require("./modules-manager-system")
 
-class UEEStateModule extends UEEModule {
+class UEEStateModule extends BaseMember {
 
   constructor({ isSaveEventsAfterBuild=false,  ...args } = {}) {
     super({...args});

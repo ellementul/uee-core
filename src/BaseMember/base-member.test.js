@@ -1,4 +1,4 @@
-const { UEEModule } =  require("./abstract-module")
+const { BaseMember } =  require("./base-member")
 const { UEEDispatcher } =  require("../UEEDispatcher")
 
 describe("Abstract Module Test", () => {
@@ -7,8 +7,8 @@ describe("Abstract Module Test", () => {
   
   const mockSendEvent = jest.fn()
   const mockTestEvent = jest.fn()
-  class IncorrectModule extends UEEModule {}
-  class TestModule extends UEEModule {
+  class IncorrectMember extends BaseMember {}
+  class TestMember extends BaseMember {
     constructor ({ ...args }) {
       super({ ...args });
       this.defEvents([
@@ -32,14 +32,14 @@ describe("Abstract Module Test", () => {
   }
 
   it("Inccorect extends", () => {
-    const inccorectModule = new IncorrectModule
+    const inccorectModule = new IncorrectMember
     expect(() => {
       inccorectModule.setDispatcher(dispatcher)
     }).toThrow("type")
   })
 
   it("Constructor", () => {
-    ueeModule = new TestModule({ isSaveEventsAfterBuild: true })
+    ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
 
     expect(ueeModule).toBeDefined()
 

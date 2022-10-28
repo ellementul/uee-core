@@ -1,6 +1,6 @@
-import UEEModule from "../../UEEModule/abstaract-module.js"
+import BaseMember from "../../BaseMember/abstaract-module.js"
 
-class TestModuleTwo extends UEEModule {
+class TestModuleTwo extends BaseMember {
   constructor (done, moduleName = "Module Two") {
     super()
 

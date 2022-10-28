@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
-class UEEModule {
+class BaseMember {
 
   constructor () {
     this.uuid = uuidv4()
@@ -70,4 +70,4 @@ class UEEModule {
   }
 }
 
-module.exports = { UEEModule }
+module.exports = { BaseMember }
