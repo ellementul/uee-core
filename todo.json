@@ -2,26 +2,27 @@
   "UEE": {
     "TODO": {
       "StoreSystem": {
-        "DbModule": {
-          "Module": true,
-          "Test": true
+        "DbMember": {
+          "Member": true,
+          "Test": true,
+          "Task": "Rename to Memder"
         },
-        "StoreModule": {
-          "Module": false,
+        "StoreMemeber": {
+          "Memeber": false,
           "Test": false
         },
         "Interface": true,
         "Test": {
-          "Load DB Module": false,
+          "Load DB Memeber": false,
           "Ready Store System": false,
-          "Ready Store module": false,
+          "Ready Store Memeber": false,
           "Save Store": false,
-          "Remake Store module(Check saved data)": false
+          "Remake Store Memeber(Check saved data)": false
         }
       },
       "UEEManager": {
         "Changes": {
-          "Load Module method": false,
+          "Load Memeber method": false,
           "Move private method in abstract class": false,
           "Event Logging": false
         }
@@ -32,26 +33,26 @@
         },
         "Comment": {
           "Args": {
-            "Root module": "Constructor",
+            "Root Memeber": "Constructor",
             "Systems": {
               "System": {
-                "Modules": {
-                  "Module": [
+                "Memebers": {
+                  "Memeber": [
                     "Type",
                     "Constructor",
                     "Init State",
-                    "Config{ArgKey:JSONKey}(If module need values from JSON Config)"
+                    "Config{ArgKey:JSONKey}(If Memeber need values from JSON Config)"
                   ]
                 }
               }
             },
-            "Begin modules states": {
+            "Begin Memebers states": {
               "State": {
-                "Module": "Constructor",
+                "Memeber": "Constructor",
                 "OtherModule": "Constructor"
               },
               "OtherState": {
-                "Module": "Constructor",
+                "Memeber": "Constructor",
                 "OtherModule": "Constructor"
               }
             },
@@ -70,14 +71,14 @@
         "Test": false,
         "Dispatcher Event Logging": false,
         "Manager Event Logging": false,
-        "Logging Module": {
-          "Module": false,
+        "Logging Memeber": {
+          "Memeber": false,
           "Test": false
         },
         "Comment": {
           "Events": [
-            "Module got Event",
-            "Module sent Event",
+            "Memeber got Event",
+            "Memeber sent Event",
             "Dispatcher register new event Signature",
             "Dispatcher got Event with uknown Signature",
             "Transport Server got Event"
