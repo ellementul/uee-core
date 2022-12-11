@@ -15,4 +15,36 @@ describe('Name of the group', () => {
     }]))
     dispatcher.sendEvent({})
   });
+
+  test('recieve event', done => {
+    const dispatcher = new UEEDispatcher
+
+    dispatcher.defineListenerEvent({})
+    dispatcher.onRecieveEvent(event => {
+      expect(event).toEqual({})
+      done()
+    })
+
+    dispatcher.sendEvent({})
+  });
+
+  test('recieve event via transport', done => {
+    const dispatcherSource = new UEEDispatcher
+
+    const transport = new TestTransport(() => {}, [{
+      from: dispatcherSource.uuid
+    }])
+
+    const dispatcherTarget = new UEEDispatcher
+    dispatcherSource.setTransport(transport)
+    dispatcherTarget.setTransport(transport)
+
+    dispatcherTarget.defineListenerEvent({})
+    dispatcherTarget.onRecieveEvent(event => {
+      expect(event).toEqual({})
+      done()
+    })
+
+    dispatcherSource.sendEvent({})
+  });
 });
