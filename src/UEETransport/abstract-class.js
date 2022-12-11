@@ -3,4 +3,4 @@ class AbstractTransport {
   onRecieve  () { throw new Error('This abstract method should be overwrite!')  } 
 }
 
-export default AbstractTransport
+module.exports = { AbstractTransport }

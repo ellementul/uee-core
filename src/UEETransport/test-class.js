@@ -1,22 +1,42 @@
-import AbstractTransport from "./abstract-class.js"
+const { AbstractTransport } = require('./abstract-class.js')
 
 class TestTransport extends AbstractTransport {
 
-  constructor (log) {
+  constructor (done, expectingEvents, log) {
     super()
+
+    this.finish = () => { done() }
     this.eventCallbacks = []
+
+    if(expectingEvents.length < 1)
+      throw "Minimum is one expecting event!"
+
+    this.expectingEvents = new Set(expectingEvents.map( event => JSON.stringify(event) ))
+    
     this.log = log ? msg => log(`Test Transport: \n   ${msg} \n`) : () => {}
   }
 
   send (event) {
-    this.log(`Serever got event with name: ${event.name} with server time: ${event.time}`)
-    this.eventCallbacks.forEach(eventCallback => eventCallback(event))
+    this.checkEvent(event)
+    process.nextTick(
+      () => this.eventCallbacks.forEach(eventCallback => eventCallback(event))
+    )
   }
 
   onRecieve (eventCallback) {
     this.log('Connected event callback...')
     this.eventCallbacks.push(event => eventCallback(event))
   }
+
+  checkEvent (event) {
+    if(this.expectingEvents.has(JSON.stringify(event)))
+      this.expectingEvents.delete(JSON.stringify(event))
+    else
+      throw `Invalid event: ${JSON.stringify(event)}`
+
+    if(this.expectingEvents.size == 0)
+      this.finish()
+  }
 }
 
-export default TestTransport
+module.exports = { TestTransport }

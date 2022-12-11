@@ -28,7 +28,7 @@ class UEEDispatcher {
     }
   }
 
-  connectServer (server) {
+  setTransport (server) {
     server.onRecieve( event => {
       if(event.from === this.uuid)
         return
