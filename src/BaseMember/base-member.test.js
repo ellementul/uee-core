@@ -1,25 +1,26 @@
 const { BaseMember } =  require("./base-member")
-const { Provider } =  require("../Provider")
+const { TestProvider } =  require("../Provider/test-class")
 
 describe("Abstract Module Test", () => {
   let ueeModule
-  const dispatcher = new Provider()
+  const dispatcher = new TestProvider()
   
   const mockSendEvent = jest.fn()
   const mockTestEvent = jest.fn()
+
+  const typeEvent = {
+    name: "testEvent",
+    payloadType: {
+      system: "Testing"
+    },
+    tags: ["system"]
+  }
+
   class IncorrectMember extends BaseMember {}
   class TestMember extends BaseMember {
     constructor ({ ...args }) {
       super({ ...args });
-      this.defEvents([
-        {
-          name: "testEvent",
-          payloadType: {
-            system: "Testing"
-          },
-          tags: ["system"]
-        }
-      ])
+      this.defEvents([typeEvent])
     }
 
     get type() {
