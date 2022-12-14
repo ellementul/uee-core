@@ -2,7 +2,6 @@ const { BaseMember } =  require("./base-member")
 const { TestProvider } =  require("../Provider/test-class")
 
 describe("Abstract Module Test", () => {
-  let ueeModule
   const dispatcher = new TestProvider()
   
   const mockSendEvent = jest.fn()
@@ -40,48 +39,39 @@ describe("Abstract Module Test", () => {
     const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
 
     expect(ueeModule).toBeDefined()
-
-    // Mocking recive events
-    ueeModule.setDispatcher(dispatcher)
-    dispatcher.sendEvent = mockSendEvent
   })
 
   describe("Getting events", () => {
+    
     it("Get event throuth method", () => {
 
-      const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
-
-      ueeModule.setDispatcher(dispatcher)
-      dispatcher.sendEvent = mockSendEvent
-
-      ueeModule.defEvents({
-        testEvent: typeEvent
-      })
-
-      dispatcher.recieveEvent({
+      const event = {
         name: "testEvent",
         payload: {
           system: "Testing"
         },
         tags: ["system"]
-      })
+      }
+
+      const ueeModule = dispatcher.connectMemeber(TestMember, { isSaveEventsAfterBuild: true })
+      ueeModule.defEvents({ testEvent: typeEvent })
+
+      dispatcher.recieveEvent(event)
 
       expect(mockTestEvent).toHaveBeenCalled()
     })
 
-    it("DefEventOn method", () => {
-      const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
-
-      ueeModule.setDispatcher(dispatcher)
-      dispatcher.sendEvent = mockSendEvent
-      
+    it("defEventNow method", () => {
       const callback = jest.fn()
-      ueeModule.defEventNow({ event: { name: "testTwoEvent" }, callback })
-
-      dispatcher.recieveEvent({
+      const event = {
         name: "testTwoEvent",
         payload: "Somethig payload"
-      })
+      }
+
+      const ueeModule = dispatcher.connectMemeber(TestMember, { isSaveEventsAfterBuild: true })
+      ueeModule.defEventNow({ event: { name: "testTwoEvent" }, callback })
+
+      dispatcher.recieveEvent(event)
 
       expect(callback).toHaveBeenCalledWith("Somethig payload")
     })

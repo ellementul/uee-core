@@ -8,6 +8,13 @@ class TestProvider extends Provider {
     if(expectedEvents.length > 0)
       this.setTransport(new TestTransport(done, expectedEvents))
   }
+
+  connectMemeber(MemeberClass, constructorParams) {
+    const member = new MemeberClass(constructorParams)
+    member.setDispatcher(this)
+
+    return member
+  } 
 }
 
 module.exports = { TestProvider }
