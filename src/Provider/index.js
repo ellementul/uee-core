@@ -22,8 +22,6 @@ class Provider {
 
     this.listenerEventsSignatures = new Set
     this.sendModules = () => { throw new Error("The recieve callback isn't function!") }
-
-    this._transport = false
   }
 
   setTransport (transport) {
@@ -34,7 +32,7 @@ class Provider {
       this.recieveEvent(event) 
     })
 
-    this.sendToTransport = event => {
+    this.sendTransport = event => {
       event.from = this.uuid 
       transport.send(event)
     }
@@ -64,8 +62,8 @@ class Provider {
   }
 
   sendEvent(event) {
-    if(this.sendToTransport)
-      this.sendToTransport(event)
+    if(this.sendTransport)
+      this.sendTransport(event)
 
     this.recieveEvent(event)
   }
