@@ -10,10 +10,10 @@ describe('Name of the group', () => {
 
   test('connect transport', done => {
     const dispatcher = new Provider
-    dispatcher.setTransport(new TestTransport(done, [{
-      from: dispatcher.uuid
-    }]))
-    dispatcher.sendEvent({})
+    const event = {}
+
+    dispatcher.setTransport(new TestTransport(done, [event]))
+    dispatcher.sendEvent(event)
   });
 
   test('recieve event', done => {
@@ -31,9 +31,8 @@ describe('Name of the group', () => {
   test('recieve event via transport', done => {
     const dispatcherSource = new Provider
 
-    const transport = new TestTransport(() => {}, [{
-      from: dispatcherSource.uuid
-    }])
+    const event = {}
+    const transport = new TestTransport(() => {}, [event])
 
     const dispatcherTarget = new Provider
     dispatcherSource.setTransport(transport)
@@ -45,6 +44,6 @@ describe('Name of the group', () => {
       done()
     })
 
-    dispatcherSource.sendEvent({})
+    dispatcherSource.sendEvent(event)
   });
 });

@@ -29,16 +29,20 @@ class Provider {
       if(event.from === this.uuid)
         return
         
-      this.recieveEvent(event) 
+      this.recieveEvent(event.data) 
     })
 
     this.sendTransport = event => {
-      event.from = this.uuid 
-      transport.send(event)
+      transport.send({
+        data: event,
+        from: this.uuid
+      })
     }
   }
 
-  calculateEventSignature ({ name, payloadType, payload, tags = [] }) {
+  calculateEventSignature (event) {
+
+    const { name, payloadType, payload, tags = [] } = event
 
     const signatures = [name]
     const data = payloadType || payload
@@ -56,8 +60,8 @@ class Provider {
     return signatures.join(';')
   }
 
-  defineListenerEvent({ name, payloadType, tags }) {
-    const eventSignature = this.calculateEventSignature({ name, payloadType, tags })
+  defineListenerEvent(event) {
+    const eventSignature = this.calculateEventSignature(event)
     this.listenerEventsSignatures.add(eventSignature)
   }
 
@@ -75,11 +79,11 @@ class Provider {
       throw new Error("The recieve callback isn't function!")
   }
 
-  recieveEvent ({ name, payload, tags }) {
-    const eventSignature =  this.calculateEventSignature({ name, payload, tags })
+  recieveEvent (event) {
+    const signature =  this.calculateEventSignature(event)
 
-    if(this.listenerEventsSignatures.has(eventSignature))
-      this.sendModules({ name, payload, tags })
+    if(this.listenerEventsSignatures.has(signature))
+      this.sendModules(event)
   }
 }
 

@@ -29,10 +29,10 @@ class TestTransport extends AbstractTransport {
   }
 
   checkEvent (event) {
-    if(this.expectingEvents.has(JSON.stringify(event)))
-      this.expectingEvents.delete(JSON.stringify(event))
+    if(this.expectingEvents.has(JSON.stringify(event.data)))
+      this.expectingEvents.delete(JSON.stringify(event.data))
     else
-      throw `Invalid event: ${JSON.stringify(event)}`
+      throw `Invalid event: ${JSON.stringify(event.data)}`
 
     if(this.expectingEvents.size == 0)
       this.finish()
