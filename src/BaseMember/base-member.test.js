@@ -16,15 +16,16 @@ describe("Abstract Module Test", () => {
     tags: ["system"]
   }
 
-  class IncorrectMember extends BaseMember {}
-  class TestMember extends BaseMember {
-    constructor ({ ...args }) {
-      super({ ...args });
-      this.defEvents({
-        testEvent: typeEvent
-      })
-    }
+  it("Inccorect extends", () => {
+    class IncorrectMember extends BaseMember {}
 
+    const inccorectModule = new IncorrectMember
+    expect(() => {
+      inccorectModule.setDispatcher(dispatcher)
+    }).toThrow("type")
+  })
+
+  class TestMember extends BaseMember {
     get type() {
       return "TestType"
     }
@@ -34,15 +35,9 @@ describe("Abstract Module Test", () => {
     }
   }
 
-  it("Inccorect extends", () => {
-    const inccorectModule = new IncorrectMember
-    expect(() => {
-      inccorectModule.setDispatcher(dispatcher)
-    }).toThrow("type")
-  })
-
   it("Constructor", () => {
-    ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
+    
+    const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
 
     expect(ueeModule).toBeDefined()
 
@@ -53,6 +48,15 @@ describe("Abstract Module Test", () => {
 
   describe("Getting events", () => {
     it("Get event throuth method", () => {
+
+      const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
+
+      ueeModule.setDispatcher(dispatcher)
+      dispatcher.sendEvent = mockSendEvent
+
+      ueeModule.defEvents({
+        testEvent: typeEvent
+      })
 
       dispatcher.recieveEvent({
         name: "testEvent",
@@ -66,6 +70,11 @@ describe("Abstract Module Test", () => {
     })
 
     it("DefEventOn method", () => {
+      const ueeModule = new TestMember({ isSaveEventsAfterBuild: true })
+
+      ueeModule.setDispatcher(dispatcher)
+      dispatcher.sendEvent = mockSendEvent
+      
       const callback = jest.fn()
       ueeModule.defEventNow({ event: { name: "testTwoEvent" }, callback })
 
