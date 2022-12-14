@@ -15,7 +15,10 @@ class UEESystemsModule extends UEEStateModule {
     this._dependsOnSystems = []
     this._systemsIsReady = []
     this.defDependensSystemEventAboutReady(systemInterfaces)
-    const envetsWithoutCallback = this.checkAndDefSystemEvents(systemInterfaces, systemEvents)
+    
+    const envetsWithoutCallback = {}
+    this.checkAndDefSystemEvents(systemInterfaces, systemEvents)
+      .forEach(event => envetsWithoutCallback[event.name] = event)
 
     this.defEvents(envetsWithoutCallback)
   }

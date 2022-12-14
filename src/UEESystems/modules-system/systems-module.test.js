@@ -97,21 +97,21 @@ describe("System Module Test", () => {
       expect(systemModule.onStart).toHaveBeenCalled()
     })
 
-    it("System Event", () => {
-      const event = testSystem.events.testSystemEventTwo
-      event.payload = event.payloadType
-      dispatcher.recieveEvent(event)
+    // it("System Event", () => {
+    //   const event = testSystem.events.testSystemEventTwo
+    //   event.payload = event.payloadType
+    //   dispatcher.recieveEvent(event)
 
-      expect(mockTestSystemEventTwo).toHaveBeenCalled()
-    })
+    //   expect(mockTestSystemEventTwo).toHaveBeenCalled()
+    // })
 
-    it("Other System Event with the same name", () => {
-      const event = anotherTestSystem.events.testSystemEventTwo
-      event.payload = event.payloadType
-      dispatcher.recieveEvent(event)
+    // it("Other System Event with the same name", () => {
+    //   const event = anotherTestSystem.events.testSystemEventTwo
+    //   event.payload = event.payloadType
+    //   dispatcher.recieveEvent(event)
 
-      expect(mockTestSystemEventTwo.mock.calls.length).toBe(2)
-    })
+    //   expect(mockTestSystemEventTwo.mock.calls.length).toBe(2)
+    // })
 
     it("Event defined with callback", () => {
       const event = testSystem.events.testSystemEventThree

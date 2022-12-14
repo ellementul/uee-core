@@ -15,9 +15,9 @@ describe("State Module Test", () => {
 
         this.testEvent = jest.fn()
 
-        this.defEvents([
-          { name: "testEvent", payloadType: { system: "Testing" }}
-        ])
+        this.defEvents({
+          testEvent: { name: "testEvent", payloadType: { system: "Testing" }}
+        })
       }
 
       get type () {

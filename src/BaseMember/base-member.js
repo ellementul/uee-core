@@ -39,13 +39,14 @@ class BaseMember {
   }
 
   defEvents (events) {
-    events.forEach((event) => {
-      if(typeof this[event.name] !== "function") 
-        throw new Error(`Callback don't define for this listenered event: ${ event.name }`)
+    for (let callback_name in events) {
+      if(typeof this[callback_name] !== "function") 
+        throw new Error(`Callback don't define for this listenered event: ${ callback_name }`)
 
-      const callback = payload => this[event.name](payload)
+      const callback = payload => this[callback_name](payload)
+      const event = events[callback_name]
       this.defEventNow({ event, callback })
-    })
+    }
   }
 
   recieveEvent ({ name, payload }) {

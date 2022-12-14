@@ -20,7 +20,9 @@ describe("Abstract Module Test", () => {
   class TestMember extends BaseMember {
     constructor ({ ...args }) {
       super({ ...args });
-      this.defEvents([typeEvent])
+      this.defEvents({
+        testEvent: typeEvent
+      })
     }
 
     get type() {

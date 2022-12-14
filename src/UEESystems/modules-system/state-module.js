@@ -14,16 +14,17 @@ class UEEStateModule extends BaseMember {
 
     this.state = new State
 
-    const stateEvents = Object.values(moduleManagerSystem.events)
+    const stateEvents = {}
+    Object.values(moduleManagerSystem.events)
     .filter( event => 
       Object.values(STATE_EVENT_NAME_CONSTATS).includes(event.name)
       && event.name !==STATE_EVENT_NAME_CONSTATS.UPDATE_MODULE_STATE
     )
-    .map( ({ name, payloadType, tags }) => {
+    .forEach( ({ name, payloadType, tags }) => {
       tags.push("entity")
       payloadType.entity = this.uuid
 
-      return { name, payloadType, tags }
+      stateEvents[name] = { name, payloadType, tags }
     })
     this.defEvents(stateEvents)
   }
