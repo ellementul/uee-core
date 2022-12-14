@@ -83,7 +83,7 @@ class Provider {
     const signature = this.calculateEventSignature(event)
 
     if(this.listenerEventsSignatures.has(signature))
-      this.sendModules(event, signature)
+      this.sendModules(event)
   }
 }
 

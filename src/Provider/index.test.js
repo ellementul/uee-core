@@ -8,7 +8,27 @@ describe('Name of the group', () => {
     expect(dispatcher).toBeDefined()
   });
 
-  test('connect transport', done => {
+  test('connect transport', () => {
+    const dispatcher = new Provider
+    const event = {}
+
+    const transport = {
+      send: jest.fn(),
+      onRecieve: callback => {
+        gettingCallback = callback
+      }
+    }
+
+    dispatcher.setTransport(transport)
+    dispatcher.sendEvent(event)
+
+    expect(transport.send).toHaveBeenCalledWith({
+      data: event,
+      from: dispatcher.uuid
+    })
+  });
+
+  test('test transport', done => {
     const dispatcher = new Provider
     const event = {}
 
