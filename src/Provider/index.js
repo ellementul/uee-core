@@ -20,7 +20,7 @@ class Provider {
   constructor () {
     this.uuid = uuidv4()
 
-    this.listenerEventsSignatures = new Map
+    this.listenerEventsSignatures = new Set
     this.sendModules = () => { throw new Error("The recieve callback isn't function!") }
 
     this.server = {
@@ -62,7 +62,7 @@ class Provider {
 
   defineListenerEvent({ name, payloadType, tags }) {
     const eventSignature = this.calculateEventSignature({ name, payloadType, tags })
-    this.listenerEventsSignatures.set(eventSignature, {})
+    this.listenerEventsSignatures.add(eventSignature)
   }
 
   sendEvent(event) {
@@ -79,11 +79,9 @@ class Provider {
 
   recieveEvent ({ name, payload, tags }) {
     const eventSignature =  this.calculateEventSignature({ name, payload, tags })
-    const eventsParam = this.listenerEventsSignatures.get(eventSignature)
 
-    if(eventsParam) {
+    if(this.listenerEventsSignatures.has(eventSignature))
       this.sendModules({ name, payload, tags })
-    }
   }
 }
 
