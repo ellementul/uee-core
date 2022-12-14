@@ -18,21 +18,21 @@ class BaseMember {
     this._events.push(...events)
   }
 
-  setDispatcher (dispatcherEvents) {
+  setDispatcher (provider) {
     if(!this.type)
       throw new Error(`The type module isn't defined!`)
 
-    if(!dispatcherEvents || typeof dispatcherEvents !== "object")
-      throw Error('Not valid dispatcher')
+    if(!provider || typeof provider !== "object")
+      throw Error('Not valid provider')
     
     this._events.forEach(({ name, payloadType, tags }) => {
-      dispatcherEvents.defineListenerEvent({ name, payloadType, tags })
+      provider.defineListenerEvent({ name, payloadType, tags })
     });
 
-    this._dispatcher = dispatcherEvents
+    this._dispatcher = provider
 
-    dispatcherEvents.onRecieveEvent(event => this.recieveEvent(event))
-    this.sendEvent = event => dispatcherEvents.sendEvent(event)
+    provider.onRecieveEvent(event => this.recieveEvent(event))
+    this.sendEvent = event => provider.sendEvent(event)
   }
 
   defEventNow ({ event: { name, payloadType, tags }, callback }) {
