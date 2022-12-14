@@ -9,15 +9,6 @@ class BaseMember {
     this.sendEvent = () => { throw new Error(`This module with uuid: ${this.uuid} don't have defined dispatcher!`) }
   }
 
-  defEvents (events) {
-    events.forEach(({ name }) => {
-      if(typeof this[name] !== "function") 
-        throw new Error(`Callback don't define for this listenered event: ${ name }`)
-    })
-
-    this._events.push(...events)
-  }
-
   setDispatcher (provider) {
     if(!this.type)
       throw new Error(`The type module isn't defined!`)
@@ -35,29 +26,31 @@ class BaseMember {
     this.sendEvent = event => provider.sendEvent(event)
   }
 
-  defEventNow ({ event: { name, payloadType, tags }, callback }) {
-
+  defEventWithoutCallback({ name, payloadType, tags }) {
     if(!this._dispatcher)
       this._events.push({ name, payloadType, tags })
     else
       this._dispatcher.defineListenerEvent({ name, payloadType, tags })
+  }
 
+  defEventNow ({ event: { name, payloadType, tags }, callback }) {
+    this.defEventWithoutCallback({ name, payloadType, tags })
     this._callbacks[name] = payload => callback(payload)
+  }
+
+  defEvents (events) {
+    events.forEach((event) => {
+      if(typeof this[event.name] !== "function") 
+        throw new Error(`Callback don't define for this listenered event: ${ event.name }`)
+
+      const callback = payload => this[event.name](payload)
+      this.defEventNow({ event, callback })
+    })
   }
 
   recieveEvent ({ name, payload }) {
     try {
-      if(typeof this._callbacks[name] == "function") {
-        this._callbacks[name](payload)
-
-        if(typeof this[name] == "function") {
-          this[name](payload)
-        }
-      }
-      else {
-        this[name](payload)
-      }
-      
+      this._callbacks[name](payload)
     }
     catch (error) {
 
