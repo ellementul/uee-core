@@ -1,4 +1,4 @@
-const { UEEDispatcher } = require("../../UEEDispatcher")
+const { Provider } = require("../../Provider")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("../modules-system/modules-manager-system")
 const { UEEDBModule } = require("./db-module")
 const { UEEDBAdapter } = require("./db-adapter")
@@ -7,7 +7,7 @@ const { storeSystem, STORE_EVENT_NAMES } = require("./store-system")
 describe("Test for DB Module", () => {
 
   let dbModule
-  const dispatcher = new UEEDispatcher
+  const dispatcher = new Provider
   const mockConnection = jest.fn()
   const mockSendEvent = jest.fn()
 

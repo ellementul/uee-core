@@ -1,10 +1,10 @@
 const { UEEStateModule } = require("./state-module")
-const { UEEDispatcher } = require("../../UEEDispatcher")
+const { Provider } = require("../../Provider")
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem, updateModuleStateAction } = require("./modules-manager-system")
 
 describe("State Module Test", () => {
   let stateModule
-  const dispatcher = new UEEDispatcher()
+  const dispatcher = new Provider()
   const mockSendEvent = jest.fn()
 
   class TestModule extends UEEStateModule {

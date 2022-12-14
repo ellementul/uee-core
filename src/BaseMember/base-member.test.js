@@ -1,9 +1,9 @@
 const { BaseMember } =  require("./base-member")
-const { UEEDispatcher } =  require("../UEEDispatcher")
+const { Provider } =  require("../Provider")
 
 describe("Abstract Module Test", () => {
   let ueeModule
-  const dispatcher = new UEEDispatcher()
+  const dispatcher = new Provider()
   
   const mockSendEvent = jest.fn()
   const mockTestEvent = jest.fn()

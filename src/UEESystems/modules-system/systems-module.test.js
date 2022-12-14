@@ -1,11 +1,11 @@
 const { UEESystemsModule } = require("./systems-module")
-const { UEEDispatcher } = require("../../UEEDispatcher")
+const { Provider } = require("../../Provider")
 const { SystemInterface } = require("../Interfaces/system-interface")
 const { moduleManagerSystem, SYSTEN_READY_EVENT_NAME } = require("./modules-manager-system")
 
 describe("System Module Test", () => {
   let systemModule
-  const dispatcher = new UEEDispatcher()
+  const dispatcher = new Provider()
   const mockSendEvent = jest.fn()
   const mockTestSystemEventTwo = jest.fn()
   const mockTestSystemEventThree = jest.fn()

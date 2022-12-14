@@ -16,7 +16,7 @@ function checkToBeValidEvent({ name, payloadType, tags }) {
   }
 }
 
-class UEEDispatcher {
+class Provider {
   constructor () {
     this.uuid = uuidv4()
 
@@ -87,4 +87,4 @@ class UEEDispatcher {
   }
 }
 
-module.exports = { UEEDispatcher, checkToBeValidEvent }
+module.exports = { Provider, checkToBeValidEvent }

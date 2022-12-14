@@ -1,4 +1,4 @@
-const { checkToBeValidEvent } = require("../../UEEDispatcher")
+const { checkToBeValidEvent } = require("../../Provider")
 
 class SystemInterface {
   constructor({ name, events, modules = [] }) {

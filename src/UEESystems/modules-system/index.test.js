@@ -1,4 +1,4 @@
-const { UEEDispatcher } = require("../../UEEDispatcher")
+const { Provider } = require("../../Provider")
 const { UEERootModule } = require("./root-module")
 const { UEEStateModule } = require("./state-module")
 const { UEESystemsModule } = require("./systems-module")
@@ -6,7 +6,7 @@ const { SystemInterface } = require("../Interfaces/system-interface")
 const { UEEManager } = require("../../UEEManager/index")
 
 describe("", () => {
-  const dispatcher = new UEEDispatcher
+  const dispatcher = new Provider
   let manager
   const mockSystemModuleOnStart = jest.fn()
   const mockTestSystemEventThree = jest.fn()

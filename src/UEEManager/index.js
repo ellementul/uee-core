@@ -1,11 +1,11 @@
-const { UEEDispatcher } = require('../UEEDispatcher')
+const { Provider } = require('../Provider')
 const { STATE_EVENT_NAME_CONSTATS, moduleManagerSystem } = require('../UEESystems/modules-system/modules-manager-system')
 
 class UEEManager {
   constructor ({ dispatcher }) {
 
-    if( !(dispatcher instanceof UEEDispatcher) )
-      throw new Error("The dispatcher has to extend UEEDispatcher!")
+    if( !(dispatcher instanceof Provider) )
+      throw new Error("The dispatcher has to extend Provider!")
 
     this.dispatcher = dispatcher
     dispatcher.onRecieveEvent( event => this.recieveEvent(event) )
