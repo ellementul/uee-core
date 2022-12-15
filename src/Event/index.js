@@ -11,6 +11,9 @@ function EventFactory(type) {
     create: () => {
       return type.rand()
     },
+    toJSON: () => {
+      return { type: type.toJSON() }
+    },
     sign: () => {
       return CRC32.str(type.toJSON())
     },
@@ -32,7 +35,10 @@ function EventFactory(type) {
 }
 
 EventFactory.fromJSON = function (json) {
-  const type = Types.outJSON(json)
+  if(typeof json == "string")
+			json = JSON.parse(json)
+  
+  const type = Types.outJSON(json.type)
   return EventFactory(type)
 }
 

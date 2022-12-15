@@ -49,4 +49,16 @@ describe('Event testing', () => {
 
     expect(json_event.sign()).toBe(event.sign());
   });
+
+  test('event to JSON', () => {
+    const type = Types.Object.Def({
+      system: "Testing",
+      index: Types.Index.Def(100)
+    })
+    
+    const event = EventFactory(type)
+    const json_event = EventFactory.fromJSON(event.toJSON())
+
+    expect(json_event.sign()).toBe(event.sign());
+  });
 });

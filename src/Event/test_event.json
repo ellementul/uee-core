@@ -1,16 +1,18 @@
 {
-  "name":"Object",
-  "struct":
-  {
-    "system":
+  "type": {
+    "name":"Object",
+    "struct":
     {
-      "name":"Const",
-      "struct":"Testing"
-    },
-    "index":
-    {
-      "name":"Index",
-      "struct": {"max":100}
+      "system":
+      {
+        "name":"Const",
+        "struct":"Testing"
+      },
+      "index":
+      {
+        "name":"Index",
+        "struct": {"max":100}
+      }
     }
   }
 }
