@@ -31,4 +31,9 @@ function EventFactory(type) {
   }
 }
 
+EventFactory.fromJSON = function (json) {
+  const type = Types.outJSON(json)
+  return EventFactory(type)
+}
+
 module.exports = { EventFactory, Types }
