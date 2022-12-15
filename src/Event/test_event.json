@@ -1,0 +1,16 @@
+{
+  "name":"Object",
+  "struct":
+  {
+    "system":
+    {
+      "name":"Const",
+      "struct":"Testing"
+    },
+    "index":
+    {
+      "name":"Index",
+      "struct": {"max":100}
+    }
+  }
+}

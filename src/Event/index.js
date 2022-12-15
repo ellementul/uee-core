@@ -2,8 +2,7 @@ const Types = require('typesjs')
 const CRC32 = require('crc-32')
 
 function EventFactory(type) {
-  if(!Types.isType(type))
-    throw new Error("The type isn't type!")
+  type = Types.isType(type) ? type : Types.Object.outJSON(type)
 
   const callbacks = new Set
 
