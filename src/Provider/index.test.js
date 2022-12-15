@@ -1,5 +1,6 @@
+const { EventFactory, Types } = require('../Event/index')
 const { Provider } = require("./index.js")
-const { TestTransport } = require("../Transport/test-class.js")
+const { TestTransport } = require("../Transport/test-class")
 
 describe('Name of the group', () => {
   test('Constructor without params', () => {
@@ -36,34 +37,37 @@ describe('Name of the group', () => {
     dispatcher.sendEvent(event)
   });
 
-  test('recieve event', done => {
+  test('defined and calling event', () => {
     const dispatcher = new Provider
+    const event = EventFactory(Types.Index.Def(7))
+    const callback = jest.fn()
 
-    dispatcher.defineListenerEvent({})
-    dispatcher.onRecieveEvent(event => {
-      expect(event).toEqual({})
-      done()
-    })
+    dispatcher.onEvent(event, callback)
 
-    dispatcher.sendEvent({})
+    dispatcher.sendEvent(1)
+    expect(callback).toHaveBeenCalledWith(1)
   });
 
-  test('recieve event via transport', done => {
-    const dispatcherSource = new Provider
+  test('diffrent events', () => {
+    const dispatcher = new Provider
 
-    const event = {}
-    const transport = new TestTransport(() => {}, [event])
+    const oneEvent = EventFactory(Types.Index.Def(7))
+    const oneCallback = jest.fn()
 
-    const dispatcherTarget = new Provider
-    dispatcherSource.setTransport(transport)
-    dispatcherTarget.setTransport(transport)
+    const twoEvent = EventFactory(Types.Index.Def(5))
+    const twoCallback = jest.fn()
 
-    dispatcherTarget.defineListenerEvent({})
-    dispatcherTarget.onRecieveEvent(event => {
-      expect(event).toEqual({})
-      done()
-    })
+    const threeEvent = EventFactory(Types.Index.Def(3))
+    const threeCallback = jest.fn()
+    
+    dispatcher.onEvent(oneEvent, oneCallback)
+    dispatcher.onEvent(twoEvent, twoCallback)
+    dispatcher.onEvent(threeEvent, threeCallback)
 
-    dispatcherSource.sendEvent(event)
+    dispatcher.sendEvent(4)
+    expect(oneCallback).toHaveBeenCalledWith(4)
+    expect(twoCallback).toHaveBeenCalledWith(4)
+    expect(threeCallback.mock.calls.length).toBe(0)
+
   });
 });
