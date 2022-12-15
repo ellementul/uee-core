@@ -26,7 +26,7 @@ class Provider {
 
   onEvent(event, callback) {
     const signature = event.sign()
-
+    
     if(!this._listenerEvents.has(signature))
       this._listenerEvents.set(signature, event)
 
