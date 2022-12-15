@@ -38,15 +38,15 @@ describe('Event testing', () => {
     expect(secondCall).toHaveBeenCalledWith(payload)
   });
 
-  test('event from object', () => {
-    const type = Types.Object.Def({
-      system: "Testing",
-      index: Types.Index.Def(100)
-    })
-    const json_type = require('./test_event.json')
-    const json_event = EventFactory(json_type)
-    const event = EventFactory(type)
+  // test('event from object', () => {
+  //   const type = Types.Object.Def({
+  //     system: "Testing",
+  //     index: Types.Index.Def(100)
+  //   })
+  //   const json_type = require('./test_event.json')
+  //   const json_event = EventFactory(json_type)
+  //   const event = EventFactory(type)
 
-    expect(json_event.sign()).toBe(event.sign());
-  });
+  //   expect(json_event.sign()).toBe(event.sign());
+  // });
 });
