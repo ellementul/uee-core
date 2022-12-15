@@ -11,6 +11,11 @@ describe('Event testing', () => {
     expect(event.sign()).toBe(1574440322)
   });
 
+  test('create', () => {
+    const event = EventFactory(Types.Object.Def({ system: "Log" }))
+    expect(event.create()).toEqual({"system": "Log"})
+  });
+
   test('validation', () => {
     const event = EventFactory(Types.Index.Def(7))
     expect(event.isValid(5)).toBe(true)

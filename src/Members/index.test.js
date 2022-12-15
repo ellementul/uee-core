@@ -50,5 +50,25 @@ describe('Member', () => {
 
       expect(callback).toHaveBeenCalledWith(1)
     });
+
+    test('Send generated event', () => {
+      const member = new Member
+      const provider = new Provider
+      const type = Types.Object.Def({ 
+        system: "Testing", 
+        index: Types.Index.Def(7) 
+      })
+      const event = EventFactory(type)
+      const callback = jest.fn()
+
+      member.setProvider(provider)
+      member.onEvent(event, callback)
+
+      expect(() => member.send(event, { index: 7 })).toThrow("payload")
+
+      member.send(event, { index: 5 })
+
+      expect(callback).toHaveBeenCalledWith({"index": 5, "system": "Testing"})
+    });
   });
 });

@@ -21,6 +21,19 @@ class Member {
       this._pre_init_messages.push(payload)
   }
 
+  send(event, payload) {
+    const message = event.create()
+    const full_message = {
+      ...message,
+      ...payload
+    }
+
+    if(!event.isValid(full_message))
+      throw "Invalid payload!"
+
+    this.sendEvent(full_message)
+  }
+
   setProvider(provider) {
     if(!(provider instanceof Provider))
       throw "The provider ins't instance of Provider class"

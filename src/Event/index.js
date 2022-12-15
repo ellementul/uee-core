@@ -8,6 +8,9 @@ function EventFactory(type) {
   const callbacks = new Set
 
   return {
+    create: () => {
+      return type.rand()
+    },
     sign: () => {
       return CRC32.str(type.toJSON())
     },
