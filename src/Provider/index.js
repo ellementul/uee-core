@@ -63,6 +63,8 @@ class Provider {
   defineListenerEvent(event) {
     const eventSignature = this.calculateEventSignature(event)
     this.listenerEventsSignatures.add(eventSignature)
+
+    return eventSignature
   }
 
   sendEvent(event) {
@@ -83,7 +85,7 @@ class Provider {
     const signature = this.calculateEventSignature(event)
 
     if(this.listenerEventsSignatures.has(signature))
-      this.sendModules(event)
+      this.sendModules(event, signature)
   }
 }
 

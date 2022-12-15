@@ -1,5 +1,5 @@
 const { Provider } = require("./index.js")
-const { TestTransport } = require("../UEETransport/test-class.js")
+const { TestTransport } = require("../Transport/test-class.js")
 
 describe('Name of the group', () => {
   test('Constructor without params', () => {
