@@ -1,4 +1,5 @@
 const { Provider } = require("../Provider/index.js")
+const connectedEvent = require('./events/connected_event')
 
 class Member {
   constructor() {
@@ -23,13 +24,18 @@ class Member {
 
   send(event, payload) {
     const message = event.create()
-    const full_message = {
-      ...message,
-      ...payload
-    }
+    let full_message
+
+    if(payload instanceof Object || Array.isArray(payload))
+      full_message = {
+        ...message,
+        ...payload
+      }
+    else
+      full_message = payload || message
 
     if(!event.isValid(full_message))
-      throw "Invalid payload!"
+      throw `Invalid payload! Full message: ${JSON.stringify(full_message)}`
 
     this.sendEvent(full_message)
   }
@@ -49,6 +55,8 @@ class Member {
       this._provider.sendEvent(payload)
     })
     this._pre_init_messages = []
+
+    this.send(connectedEvent)
   }
 }
 

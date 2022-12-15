@@ -1,6 +1,6 @@
 const { Member } = require('./index')
-const { EventFactory, Types } = require('../Event/index')
-const { Provider } = require("../Provider/index.js")
+const { EventFactory, Types } = require('../Event')
+const { Provider } = require("../Provider")
 
 describe('Member', () => {
   test('constructor', () => {
@@ -69,6 +69,34 @@ describe('Member', () => {
       member.send(event, { index: 5 })
 
       expect(callback).toHaveBeenCalledWith({"index": 5, "system": "Testing"})
+    });
+  });
+
+  describe('events about state member', () => {
+    test('connected', () => {
+      const member = new Member
+      const provider = new Provider
+      const event = require('./events/connected_event')
+      const callback = jest.fn()
+
+      member.onEvent(event, callback)
+      member.setProvider(provider)
+      expect(callback).toHaveBeenCalledWith(event.create())
+    });
+
+    test('any change member state', () => {
+      const member = new Member
+      const provider = new Provider
+      const event = require('./events/change_state_event')
+      const callback = jest.fn()
+      
+      member.onEvent(event, callback)
+      member.setProvider(provider)
+      const payload = {
+        ...event.create(),
+        state: "Connected"
+      }
+      expect(callback).toHaveBeenCalledWith(payload)
     });
   });
 });
