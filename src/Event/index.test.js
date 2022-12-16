@@ -23,7 +23,7 @@ describe('Event testing', () => {
   });
 
   test('calling', () => {
-    const event = EventFactory(Types.String.Def("\\w", 100))
+    const event = EventFactory(Types.Key.Def())
     const payload = "TestPayload"
 
     const firstCall = jest.fn()
