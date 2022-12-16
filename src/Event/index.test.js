@@ -8,7 +8,7 @@ describe('Event testing', () => {
 
   test('signature', () => {
     const event = EventFactory(Types.Index.Def(7))
-    expect(event.sign()).toBe(1574440322)
+    expect(event.sign()).toEqual("8c06eb0e-b55f-5156-bad8-676866da551e")
   });
 
   test('create', () => {
@@ -47,7 +47,7 @@ describe('Event testing', () => {
     const json_event = EventFactory.fromJSON(json_type)
     const event = EventFactory(type)
 
-    expect(json_event.sign()).toBe(event.sign());
+    expect(json_event.sign()).toEqual(event.sign());
   });
 
   test('event to JSON', () => {
@@ -59,6 +59,6 @@ describe('Event testing', () => {
     const event = EventFactory(type)
     const json_event = EventFactory.fromJSON(event.toJSON())
 
-    expect(json_event.sign()).toBe(event.sign());
+    expect(json_event.sign()).toEqual(event.sign());
   });
 });

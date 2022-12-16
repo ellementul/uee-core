@@ -1,5 +1,5 @@
 const Types = require('typesjs')
-const CRC32 = require('crc-32')
+const getUuid = require('uuid-by-string');
 
 function EventFactory(type) {
   if(!Types.isType(type))
@@ -15,7 +15,7 @@ function EventFactory(type) {
       return { type: type.toJSON() }
     },
     sign: () => {
-      return CRC32.str(type.toJSON())
+      return getUuid(type.toJSON(), 5)
     },
     isValid: (payload) => {
       return !type.test(payload)
