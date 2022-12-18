@@ -4,13 +4,13 @@ const { TestTransport } = require("../Transport/test-class")
 
 describe('Name of the group', () => {
   test('Constructor without params', () => {
-    const dispatcher = new Provider
+    const provider = new Provider
 
-    expect(dispatcher).toBeDefined()
+    expect(provider).toBeDefined()
   });
 
   test('connect transport', () => {
-    const dispatcher = new Provider
+    const provider = new Provider
     const event = {}
 
     const transport = {
@@ -20,36 +20,36 @@ describe('Name of the group', () => {
       }
     }
 
-    dispatcher.setTransport(transport)
-    dispatcher.sendEvent(event)
+    provider.setTransport(transport)
+    provider.sendEvent(event)
 
     expect(transport.send).toHaveBeenCalledWith({
       data: event,
-      from: dispatcher.uuid
+      from: provider.uuid
     })
   });
 
   test('test transport', done => {
-    const dispatcher = new Provider
+    const provider = new Provider
     const event = {}
 
-    dispatcher.setTransport(new TestTransport(done, [event]))
-    dispatcher.sendEvent(event)
+    provider.setTransport(new TestTransport(done, [event]))
+    provider.sendEvent(event)
   });
 
   test('defined and calling event', () => {
-    const dispatcher = new Provider
+    const provider = new Provider
     const event = EventFactory(Types.Index.Def(7))
     const callback = jest.fn()
 
-    dispatcher.onEvent(event, callback)
+    provider.onEvent(event, callback)
 
-    dispatcher.sendEvent(1)
+    provider.sendEvent(1)
     expect(callback).toHaveBeenCalledWith(1)
   });
 
   test('diffrent events', () => {
-    const dispatcher = new Provider
+    const provider = new Provider
 
     const oneEvent = EventFactory(Types.Index.Def(7))
     const oneCallback = jest.fn()
@@ -60,14 +60,32 @@ describe('Name of the group', () => {
     const threeEvent = EventFactory(Types.Index.Def(3))
     const threeCallback = jest.fn()
     
-    dispatcher.onEvent(oneEvent, oneCallback)
-    dispatcher.onEvent(twoEvent, twoCallback)
-    dispatcher.onEvent(threeEvent, threeCallback)
+    provider.onEvent(oneEvent, oneCallback)
+    provider.onEvent(twoEvent, twoCallback)
+    provider.onEvent(threeEvent, threeCallback)
 
-    dispatcher.sendEvent(4)
+    provider.sendEvent(4)
     expect(oneCallback).toHaveBeenCalledWith(4)
     expect(twoCallback).toHaveBeenCalledWith(4)
     expect(threeCallback.mock.calls.length).toBe(0)
 
+  });
+
+  test('logging callback', () => {
+    const provider = new Provider
+    const logCallback = jest.fn()
+    provider.setLogging(logCallback)
+
+    const event = EventFactory(Types.Index.Def(7))
+    const callback = jest.fn()
+    provider.onEvent(event, callback)
+
+    provider.sendEvent(4)
+    expect(callback).toHaveBeenCalledWith(4)
+
+    expect(logCallback).toHaveBeenCalledWith({
+      "message": 4, 
+      "triggeredEvents": new Map([[event.sign(), event.toJSON()]])
+    })
   });
 });

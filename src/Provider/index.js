@@ -5,7 +5,7 @@ class Provider {
     this.uuid = uuidv4()
 
     this._listenerEvents = new Map
-    this.sendModules = () => { throw new Error("The recieve callback isn't function!") }
+    this._logging = null
   }
 
   setTransport (transport) {
@@ -41,10 +41,32 @@ class Provider {
   }
 
   recieveEvent (payload) {
+    this.log(payload)
+
     this._listenerEvents.forEach((event, sign) => {
       if(event.isValid(payload))
         event.call(payload)
     })
+  }
+
+  setLogging(logging) {
+    if(typeof logging === "function")
+      this._logging = logging
+    else
+      throw new TypeError("The recieve logging callback isn't function!")
+  }
+
+  log (payload) {
+    if(this._logging) {
+      let events = new Map
+
+      this._listenerEvents.forEach((event, sign) => {
+        if(event.isValid(payload))
+          events.set(sign, event.toJSON())
+      })
+
+      this._logging({ message: payload, triggeredEvents: events })
+    }
   }
 }
 

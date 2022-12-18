@@ -3,7 +3,7 @@ const getUuid = require('uuid-by-string');
 
 function EventFactory(type) {
   if(!Types.isType(type))
-    throw new Error("The type isn't type!")
+    throw new TypeError("The type isn't type!")
 
   const callbacks = new Set
 
@@ -27,7 +27,7 @@ function EventFactory(type) {
       if(typeof callback === "function")
         callbacks.add(callback)
       else
-        throw new Error("The recieve callback isn't function!")
+        throw new TypeError("The recieve callback isn't function!")
     },
     call: payload => {
       for (let callback of callbacks) {
