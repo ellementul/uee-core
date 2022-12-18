@@ -2,7 +2,7 @@
   "name": "uee",
   "version": "0.9.1",
   "description": "United Environment Events",
-  "main": "src/index.js",
+  "main": "./index.js",
   "scripts": {
     "test": "node node_modules/jest/bin/jest.js",
     "test:w": "node node_modules/jest/bin/jest.js --watch"
