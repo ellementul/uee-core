@@ -1,4 +1,4 @@
-const { AbstractTransport } = require('./index')
+const { AbstractTransport } = require("./index")
 
 class TestTransport extends AbstractTransport {
 

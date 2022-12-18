@@ -1,5 +1,5 @@
-const { EventFactory, Types } = require('../Event/index')
-const { Provider } = require("./index.js")
+const { EventFactory, Types } = require('../Event')
+const { Provider } = require("./index")
 const { TestTransport } = require("../Transport/test-class")
 
 describe('Name of the group', () => {

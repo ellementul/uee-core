@@ -1,5 +1,5 @@
 const { Provider } =  require("./index")
-const { TestTransport } = require("../UEETransport/test-class.js")
+const { TestTransport } = require("../UEETransport/test-class")
 
 class TestProvider extends Provider {
   constructor (done, expectedEvents = []) {
