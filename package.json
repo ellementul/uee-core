@@ -1,6 +1,6 @@
 {
   "name": "uee",
-  "version": "0.8",
+  "version": "0.9",
   "description": "United Environment Events",
   "type": "module",
   "main": "src/index.js",
