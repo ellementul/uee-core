@@ -100,12 +100,50 @@ describe('Member', () => {
     });
 
     test('Logging', () => {
+      const member = new Member
+      const provider = new Provider
       const event = require('./events/log_event')
-      expect(event.isValid({
-        system: "Logging",
+      const callback = jest.fn()
+      
+      member.onEvent(event, callback)
+      member.setProvider(provider)
+      const message = {
         entity: "Run_Test",
         state: "Update"
-      })).toBe(true)
+      }
+      member.send(event, message)
+
+      const fullMessage = {
+        ...event.create(),
+        ...message
+      }
+      expect(callback).toHaveBeenCalledWith(fullMessage)
+    });
+
+    describe('Errors', () => {
+
+      test('The error in callback', () => {
+        const member = new Member
+        const provider = new Provider
+
+        const errorEvent = require('./events/error_event')
+        const errorCallback = jest.fn(({ state: { name, message } }) => {
+          expect(name).toBe("Error");
+          expect(message).toBe("Testing Error");
+        })
+        member.onEvent(errorEvent, errorCallback)
+
+        const event = EventFactory(Types.Key.Def())
+        const callbackWithError = () => {
+          throw new Error("Testing Error")
+        }
+        member.onEvent(event, callbackWithError)
+        member.setProvider(provider)
+        member.sendEvent("GettingError")
+
+        expect(errorCallback).toHaveBeenCalled()
+      });
+      
     });
   });
 });

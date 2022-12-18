@@ -1,5 +1,6 @@
 const { Provider } = require("../Provider/index.js")
 const connectedEvent = require('./events/connected_event')
+const errorEvent = require('./events/error_event')
 
 class Member {
   constructor() {
@@ -8,7 +9,29 @@ class Member {
     this._pre_init_messages = []
   }
 
+  wrapCallback(callback) {
+    return payload => {
+      try {
+        callback(payload)
+      } catch (error) {
+        if(error instanceof Error)
+          this.send(errorEvent, {
+            state: {
+              name: error.name,
+              message: error.message,
+              stack: error.stack
+            }
+          })
+        else
+          throw error
+      }
+    }
+  }
+
   onEvent(event, callback) {
+    if(event.sign() !== errorEvent.sign())
+      callback = this.wrapCallback(callback)
+
     if(this._provider)
       this._provider.onEvent(event, callback)
     else

@@ -7,6 +7,6 @@ const type = Types.Object.Def({
   {
     name: Types.Key.Def(),
   }
-})
+}, true)
 
 module.exports = EventFactory(type)
