@@ -98,5 +98,14 @@ describe('Member', () => {
       }
       expect(callback).toHaveBeenCalledWith(payload)
     });
+
+    test('Logging', () => {
+      const event = require('./events/log_event')
+      expect(event.isValid({
+        system: "Logging",
+        entity: "Run_Test",
+        state: "Update"
+      })).toBe(true)
+    });
   });
 });

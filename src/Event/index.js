@@ -1,4 +1,4 @@
-const Types = require('typesjs')
+const Types = require('messages-types')
 const getUuid = require('uuid-by-string');
 
 function EventFactory(type) {
@@ -8,6 +8,9 @@ function EventFactory(type) {
   const callbacks = new Set
 
   return {
+    get type() {
+      return type
+    },
     create: () => {
       return type.rand()
     },
