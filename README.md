@@ -12,7 +12,7 @@ const {
   Provider,
   Members,
   events 
-} = require('./index')
+} = require('uee')
 ```
 
 ### Create event
