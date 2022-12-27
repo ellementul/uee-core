@@ -1,6 +1,6 @@
 {
   "name": "@ellementul/uee",
-  "version": "0.8.4",
+  "version": "0.9.4",
   "description": "United Environment Events",
   "main": "./index.js",
   "scripts": {
