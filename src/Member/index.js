@@ -64,9 +64,6 @@ class Member {
   }
 
   setProvider(provider) {
-    if(!(provider instanceof Provider))
-      throw "The provider ins't instance of Provider class"
-
     this._provider = provider
 
     this._pre_init_events.forEach(params => {

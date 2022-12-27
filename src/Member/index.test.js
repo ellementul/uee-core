@@ -16,12 +16,6 @@ describe('Member', () => {
     expect(member).toBeDefined()
   });
 
-  test('setProvider error', () => {
-    const member = new Member
-
-    expect(() => member.setProvider(null)).toThrow()
-  });
-
   describe('calling events', () => {
 
     test('Defined event', () => {
