@@ -77,7 +77,8 @@ describe('Member', () => {
       member.setProvider(provider)
       expect(callback).toHaveBeenCalledWith({
         ...event.create(),
-        role: "Member"
+        role: "Member",
+        uuid: member.uuid
       })
     });
 
@@ -92,7 +93,8 @@ describe('Member', () => {
       const payload = {
         ...event.create(),
         state: "Connected",
-        role: "Member"
+        role: "Member",
+        uuid: member.uuid
       }
       expect(callback).toHaveBeenCalledWith(payload)
     });

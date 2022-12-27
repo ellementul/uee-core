@@ -1,4 +1,4 @@
-const { Provider } = require("../Provider/index.js")
+const { Types } = require('../Event')
 const connectedEvent = require('./events/connected_event')
 const errorEvent = require('./events/error_event')
 
@@ -7,6 +7,11 @@ class Member {
     this._provider = null
     this._pre_init_events = []
     this._pre_init_messages = []
+    this._uuid = Types.UUID.Def().rand()
+  }
+
+  get uuid() {
+    return this._uuid
   }
 
   wrapCallback(callback) {
@@ -77,7 +82,8 @@ class Member {
     this._pre_init_messages = []
 
     this.send(connectedEvent, {
-      role: this.getRole()
+      role: this.getRole(),
+      uuid: this._uuid
     })
   }
 
