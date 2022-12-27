@@ -81,7 +81,10 @@ describe('Member', () => {
 
       member.onEvent(event, callback)
       member.setProvider(provider)
-      expect(callback).toHaveBeenCalledWith(event.create())
+      expect(callback).toHaveBeenCalledWith({
+        ...event.create(),
+        role: "Member"
+      })
     });
 
     test('any change member state', () => {
@@ -94,7 +97,8 @@ describe('Member', () => {
       member.setProvider(provider)
       const payload = {
         ...event.create(),
-        state: "Connected"
+        state: "Connected",
+        role: "Member"
       }
       expect(callback).toHaveBeenCalledWith(payload)
     });

@@ -79,7 +79,13 @@ class Member {
     })
     this._pre_init_messages = []
 
-    this.send(connectedEvent)
+    this.send(connectedEvent, {
+      role: this.getRole()
+    })
+  }
+
+  getRole() {
+    return this.role || this.constructor.name
   }
 }
 
