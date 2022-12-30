@@ -38,6 +38,13 @@ describe('Event testing', () => {
     expect(secondCall).toHaveBeenCalledWith(payload)
   });
 
+  test('clone event', () => {
+    const event = EventFactory(Types.Index.Def(7))
+    const clonedEvent = event.clone()
+    expect(event).not.toBe(clonedEvent)
+    expect(event.sign()).toEqual(clonedEvent.sign())
+  });
+
   test('event from object', () => {
     const type = Types.Object.Def({
       system: "Testing",

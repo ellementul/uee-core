@@ -33,6 +33,9 @@ function EventFactory(type) {
       for (let callback of callbacks) {
         callback(payload)
       }
+    },
+    clone: function() {
+      return EventFactory(this.type)
     }
   }
 }

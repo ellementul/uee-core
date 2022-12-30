@@ -28,9 +28,9 @@ class Provider {
     const signature = event.sign()
     
     if(!this._listenerEvents.has(signature))
-      this._listenerEvents.set(signature, event)
+      this._listenerEvents.set(signature, event.clone())
 
-    event.on(callback)
+    this._listenerEvents.get(signature).on(callback)
   }
 
   sendEvent(payload) {

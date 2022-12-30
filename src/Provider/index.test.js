@@ -88,4 +88,22 @@ describe('Name of the group', () => {
       "triggeredEvents": new Map([[event.sign(), event.toJSON()]])
     })
   });
+
+  test('the same event with diffrents provider', () => {
+    const oneProvider = new Provider
+    const twoProvider = new Provider
+
+    const event = EventFactory(Types.Index.Def(7))
+
+    const callback = jest.fn()
+    const secondCallback = jest.fn()
+
+    oneProvider.onEvent(event, callback)
+    twoProvider.onEvent(event, secondCallback)
+
+    oneProvider.sendEvent(1)
+    twoProvider.sendEvent(1)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(secondCallback).toHaveBeenCalledTimes(1)
+  });
 });
