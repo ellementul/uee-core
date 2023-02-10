@@ -88,7 +88,7 @@ class Member {
   }
 
   getRole() {
-    return this.role || this.constructor.name
+    return this.role
   }
 }
 

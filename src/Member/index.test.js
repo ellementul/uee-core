@@ -12,6 +12,7 @@ describe('Member', () => {
     const member = new Member
     const provider = new Provider
 
+    member.role = "TestRole"
     member.setProvider(provider)
     expect(member).toBeDefined()
   });
@@ -24,6 +25,7 @@ describe('Member', () => {
       const event = EventFactory(Types.Index.Def(7))
       const callback = jest.fn()
   
+      member.role = "TestRole"
       member.setProvider(provider)
       member.onEvent(event, callback)
       member.sendEvent(1)
@@ -40,6 +42,7 @@ describe('Member', () => {
       member.onEvent(event, callback)
       member.sendEvent(1)
 
+      member.role = "TestRole"
       member.setProvider(provider)
 
       expect(callback).toHaveBeenCalledWith(1)
@@ -55,6 +58,7 @@ describe('Member', () => {
       const event = EventFactory(type)
       const callback = jest.fn()
 
+      member.role = "TestRole"
       member.setProvider(provider)
       member.onEvent(event, callback)
 
@@ -74,10 +78,11 @@ describe('Member', () => {
       const callback = jest.fn()
 
       member.onEvent(event, callback)
+      member.role = "TestRole"
       member.setProvider(provider)
       expect(callback).toHaveBeenCalledWith({
         ...event.create(),
-        role: "Member",
+        role: "TestRole",
         uuid: member.uuid
       })
     });
@@ -89,11 +94,12 @@ describe('Member', () => {
       const callback = jest.fn()
       
       member.onEvent(event, callback)
+      member.role = "TestRole"
       member.setProvider(provider)
       const payload = {
         ...event.create(),
         state: "Connected",
-        role: "Member",
+        role: "TestRole",
         uuid: member.uuid
       }
       expect(callback).toHaveBeenCalledWith(payload)
@@ -106,6 +112,7 @@ describe('Member', () => {
       const callback = jest.fn()
       
       member.onEvent(event, callback)
+      member.role = "TestRole"
       member.setProvider(provider)
       const message = {
         entity: "Run_Test",
@@ -138,6 +145,7 @@ describe('Member', () => {
           throw new Error("Testing Error")
         }
         member.onEvent(event, callbackWithError)
+        member.role = "TestRole"
         member.setProvider(provider)
         member.sendEvent("GettingError")
 
