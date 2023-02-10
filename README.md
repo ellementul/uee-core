@@ -1,27 +1,22 @@
-# UEE
-United Events Environment
+# UEE Core
+United Events Environment Core
 
+This module is part of main [UEE package]
 
-## Event
+## It contains definitions of basic entities for UEE:
+- Event
+- Member
+- Provider
+- Transport
 
-### Require
+## For members defined next events:
 ```js
 const {
-  EventFactory,
-  Types,
-  Provider,
-  Members,
-  events 
-} = require('uee')
-```
-
-### Create event
-```js
-const event = EventFactory(Types.Object.Def({ system: "Log" }))
-```
-
-### Valid message by event
-```js
-const message = { system: "Log" }
-event.isValid(message)
+  events: {
+    change, // Call when status of member is changed
+    connect, // Call when status of member become "connected"
+    log, // Prototype event for logging system 
+    error // Call when there is error, it is part of logging system
+  }
+} = require("@ellementul/uee-core")
 ```

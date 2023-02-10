@@ -1,7 +1,7 @@
 {
-  "name": "@ellementul/uee",
-  "version": "1.0.1",
-  "description": "United Environment Events",
+  "name": "@ellementul/uee-core",
+  "version": "1.0.2",
+  "description": "United Environment Events Core",
   "main": "./index.js",
   "scripts": {
     "test": "node node_modules/jest/bin/jest.js",
