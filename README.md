@@ -1,7 +1,7 @@
 # UEE Core
 United Events Environment Core
 
-This module is part of main [UEE package]
+This module is part of main [UEE package](https://github.com/ellementul/UEE)
 
 ## It contains definitions of basic entities for UEE:
 - Event
