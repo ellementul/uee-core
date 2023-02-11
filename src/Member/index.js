@@ -88,7 +88,7 @@ class Member {
   }
 
   getRole() {
-    return this.role
+    return this.role || "MemberWithoutRole"
   }
 }
 
