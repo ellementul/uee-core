@@ -1,6 +1,6 @@
 {
   "name": "@ellementul/uee-core",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "United Environment Events Core",
   "main": "./index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
-    "messages-types": "github:ellementul/messages-types",
+    "@ellementul/message-types": "^2.3.1",
     "uuid": "^8.3.2",
     "uuid-by-string": "^4.0.0"
   },
