@@ -1,4 +1,4 @@
-const Types = require('messages-types')
+const Types = require('@ellementul/message-types')
 const getUuid = require('uuid-by-string');
 
 function EventFactory(type) {
