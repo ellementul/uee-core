@@ -21,12 +21,12 @@ describe('Member', () => {
 
     test('Defined event', () => {
       const member = new Member
-      const provider = new Provider
       const event = EventFactory(Types.Index.Def(7))
       const callback = jest.fn()
-  
-      member.setProvider(provider)
       member.onEvent(event, callback)
+  
+      member.setProvider(new Provider)
+      
       member.sendEvent(1)
 
       expect(callback).toHaveBeenCalledWith(1)
@@ -34,14 +34,14 @@ describe('Member', () => {
 
     test('Defined event before provider', () => {
       const member = new Member
-      const provider = new Provider
+
       const event = EventFactory(Types.Index.Def(7))
       const callback = jest.fn()
-  
       member.onEvent(event, callback)
-      member.sendEvent(1)
 
-      member.setProvider(provider)
+      member.setProvider(new Provider)
+      
+      member.sendEvent(1)
 
       expect(callback).toHaveBeenCalledWith(1)
     });
@@ -90,7 +90,34 @@ describe('Member', () => {
           someProperty: "Check that it will be copied from template",
           },
         })
-      })
+    })
+
+    test('Limit Calls of Event in Runtime', () => {
+      const member = new Member
+
+      const event = EventFactory(Types.Object.Def({ system: "Testing" }))
+      const runtimeEvent = EventFactory(Types.Object.Def({ system: "Testing2" }))
+
+      const callback = jest.fn()
+      member.onEvent(event, callback)
+
+      member.setProvider(new Provider)
+      
+      const runtimeCallback = jest.fn()
+      member.onEvent(runtimeEvent, runtimeCallback)
+
+      member.send(event)
+      member.send(runtimeEvent)
+
+      expect(callback).toHaveBeenCalledTimes(1)
+      expect(runtimeCallback).toHaveBeenCalledTimes(1)
+
+      member.send(event)
+      member.send(runtimeEvent)
+
+      expect(callback).toHaveBeenCalledTimes(2)
+      expect(runtimeCallback).toHaveBeenCalledTimes(1)
+    })
   });
 
   describe('events about state member', () => {

@@ -10,6 +10,8 @@ class Member {
     this._pre_init_events = []
     this._pre_init_messages = []
     this._uuid = Types.UUID.Def().rand()
+
+    this.onEvent = this.onEventInConstructor
   }
 
   get uuid() {
@@ -35,14 +37,21 @@ class Member {
     }
   }
 
-  onEvent(event, callback) {
+  onEventInConstructor(event, callback, limit = -1) {
     if(event.sign() !== errorEvent.sign())
       callback = this.wrapCallback(callback)
 
     if(this._provider)
-      this._provider.onEvent(event, callback, this.uuid)
+      this._provider.onEvent(event, callback, this.uuid, limit)
     else
-      this._pre_init_events.push([event, callback, this.uuid])
+      this._pre_init_events.push([event, callback, this.uuid, limit])
+  }
+
+  onEventInRuntime(event, callback, limit = 1) {
+    if(event.sign() !== errorEvent.sign())
+      callback = this.wrapCallback(callback)
+
+    this._provider.onEvent(event, callback, this.uuid, limit)
   }
 
   sendEvent(payload) {
@@ -58,8 +67,10 @@ class Member {
 
     if(payload instanceof Object)
       full_message = merge(template, payload)
+    else if(!payload)
+      full_message = template
     else
-      throw new Error("This function waits object to merge it with template. Please, use sendEvent method for other cases.")
+      throw new Error("This function waits for second argument is object to merge with template. Please, use sendEvent method for other cases.")
 
     const validError = event.isValidError(full_message)
     if(validError)
@@ -87,6 +98,8 @@ class Member {
       this._provider.sendEvent(payload)
     })
     this._pre_init_messages = []
+
+    this.onEvent = this.onEventInRuntime
 
     this.send(connectedEvent, {
       role: this.getRole(),
