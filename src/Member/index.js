@@ -51,19 +51,27 @@ class Member {
   }
 
   send(event, payload) {
-    const message = event.create()
+    const template = event.create()
     let full_message
 
     if(payload instanceof Object || Array.isArray(payload))
       full_message = {
-        ...message,
+        ...template,
         ...payload
       }
     else
-      full_message = payload || message
+      full_message = payload || template
 
-    if(!event.isValid(full_message))
-      throw `Invalid payload! Full message: ${JSON.stringify(full_message)}`
+    const validError = event.isValidError(full_message)
+    if(validError)
+      throw new TypeError(`
+        Invalid payload!
+        Data: ${JSON.stringify({
+          validError,
+          template,
+          payload
+        }, null, 2)}
+      `)
 
     this.sendEvent(full_message)
   }

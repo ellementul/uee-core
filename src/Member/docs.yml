@@ -1,7 +1,5 @@
 TODO:
   - Payload can't be Array
   - Deep clone payload of event
-  - Invalid payload error to has to be understandable:
-    - When payload is invalid, show clean payload, clean random message and error type
   - When set provider, we deprecated onEvent function, and setup onEventForTime function
   - Make list events for infinite listening(define in constructor), and check to doesn't send them from this member

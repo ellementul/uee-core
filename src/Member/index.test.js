@@ -122,31 +122,57 @@ describe('Member', () => {
       }
       expect(callback).toHaveBeenCalledWith(fullMessage)
     });
-
-    describe('Errors', () => {
-
-      test('The error in callback', () => {
-        const member = new Member
-        const provider = new Provider
-
-        const errorEvent = require('./events/error_event')
-        const errorCallback = jest.fn(({ state: { name, message } }) => {
-          expect(name).toBe("Error");
-          expect(message).toBe("Testing Error");
-        })
-        member.onEvent(errorEvent, errorCallback)
-
-        const event = EventFactory(Types.Key.Def())
-        const callbackWithError = () => {
-          throw new Error("Testing Error")
-        }
-        member.onEvent(event, callbackWithError)
-        member.setProvider(provider)
-        member.sendEvent("GettingError")
-
-        expect(errorCallback).toHaveBeenCalled()
-      });
-      
-    });
   });
+
+  describe('Errors', () => {
+
+    test('The error in callback', () => {
+      const member = new Member
+      const provider = new Provider
+
+      const errorEvent = require('./events/error_event')
+      const errorCallback = jest.fn(({ state: { name, message } }) => {
+        expect(name).toBe("Error");
+        expect(message).toBe("Testing Error");
+      })
+      member.onEvent(errorEvent, errorCallback)
+
+      const event = EventFactory(Types.Key.Def())
+      const callbackWithError = () => {
+        throw new Error("Testing Error")
+      }
+      member.onEvent(event, callbackWithError)
+      member.setProvider(provider)
+      member.sendEvent("GettingError")
+
+      expect(errorCallback).toHaveBeenCalled()
+    });
+    
+  });
+
+  test('Invalid payload for event', () => {
+    const member = new Member
+    const provider = new Provider
+
+    const type = Types.Object.Def({
+      system: "Test",
+      action: "TestInvalidPayload",
+      state: {
+        correctState: true
+      }
+    })
+    
+    const testEvent = EventFactory(type)
+
+    member.setProvider(provider)
+
+
+    const getError = () => member.send(testEvent, { state: { correctState: false } })
+
+    expect(getError).toThrow(TypeError)
+    expect(getError).toThrow("validError")
+    expect(getError).toThrow("template")
+    expect(getError).toThrow("payload")
+  });
+  
 });
