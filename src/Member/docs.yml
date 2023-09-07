@@ -1,8 +1,6 @@
 TODO:
-  - When set provider, we deprecated onEvent function, and setup onEventForTime function:
-    - Make warning for using onEvent function outside constructor 
-    - Delete callback from event
-    - Wrap callback with counting calls and automatic deleting
-  - Make list events for listening, and check to doesn't send them from this member:
+  - Deleted event in member only runtime
+  - Make list events for listening, check to doesn't send them from this member and check to there aren't duplicate:
     - define via onEvent is Error
     - define via onEventForTime is Warning
+    - message "You can delete callback event before define new"
