@@ -1,3 +1,5 @@
+const merge = require('deepmerge')
+
 const { Types } = require('../Event')
 const connectedEvent = require('./events/connected_event')
 const errorEvent = require('./events/error_event')
@@ -54,13 +56,10 @@ class Member {
     const template = event.create()
     let full_message
 
-    if(payload instanceof Object || Array.isArray(payload))
-      full_message = {
-        ...template,
-        ...payload
-      }
+    if(payload instanceof Object)
+      full_message = merge(template, payload)
     else
-      full_message = payload || template
+      throw new Error("This function waits object to merge it with template. Please, use sendEvent method for other cases.")
 
     const validError = event.isValidError(full_message)
     if(validError)

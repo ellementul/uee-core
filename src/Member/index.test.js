@@ -59,12 +59,38 @@ describe('Member', () => {
       member.setProvider(provider)
       member.onEvent(event, callback)
 
-      expect(() => member.send(event, { index: 7 })).toThrow("payload")
-
       member.send(event, { index: 5 })
 
       expect(callback).toHaveBeenCalledWith({"index": 5, "system": "Testing"})
     });
+
+    test('Deep merge template with payload', () => {
+      const member = new Member
+      const provider = new Provider
+
+      const type = Types.Object.Def({ 
+        system: "Testing", 
+        state: {
+          someProperty: "Check that it will be copied from template",
+          overwriteProperty: Types.Index.Def(1000000000)
+        }
+      })
+      const event = EventFactory(type)
+      member.setProvider(provider)
+      
+      const callback = jest.fn()
+      member.onEvent(event, callback)
+
+      member.send(event, { state: { overwriteProperty: 7 } })
+
+      expect(callback).toHaveBeenCalledWith({
+        system: "Testing",
+        state: {
+          overwriteProperty: 7,
+          someProperty: "Check that it will be copied from template",
+          },
+        })
+      })
   });
 
   describe('events about state member', () => {
