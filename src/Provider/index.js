@@ -24,13 +24,23 @@ class Provider {
     }
   }
 
-  onEvent(event, callback) {
+  onEvent(event, callback, id) {
+    id = id || callback
     const signature = event.sign()
     
     if(!this._listenerEvents.has(signature))
       this._listenerEvents.set(signature, event.clone())
 
-    this._listenerEvents.get(signature).on(callback)
+    this._listenerEvents.get(signature).on(id, callback)
+  }
+
+  offEvent(event, id) {
+    const signature = event.sign()
+    
+    if(!this._listenerEvents.has(signature))
+      return
+
+    this._listenerEvents.get(signature).off(id)
   }
 
   sendEvent(payload) {

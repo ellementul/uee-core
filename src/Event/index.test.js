@@ -31,12 +31,46 @@ describe('Event testing', () => {
     const firstCall = jest.fn()
     const secondCall = jest.fn()
 
-    event.on(firstCall)
-    event.on(secondCall)
+    event.on("firstId", firstCall)
+    event.on("secondId", secondCall)
     
     event.call(payload)
 
     expect(firstCall).toHaveBeenCalledWith(payload)
+    expect(secondCall).toHaveBeenCalledWith(payload)
+  });
+
+  test('calling with uuid', () => {
+    const event = EventFactory(Types.Key.Def())
+    const payload = "TestPayload"
+
+    const firstCall = jest.fn()
+    const secondCall = jest.fn()
+
+    event.on("theSameId", firstCall)
+    event.on("theSameId", secondCall)
+    
+    event.call(payload)
+
+    expect(firstCall).not.toHaveBeenCalled()
+    expect(secondCall).toHaveBeenCalledTimes(1)
+  });
+
+  test('delete callback', () => {
+    const event = EventFactory(Types.Key.Def())
+    const payload = "TestPayload"
+
+    const firstCall = jest.fn()
+    const secondCall = jest.fn()
+
+    event.on("firstId", firstCall)
+    event.on("secondId", secondCall)
+
+    event.off("firstId")
+    
+    event.call(payload)
+
+    expect(firstCall).not.toHaveBeenCalled()
     expect(secondCall).toHaveBeenCalledWith(payload)
   });
 

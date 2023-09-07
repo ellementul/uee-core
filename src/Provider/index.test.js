@@ -20,6 +20,26 @@ describe('Without transport', () => {
     expect(callback).toHaveBeenCalledWith(1)
   });
 
+  test('defined and destroy event', () => {
+    const provider = new Provider
+    const event = EventFactory(Types.Index.Def(7))
+    const callback = jest.fn()
+    const removedCallback = jest.fn()
+
+    provider.onEvent(event, callback)
+    provider.onEvent(event, removedCallback)
+
+    provider.sendEvent(1)
+    expect(callback).toHaveBeenCalledWith(1)
+    expect(removedCallback).toHaveBeenCalledWith(1)
+
+    provider.offEvent(event, removedCallback)
+
+    provider.sendEvent(2)
+    expect(callback).toHaveBeenCalledWith(2)
+    expect(removedCallback).toHaveBeenCalledWith(1)
+  });
+
   test('diffrent events', () => {
     const provider = new Provider
 
