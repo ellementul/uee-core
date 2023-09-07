@@ -34,7 +34,9 @@ class Provider {
   }
 
   sendEvent(payload) {
-    if(this.sendTransport)
+    const isLocal = payload.access == "Local"
+
+    if(!isLocal && this.sendTransport)
       this.sendTransport(payload)
 
     this.recieveEvent(payload)

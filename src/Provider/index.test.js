@@ -2,40 +2,12 @@ const { EventFactory, Types } = require('../Event')
 const { Provider } = require("./index")
 const { TestTransport } = require("../Transport/test-class")
 
-describe('Name of the group', () => {
+describe('Without transport', () => {
   test('Constructor without params', () => {
     const provider = new Provider
 
     expect(provider).toBeDefined()
-  });
-
-  test('connect transport', () => {
-    const provider = new Provider
-    const event = {}
-
-    const transport = {
-      send: jest.fn(),
-      onRecieve: callback => {
-        gettingCallback = callback
-      }
-    }
-
-    provider.setTransport(transport)
-    provider.sendEvent(event)
-
-    expect(transport.send).toHaveBeenCalledWith({
-      data: event,
-      from: provider.uuid
-    })
-  });
-
-  test('test transport', done => {
-    const provider = new Provider
-    const event = {}
-
-    provider.setTransport(new TestTransport(done, [event]))
-    provider.sendEvent(event)
-  });
+  })
 
   test('defined and calling event', () => {
     const provider = new Provider
@@ -106,4 +78,53 @@ describe('Name of the group', () => {
     expect(callback).toHaveBeenCalledTimes(1)
     expect(secondCallback).toHaveBeenCalledTimes(1)
   });
-});
+})
+
+describe('With transport', () => {
+  test('test transport', done => {
+    const provider = new Provider
+    const event = {}
+
+    provider.setTransport(new TestTransport(done, [event]))
+    provider.sendEvent(event)
+  })
+
+  test('connect transport', () => {
+    const provider = new Provider
+    const event = {}
+
+    const transport = {
+      send: jest.fn(),
+      onRecieve: callback => {
+        gettingCallback = callback
+      }
+    }
+
+    provider.setTransport(transport)
+    provider.sendEvent(event)
+
+    expect(transport.send).toHaveBeenCalledWith({
+      data: event,
+      from: provider.uuid
+    })
+  })
+
+  test('Local access', () => {
+    const provider = new Provider
+    const event = {
+      access: "Local"
+    }
+
+    const transport = {
+      send: jest.fn(),
+      onRecieve: callback => {
+        gettingCallback = callback
+      }
+    }
+
+    provider.setTransport(transport)
+    provider.sendEvent(event)
+
+    expect(transport.send).not.toHaveBeenCalled()
+  })
+})

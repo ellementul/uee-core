@@ -1,6 +1,6 @@
 {
   "name": "@ellementul/uee-core",
-  "version": "1.2.2",
+  "version": "1.3.2",
   "description": "United Environment Events Core",
   "main": "./index.js",
   "scripts": {
