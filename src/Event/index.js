@@ -6,6 +6,7 @@ function EventFactory(type) {
     throw new TypeError("The type isn't type!")
 
   const callbacks = new Map
+  const limits = new Map
 
   return {
     get type() {
@@ -26,17 +27,34 @@ function EventFactory(type) {
     isValidError: (payload) => {
       return type.test(payload)
     },
-    on: (id, callback) => {
-      if(typeof callback === "function")
+    on: (id, callback, limit = -1) => {
+      if(typeof callback === "function") {
         callbacks.set(id, callback)
-      else
+
+        if(limit >= 0)
+          limits.set(id, limit)
+      }
+      else {
         throw new TypeError("The recieve callback isn't function!")
+      }
     },
     off: (id) => {
       callbacks.delete(id)
+      limits.delete(id)
     },
     call: payload => {
-      for (let [_, callback] of callbacks) {
+      for (let [id, callback] of callbacks) {
+        if(limits.has(id)) {
+          if(limits.get(id) <= 0) {
+            callbacks.delete(id)
+            limits.delete(id)
+            continue
+          }
+          else {
+            limits.set(id, limits.get(id) - 1)
+          }
+        }
+
         callback(payload)
       }
     },

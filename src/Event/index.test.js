@@ -40,7 +40,7 @@ describe('Event testing', () => {
     expect(secondCall).toHaveBeenCalledWith(payload)
   });
 
-  test('calling with uuid', () => {
+  test('calling with the same uuid', () => {
     const event = EventFactory(Types.Key.Def())
     const payload = "TestPayload"
 
@@ -60,18 +60,35 @@ describe('Event testing', () => {
     const event = EventFactory(Types.Key.Def())
     const payload = "TestPayload"
 
-    const firstCall = jest.fn()
-    const secondCall = jest.fn()
+    const callback = jest.fn()
 
-    event.on("firstId", firstCall)
-    event.on("secondId", secondCall)
-
-    event.off("firstId")
+    event.on("id", callback)
     
     event.call(payload)
+    expect(callback).toHaveBeenCalledTimes(1)
 
-    expect(firstCall).not.toHaveBeenCalled()
-    expect(secondCall).toHaveBeenCalledWith(payload)
+    event.off("id")
+    
+    event.call(payload)
+    expect(callback).toHaveBeenCalledTimes(1)
+  });
+
+  test('callback limtly calling', () => {
+    const event = EventFactory(Types.Key.Def())
+    const payload = "TestPayload"
+
+    const callback = jest.fn()
+
+    event.on("id", callback, 2)
+    
+    event.call(payload)
+    expect(callback).toHaveBeenCalledTimes(1)
+    
+    event.call(payload)
+    expect(callback).toHaveBeenCalledTimes(2)
+
+    event.call(payload)
+    expect(callback).toHaveBeenCalledTimes(2)
   });
 
   test('clone event', () => {

@@ -31,13 +31,27 @@ describe('Without transport', () => {
 
     provider.sendEvent(1)
     expect(callback).toHaveBeenCalledWith(1)
-    expect(removedCallback).toHaveBeenCalledWith(1)
+    expect(removedCallback).toHaveBeenCalledTimes(1)
 
     provider.offEvent(event, removedCallback)
 
     provider.sendEvent(2)
     expect(callback).toHaveBeenCalledWith(2)
-    expect(removedCallback).toHaveBeenCalledWith(1)
+    expect(removedCallback).toHaveBeenCalledTimes(1)
+  });
+
+  test('defined limit event', () => {
+    const provider = new Provider
+    const event = EventFactory(Types.Index.Def(7))
+    const callback = jest.fn()
+
+    provider.onEvent(event, callback, null, 1)
+
+    provider.sendEvent(1)
+    expect(callback).toHaveBeenCalledTimes(1)
+
+    provider.sendEvent(2)
+    expect(callback).toHaveBeenCalledTimes(1)
   });
 
   test('diffrent events', () => {

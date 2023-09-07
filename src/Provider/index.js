@@ -24,14 +24,14 @@ class Provider {
     }
   }
 
-  onEvent(event, callback, id) {
+  onEvent(event, callback, id, limit = -1) {
     id = id || callback
     const signature = event.sign()
     
     if(!this._listenerEvents.has(signature))
       this._listenerEvents.set(signature, event.clone())
 
-    this._listenerEvents.get(signature).on(id, callback)
+    this._listenerEvents.get(signature).on(id, callback, limit)
   }
 
   offEvent(event, id) {

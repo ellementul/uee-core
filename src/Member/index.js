@@ -40,9 +40,9 @@ class Member {
       callback = this.wrapCallback(callback)
 
     if(this._provider)
-      this._provider.onEvent(event, callback)
+      this._provider.onEvent(event, callback, this.uuid)
     else
-      this._pre_init_events.push([event, callback])
+      this._pre_init_events.push([event, callback, this.uuid])
   }
 
   sendEvent(payload) {
