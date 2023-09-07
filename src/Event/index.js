@@ -23,6 +23,9 @@ function EventFactory(type) {
     isValid: (payload) => {
       return !type.test(payload)
     },
+    isValidError: (payload) => {
+      return type.test(payload)
+    },
     on: callback => {
       if(typeof callback === "function")
         callbacks.add(callback)

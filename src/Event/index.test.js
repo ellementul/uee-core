@@ -20,6 +20,8 @@ describe('Event testing', () => {
     const event = EventFactory(Types.Index.Def(7))
     expect(event.isValid(5)).toBe(true)
     expect(event.isValid(7)).toBe(false)
+    expect(event.isValidError(5)).toBe(false)
+    expect(event.isValidError(7)).toEqual({"type": {"name": "Index", "struct": {"max": 7}}, "value": 7})
   });
 
   test('calling', () => {
