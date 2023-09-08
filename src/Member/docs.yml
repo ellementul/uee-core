@@ -1,6 +1,0 @@
-TODO:
-  - Deleted event in member only runtime
-  - Make list events for listening, check to doesn't send them from this member and check to there aren't duplicate:
-    - define via onEvent is Error
-    - define via onEventForTime is Warning
-    - message "You can delete callback event before define new"
