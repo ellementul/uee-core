@@ -96,8 +96,10 @@ class Member {
     const template = event.create()
     let full_message
 
+    const arrayMerge = (destinationArray, sourceArray, options) => sourceArray
+
     if(payload instanceof Object)
-      full_message = merge(template, payload)
+      full_message = merge(template, payload, { arrayMerge })
     else if(!payload)
       full_message = template
     else

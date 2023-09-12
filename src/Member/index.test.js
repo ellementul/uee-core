@@ -98,7 +98,8 @@ describe('Member', () => {
         system: "Testing", 
         state: {
           someProperty: "Check that it will be copied from template",
-          overwriteProperty: Types.Index.Def(1000000000)
+          overwriteProperty: Types.Index.Def(1000000000),
+          array: Types.Array.Def(Types.Index.Def(1000000000), 50)
         }
       })
       const event = EventFactory(type)
@@ -107,13 +108,14 @@ describe('Member', () => {
       const callback = jest.fn()
       provider.onEvent(event, callback)
 
-      member.send(event, { state: { overwriteProperty: 7 } })
+      member.send(event, { state: { overwriteProperty: 7, array: [3, 4] } })
 
       expect(callback).toHaveBeenCalledWith({
         system: "Testing",
         state: {
-          overwriteProperty: 7,
-          someProperty: "Check that it will be copied from template",
+            overwriteProperty: 7,
+            someProperty: "Check that it will be copied from template",
+            array: [3, 4]
           },
         })
     })
