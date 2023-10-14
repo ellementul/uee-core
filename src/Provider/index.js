@@ -1,8 +1,10 @@
-const { v4: uuidv4 } = require('uuid')
+import Types from '@ellementul/message-types'
+
+const getUuid = Types.UUID.Def().rand
 
 class Provider {
   constructor () {
-    this.uuid = uuidv4()
+    this.uuid = getUuid()
 
     this._listenerEvents = new Map
     this._logging = null
@@ -82,4 +84,4 @@ class Provider {
   }
 }
 
-module.exports = { Provider }
+export { Provider }

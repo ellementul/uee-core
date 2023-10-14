@@ -1,4 +1,4 @@
-const merge = require('deepmerge')
+import mergician from 'mergician'
 
 const { Types } = require('../Event')
 const connectedEvent = require('./events/connected_event')
@@ -96,10 +96,12 @@ class Member {
     const template = event.create()
     let full_message
 
-    const arrayMerge = (destinationArray, sourceArray, options) => sourceArray
+    const merge = mergician({
+      filter: ({ srcVal, targetVal }) => !(Array.isArray(srcVal) && Array.isArray(targetVal))
+    }) 
 
     if(payload instanceof Object)
-      full_message = merge(template, payload, { arrayMerge })
+      full_message = merge(template, payload)
     else if(!payload)
       full_message = template
     else

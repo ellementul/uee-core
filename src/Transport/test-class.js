@@ -1,4 +1,4 @@
-const { AbstractTransport } = require("./index")
+import { AbstractTransport } from './index.js'
 
 class TestTransport extends AbstractTransport {
 
@@ -39,4 +39,4 @@ class TestTransport extends AbstractTransport {
   }
 }
 
-module.exports = { TestTransport }
+export { TestTransport }

@@ -21,7 +21,7 @@
   "dependencies": {
     "@ellementul/message-types": "^3.0.0",
     "@ellementul/uuid-by-string": "^1.0.0",
-    "deepmerge": "^4.3.1",
+    "mergician": "^1.1.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
