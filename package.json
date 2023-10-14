@@ -3,8 +3,9 @@
   "version": "1.5.1",
   "description": "United Environment Events Core",
   "main": "./index.js",
+  "type": "module",
   "scripts": {
-    "test": "node node_modules/jest/bin/jest.js",
+    "test": "ava",
     "test:w": "node node_modules/jest/bin/jest.js --watch"
   },
   "repository": {
@@ -18,12 +19,18 @@
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
-    "@ellementul/message-types": "^2.3.1",
+    "@ellementul/message-types": "^3.0.0",
+    "@ellementul/uuid-by-string": "^1.0.0",
     "deepmerge": "^4.3.1",
-    "uuid": "^8.3.2",
-    "uuid-by-string": "^4.0.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "jest": "^29.3.1"
+    "ava": "^5.3.1",
+    "sinon": "^16.1.0"
+  },
+  "ava": {
+    "files": [
+      "**/*.test.js"
+    ]
   }
 }

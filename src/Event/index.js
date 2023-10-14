@@ -1,5 +1,5 @@
-const Types = require('@ellementul/message-types')
-const getUuid = require('uuid-by-string');
+import Types from '@ellementul/message-types'
+import getUuid from '@ellementul/uuid-by-string'
 
 function EventFactory(type) {
   if(!Types.isType(type))
@@ -72,4 +72,4 @@ EventFactory.fromJSON = function (json) {
   return EventFactory(type)
 }
 
-module.exports = { EventFactory, Types }
+export { EventFactory, Types }

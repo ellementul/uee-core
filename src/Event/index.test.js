@@ -1,124 +1,128 @@
-const { EventFactory, Types } = require('./index')
+import test from 'ava'
+import sinon from "sinon"
+import { EventFactory, Types } from './index.js'
 
-describe('Event testing', () => {
-  test('constructor', () => {
-    const event = EventFactory(Types.Index.Def(7))
-    expect(event).toBeDefined()
-  });
+import json_type from './test_event.json' assert { type: 'json' }
 
-  test('signature', () => {
-    const event = EventFactory(Types.Index.Def(7))
-    expect(event.sign()).toEqual("8c06eb0e-b55f-5156-bad8-676866da551e")
-  });
 
-  test('create', () => {
-    const event = EventFactory(Types.Object.Def({ system: "Log" }))
-    expect(event.create()).toEqual({"system": "Log"})
-  });
+test('constructor', t => {
+		const event = EventFactory(Types.Index.Def(7))
+		t.truthy(event)
+})
 
-  test('validation', () => {
-    const event = EventFactory(Types.Index.Def(7))
-    expect(event.isValid(5)).toBe(true)
-    expect(event.isValid(7)).toBe(false)
-    expect(event.isValidError(5)).toBe(false)
-    expect(event.isValidError(7)).toEqual({"type": {"name": "Index", "struct": {"max": 7}}, "value": 7})
-  });
+test('signature', t => {
+	const event = EventFactory(Types.Index.Def(7))
+	t.is(event.sign(), "8c06eb0e-b55f-5156-bad8-676866da551e")
+})
 
-  test('calling', () => {
-    const event = EventFactory(Types.Key.Def())
-    const payload = "TestPayload"
+test('create', t => {
+	const event = EventFactory(Types.Object.Def({ system: "Log" }))
+	t.deepEqual(event.create(), {"system": "Log"})
+})
 
-    const firstCall = jest.fn()
-    const secondCall = jest.fn()
-
-    event.on("firstId", firstCall)
-    event.on("secondId", secondCall)
-    
-    event.call(payload)
-
-    expect(firstCall).toHaveBeenCalledWith(payload)
-    expect(secondCall).toHaveBeenCalledWith(payload)
-  });
-
-  test('calling with the same uuid', () => {
-    const event = EventFactory(Types.Key.Def())
-    const payload = "TestPayload"
-
-    const firstCall = jest.fn()
-    const secondCall = jest.fn()
-
-    event.on("theSameId", firstCall)
-    event.on("theSameId", secondCall)
-    
-    event.call(payload)
-
-    expect(firstCall).not.toHaveBeenCalled()
-    expect(secondCall).toHaveBeenCalledTimes(1)
-  });
-
-  test('delete callback', () => {
-    const event = EventFactory(Types.Key.Def())
-    const payload = "TestPayload"
-
-    const callback = jest.fn()
-
-    event.on("id", callback)
-    
-    event.call(payload)
-    expect(callback).toHaveBeenCalledTimes(1)
-
-    event.off("id")
-    
-    event.call(payload)
-    expect(callback).toHaveBeenCalledTimes(1)
-  });
-
-  test('callback limtly calling', () => {
-    const event = EventFactory(Types.Key.Def())
-    const payload = "TestPayload"
-
-    const callback = jest.fn()
-
-    event.on("id", callback, 2)
-    
-    event.call(payload)
-    expect(callback).toHaveBeenCalledTimes(1)
-    
-    event.call(payload)
-    expect(callback).toHaveBeenCalledTimes(2)
-
-    event.call(payload)
-    expect(callback).toHaveBeenCalledTimes(2)
-  });
-
-  test('clone event', () => {
-    const event = EventFactory(Types.Index.Def(7))
-    const clonedEvent = event.clone()
-    expect(event).not.toBe(clonedEvent)
-    expect(event.sign()).toEqual(clonedEvent.sign())
-  });
-
-  test('event from object', () => {
-    const type = Types.Object.Def({
-      system: "Testing",
-      index: Types.Index.Def(100)
-    })
-    const json_type = require('./test_event.json')
-    const json_event = EventFactory.fromJSON(json_type)
-    const event = EventFactory(type)
-
-    expect(json_event.sign()).toEqual(event.sign());
-  });
-
-  test('event to JSON', () => {
-    const type = Types.Object.Def({
-      system: "Testing",
-      index: Types.Index.Def(100)
-    })
-    
-    const event = EventFactory(type)
-    const json_event = EventFactory.fromJSON(event.toJSON())
-
-    expect(json_event.sign()).toEqual(event.sign());
-  });
+test('validation', t => {
+	const event = EventFactory(Types.Index.Def(7))
+	t.is(event.isValid(5), true)
+	t.is(event.isValid(7), false)
+	t.is(event.isValidError(5), false)
+	t.deepEqual(event.isValidError(7), {"type": {"name": "Index", "struct": {"max": 7}}, "value": 7})
 });
+
+test('calling', t => {
+	const event = EventFactory(Types.Key.Def())
+	const payload = "TestPayload"
+
+	const firstCall = sinon.fake()
+	const secondCall = sinon.fake()
+
+	event.on("firstId", firstCall)
+	event.on("secondId", secondCall)
+	
+	event.call(payload)
+
+	t.truthy(firstCall.calledWith(payload))
+	t.truthy(secondCall.calledWith(payload))
+})
+
+test('calling with the same uuid', t => {
+	const event = EventFactory(Types.Key.Def())
+	const payload = "TestPayload"
+
+	const firstCall = sinon.fake()
+	const secondCall = sinon.fake()
+
+	event.on("theSameId", firstCall)
+	event.on("theSameId", secondCall)
+	
+	event.call(payload)
+
+	t.truthy(firstCall.notCalled)
+	t.truthy(secondCall.calledOnce)
+})
+
+test('delete callback', t => {
+	const event = EventFactory(Types.Key.Def())
+	const payload = "TestPayload"
+
+	const callback = sinon.fake()
+
+	event.on("id", callback)
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+
+	event.off("id")
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+})
+
+test('callback limtly calling', t => {
+	const event = EventFactory(Types.Key.Def())
+	const payload = "TestPayload"
+
+	const callback = sinon.fake()
+
+	event.on("id", callback, 2)
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+	
+	event.call(payload)
+	t.truthy(callback.calledTwice)
+
+	event.call(payload)
+	t.truthy(callback.calledTwice)
+})
+
+test('clone event', t => {
+	const event = EventFactory(Types.Index.Def(7))
+	const clonedEvent = event.clone()
+
+	t.not(event, clonedEvent)
+	t.deepEqual(event.sign(), clonedEvent.sign())
+})
+
+test('event from object', t => {
+	const type = Types.Object.Def({
+		system: "Testing",
+		index: Types.Index.Def(100)
+	})
+	
+	const json_event = EventFactory.fromJSON(json_type)
+	const event = EventFactory(type)
+
+	t.deepEqual(json_event.sign(), event.sign())
+})
+
+test('event to JSON', t => {
+	const type = Types.Object.Def({
+		system: "Testing",
+		index: Types.Index.Def(100)
+	})
+	
+	const event = EventFactory(type)
+	const json_event = EventFactory.fromJSON(event.toJSON())
+
+	t.deepEqual(json_event.sign(), event.sign())
+})
