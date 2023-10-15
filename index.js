@@ -1,12 +1,23 @@
-module.exports = {
-  ...require('./src/Event'),
-  ...require('./src/Provider'),
-  ...require('./src/Member'),
-  ...require('./src/Transport'),
-  events: {
-    change: require('./src/Member/events/change_state_event'),
-    connect: require('./src/Member/events/connected_event'),
-    log: require('./src/Member/events/log_event'),
-    error: require('./src/Member/events/error_event')
-  }
+export { Types, EventFactory } from './src/Event/index.js'
+export { Provider } from './src/Provider/index.js'
+export { Member } from './src/Member/index.js'
+export { AbstractTransport } from './src/Transport/index.js'
+export { TestTransport } from './src/Transport/test-class.js'
+
+import changeEvent from './src/Member/events/change_state_event.js'
+import connectEvent from './src/Member/events/connected_event.js'
+import errorEvent from './src/Member/events/error_event.js'
+import logEvent from './src/Member/events/log_event.js'
+
+const events = {
+  changeEvent,
+  change: changeEvent,
+  connectEvent,
+  connect: connectEvent,
+  errorEvent,
+  error: errorEvent,
+  logEvent,
+  log: logEvent,
 }
+
+export { events }
