@@ -21,6 +21,7 @@ test('testing export main classes', t => {
 
 test('testing export events', t => {
   t.truthy(events)
+  t.is(Member.events, events)
 
   t.truthy(events.change)
   t.is(events.change, events.changeEvent)
