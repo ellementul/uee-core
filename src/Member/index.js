@@ -1,8 +1,8 @@
 import mergician from 'mergician'
 
-const { Types } = require('../Event')
-const connectedEvent = require('./events/connected_event')
-const errorEvent = require('./events/error_event')
+import { Types } from '../Event/index.js'
+import connectedEvent from './events/connected_event.js'
+import errorEvent from './events/error_event.js'
 
 class Member {
   constructor() {
@@ -97,7 +97,10 @@ class Member {
     let full_message
 
     const merge = mergician({
-      filter: ({ srcVal, targetVal }) => !(Array.isArray(srcVal) && Array.isArray(targetVal))
+      filter: ({ srcVal, targetVal }) => {
+        if(Array.isArray(srcVal) && Array.isArray(targetVal))
+          return srcVal
+      }
     }) 
 
     if(payload instanceof Object)
@@ -148,4 +151,4 @@ class Member {
   }
 }
 
-module.exports = { Member } 
+export { Member }

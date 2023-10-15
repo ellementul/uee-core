@@ -1,4 +1,4 @@
-const { EventFactory, Types } = require('../../Event')
+import { EventFactory, Types } from '../../Event/index.js'
 
 const type = Types.Object.Def({
   system: "Logging",
@@ -9,4 +9,4 @@ const type = Types.Object.Def({
   }
 }, true)
 
-module.exports = EventFactory(type)
+export default EventFactory(type)

@@ -1,4 +1,4 @@
-const { EventFactory, Types } = require('../../Event')
+import { EventFactory, Types } from '../../Event/index.js'
 
 const type = Types.Object.Def({
   system: "Cooperation",
@@ -8,4 +8,4 @@ const type = Types.Object.Def({
   uuid: Types.UUID.Def()
 })
 
-module.exports = EventFactory(type)
+export default EventFactory(type)
