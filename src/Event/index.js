@@ -1,32 +1,65 @@
 import Types from '@ellementul/message-types'
 import getUuid from '@ellementul/uuid-by-string'
 
-function EventFactory(type) {
+import mergician from 'mergician'
+
+function EventFactory(type, accessLvl) {
   if(!Types.isType(type))
     throw new TypeError("The type isn't type!")
 
   const callbacks = new Map
   const limits = new Map
+  accessLvl = accessLvl || 0
 
   return {
     get type() {
       return type
     },
-    create: () => {
-      return type.rand()
+
+    get callbacksCount() {
+      return callbacks.size()
     },
+
+    createMsg: (payload, validation = false) => {
+      const msg = type.rand()
+
+      const fullMsg = {
+        accessLvl,
+        payload: merge(msg, payload)
+      }
+
+      if(validation) {
+        const validError = this.isValidError(fullMsg)
+        if(validError)
+          throw new TypeError(`
+            Invalid payload!
+            Data: ${JSON.stringify({
+              validError,
+              template,
+              payload
+            }, null, 2)}
+          `)
+      }
+
+      return fullMsg
+    },
+
     toJSON: () => {
       return { type: type.toJSON() }
     },
+
     sign: () => {
       return getUuid(type.toJSON(), 5)
     },
-    isValid: (payload) => {
+
+    isValid: ({ payload }) => {
       return !type.test(payload)
     },
-    isValidError: (payload) => {
+
+    isValidError: ({ payload }) => {
       return type.test(payload)
     },
+
     on: (id, callback, limit = -1) => {
       if(typeof callback === "function") {
         callbacks.set(id, callback)
@@ -38,11 +71,13 @@ function EventFactory(type) {
         throw new TypeError("The recieve callback isn't function!")
       }
     },
+
     off: (id) => {
       callbacks.delete(id)
       limits.delete(id)
     },
-    call: payload => {
+
+    call: ({ payload }) => {
       for (let [id, callback] of callbacks) {
         if(limits.has(id)) {
           if(limits.get(id) <= 0) {
@@ -55,14 +90,33 @@ function EventFactory(type) {
           }
         }
 
-        callback(payload)
+        callback({ payload })
       }
     },
+    
     clone: function() {
       return EventFactory(this.type)
     }
   }
 }
+
+function checkAccessLvl(msg) {
+  return (typeof msg.accessLvl === "number" && msg.accessLvl > 0)
+}
+
+function decreaseAccessLvl(msg) {
+  return {
+    ...msg,
+    accessLvl: msg.accessLvl - 1
+  }
+}
+
+const merge = mergician({
+  filter: ({ srcVal, targetVal }) => {
+    if(Array.isArray(srcVal) && Array.isArray(targetVal))
+      return srcVal
+  }
+}) 
 
 EventFactory.fromJSON = function (json) {
   if(typeof json == "string")
@@ -72,4 +126,4 @@ EventFactory.fromJSON = function (json) {
   return EventFactory(type)
 }
 
-export { EventFactory, Types }
+export { EventFactory, checkAccessLvl, decreaseAccessLvl, Types }

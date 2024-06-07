@@ -4,83 +4,35 @@ const getUuid = Types.UUID.Def().rand
 
 class Provider {
   constructor () {
-    this.uuid = getUuid()
-
-    this._listenerEvents = new Map
-    this._logging = null
-  }
-
-  setTransport (transport) {
-    transport.onRecieve( event => {
-      if(event.from === this.uuid)
-        return
-        
-      this.recieveEvent(event.data) 
-    })
-
-    this.sendTransport = event => {
-      transport.send({
-        data: event,
-        from: this.uuid
-      })
-    }
+    this.listenerEvents = new Map
   }
 
   onEvent(event, callback, id, limit = -1) {
-    id = id || callback
     const signature = event.sign()
     
-    if(!this._listenerEvents.has(signature))
-      this._listenerEvents.set(signature, event.clone())
+    if(!this.listenerEvents.has(signature))
+      this.listenerEvents.set(signature, event.clone())
 
-    this._listenerEvents.get(signature).on(id, callback, limit)
+    this.listenerEvents.get(signature).on(id, callback, limit)
   }
 
   offEvent(event, id) {
     const signature = event.sign()
     
-    if(!this._listenerEvents.has(signature))
+    if(!this.listenerEvents.has(signature))
       return
 
-    this._listenerEvents.get(signature).off(id)
+    this.listenerEvents.get(signature).off(id)
+
+    if(this.listenerEvents.get(signature).callbacksCount === 0)
+      this.listenerEvents.delete(signature)
   }
 
   sendEvent(payload) {
-    const isLocal = payload.access == "Local"
-
-    if(!isLocal && this.sendTransport)
-      this.sendTransport(payload)
-
-    this.recieveEvent(payload)
-  }
-
-  recieveEvent (payload) {
-    this.log(payload)
-
-    this._listenerEvents.forEach((event, sign) => {
+    this.listenerEvents.forEach((event, sign) => {
       if(event.isValid(payload))
         event.call(payload)
     })
-  }
-
-  setLogging(logging) {
-    if(typeof logging === "function")
-      this._logging = logging
-    else
-      throw new TypeError("The recieve logging callback isn't function!")
-  }
-
-  log (payload) {
-    if(this._logging) {
-      let events = new Map
-
-      this._listenerEvents.forEach((event, sign) => {
-        if(event.isValid(payload))
-          events.set(sign, event.toJSON())
-      })
-
-      this._logging({ message: payload, triggeredEvents: events })
-    }
   }
 }
 

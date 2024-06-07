@@ -8,7 +8,7 @@ import connectEvent from './src/Member/events/connected_event.js'
 import errorEvent from './src/Member/events/error_event.js'
 import logEvent from './src/Member/events/log_event.js'
 
-import { Member } from './src/Member/index.js'
+import { Member } from './src/Member/old.index.js'
 
 const events = {
   changeEvent,

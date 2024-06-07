@@ -1,154 +1,105 @@
-import mergician from 'mergician'
+import { checkAccessLvl, decreaseAccessLvl, Types } from "../Event/index.js"
+import { Provider } from "../Provider/index.js"
 
-import { Types } from '../Event/index.js'
-import connectedEvent from './events/connected_event.js'
-import errorEvent from './events/error_event.js'
+export function memberFactory (validationMsg = false) {
 
-class Member {
-  constructor() {
-    this._uuid = Types.UUID.Def().rand()
+    const uuid = Types.UUID.Def().rand()
+    const subscribedEvents = new Map
 
-    this._provider = null
-    this._pre_init_events = []
-    this._pre_init_messages = []
+    return {
+        get uuid() {
+            return uuid
+        },
 
-    this.listeningEvents = new Set
+        send(typeMsg, payload) {
+            const signEvent = typeMsg.sign()
 
-    this.onEvent = this.onEventInConstructor
-    this.offEvent = this.offEventInConstructor
-  }
+            if(outsideListeningEvents.has(signEvent))
+                console.warn("You send event what this member listens, it may be cycle in calls of one event!")
 
-  get uuid() {
-    return this._uuid
-  }
+            const msg = typeMsg.createMsg(payload, validationMsg)
+            
+            if(checkAccessLvl(msg) && typeof this.outsideRoom)
+                this.outsideRoom.send(decreaseAccessLvl(msg))
 
-  wrapCallback(callback) {
-    return payload => {
-      try {
-        callback(payload)
-      } catch (error) {
-        if(error instanceof Error)
-          this.send(errorEvent, {
-            state: {
-              name: error.name,
-              message: error.message,
-              stack: error.stack
+            if(this.isRoom)
+                this.provider.sendEvent(msg)
+
+            if(typeof receiveAll === "function")
+                this.receiveAll(msg)
+        },
+
+        subscribe(msgType, callback, memberUuid, limit) {
+            limit = limit || -1
+            memberUuid = memberUuid || uuid
+
+            if(typeof this.outsideRoom && checkAccessLvl(msgType))
+                this.subscribeEventOutside(msgType, callback, memberUuid, limit)
+
+            if(this.isRoom)
+                this.provider.onEvent(msgType, callback, memberUuid, limit)
+        },
+
+        unsubscribe(msgType, memberUuid) {
+            memberUuid = memberUuid || uuid
+
+            this.provider.offEvent(msgType, memberUuid)
+        },
+
+        subscribeEventOutside(msgType, callback, memberUuid, limit) {
+            if(!this.members.has(memberUuid))
+                throw new Error(`This uuid not found: ${memberUuid}`)
+
+            subscribedEvents.set(memberUuid, msgType)
+            this.outsideRoom.subscribe(msgType, callback, memberUuid, limit)
+        },
+
+        makeRoom(){
+            if(this.isRoom)
+                return
+
+            this.isRoom = true
+            this.provider = new Provider
+            this.members = new Map
+        },
+
+        destroy(){
+            if(this.isRoom)
+                this.clearRoom()
+
+            for (const [uuid, typeMsg] of subscribedEvents) {
+                this.outsideRoom.unsubscribe(typeMsg, uuid)
             }
-          })
-        else
-          throw error
-      }
+        },
+
+        clearRoom(){
+            for (const [uuid, _] of this.members) {
+                this.deleteMember(uuid)
+            }
+        },
+
+        setOutsideRoom(room) {
+            this.outsideRoom = room
+        },
+
+        addMember(Factory) {
+            if(!this.isRoom)
+                throw new TypeError(`This member is not Room! Call method "makeRoom" please!`)
+
+            const newMember = Factory()
+            newMember.setOutsideRoom(this)
+            this.members.set(newMember.uuid, newMember)
+            
+            if(typeof newMember.init === "function")
+                newMember.init()
+        },
+
+        deleteMember(uuid) {
+            const member = this.members.delete(uuid)
+
+            if(member) {
+                member.destroy()
+            }          
+        }
     }
-  }
-
-  onEventInConstructor(event, callback, limit = -1) {
-    const signEvent = event.sign()
-
-    if(this.listeningEvents.has(signEvent))
-      throw new Error("Duplicated define callback for event! You can delete old callback via offEvent method and define new callback again")
-
-    if(signEvent !== errorEvent.sign())
-      callback = this.wrapCallback(callback)
-
-    if(this._provider)
-      this._provider.onEvent(event, callback, this.uuid, limit)
-    else
-      this._pre_init_events.push([event, callback, this.uuid, limit])
-
-    this.listeningEvents.add(signEvent)
-  }
-
-  onEventInRuntime(event, callback, limit = 1) {
-    const signEvent = event.sign()
-
-    if(this.listeningEvents.has(signEvent))
-      throw new Error
-
-    if(signEvent !== errorEvent.sign())
-      callback = this.wrapCallback(callback)
-
-    this._provider.onEvent(event, callback, this.uuid, limit)
-    this.listeningEvents.add(signEvent)
-  }
-
-  offEventInConstructor() {
-    throw new Error("Only after setting provider!")
-  }
-
-  offEventInRuntime(event) {
-    this.listeningEvents.delete(event.sign())
-    this._provider.offEvent(event, this.uuid)
-  }
-
-  sendEvent(payload) {
-    if(this._provider)
-      this._provider.sendEvent(payload)
-    else
-      this._pre_init_messages.push(payload)
-  }
-
-  send(event, payload) {
-    const signEvent = event.sign()
-
-    if(this.listeningEvents.has(signEvent))
-      console.warn("You send event what this member listens, it may be cycle in calls of one event!")
-
-    const template = event.create()
-    let full_message
-
-    const merge = mergician({
-      filter: ({ srcVal, targetVal }) => {
-        if(Array.isArray(srcVal) && Array.isArray(targetVal))
-          return srcVal
-      }
-    }) 
-
-    if(payload instanceof Object)
-      full_message = merge(template, payload)
-    else if(!payload)
-      full_message = template
-    else
-      throw new Error("This function waits for second argument is object to merge with template. Please, use sendEvent method for other cases.")
-
-    const validError = event.isValidError(full_message)
-    if(validError)
-      throw new TypeError(`
-        Invalid payload!
-        Data: ${JSON.stringify({
-          validError,
-          template,
-          payload
-        }, null, 2)}
-      `)
-
-    this.sendEvent(full_message)
-  }
-
-  setProvider(provider) {
-    this._provider = provider
-
-    this._pre_init_events.forEach(params => {
-      this._provider.onEvent(...params)
-    })
-    this._pre_init_events = []
-
-    this._pre_init_messages.forEach(payload => {
-      this._provider.sendEvent(payload)
-    })
-    this._pre_init_messages = []
-
-    this.onEvent = this.onEventInRuntime
-    this.offEvent = this.offEventInRuntime
-
-    this.send(connectedEvent, {
-      role: this.getRole(),
-      uuid: this._uuid
-    })
-  }
-
-  getRole() {
-    return this.role || "MemberWithoutRole"
-  }
 }
-
-export { Member }

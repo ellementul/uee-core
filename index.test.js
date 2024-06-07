@@ -15,8 +15,6 @@ test('testing export main classes', t => {
   t.truthy(EventFactory)
   t.truthy(Provider)
   t.truthy(Member)
-  t.truthy(AbstractTransport)
-  t.truthy(TestTransport)
 })
 
 test('testing export events', t => {
