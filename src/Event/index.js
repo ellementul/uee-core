@@ -22,6 +22,7 @@ function EventFactory(type, accessLvl) {
 
     createMsg: (payload, validation = false) => {
       const msg = type.rand()
+      payload = payload || {}
 
       const fullMsg = {
         accessLvl,
@@ -29,14 +30,14 @@ function EventFactory(type, accessLvl) {
       }
 
       if(validation) {
-        const validError = this.isValidError(fullMsg)
+        const validError = this.getValidError(fullMsg)
         if(validError)
           throw new TypeError(`
             Invalid payload!
             Data: ${JSON.stringify({
-              validError,
-              template,
-              payload
+              clearMsg: msg,
+              customPayload: payload,
+              validError
             }, null, 2)}
           `)
       }
@@ -53,10 +54,16 @@ function EventFactory(type, accessLvl) {
     },
 
     isValid: ({ payload }) => {
+      if(typeof payload !== "object")
+        return false
+
       return !type.test(payload)
     },
 
-    isValidError: ({ payload }) => {
+    getValidError: ({ payload }) => {
+      if(typeof payload !== "object")
+        return 'Payload has to be object!!'
+
       return type.test(payload)
     },
 
@@ -90,7 +97,7 @@ function EventFactory(type, accessLvl) {
           }
         }
 
-        callback({ payload })
+        callback(payload)
       }
     },
     

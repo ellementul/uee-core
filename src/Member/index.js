@@ -1,7 +1,7 @@
 import { checkAccessLvl, decreaseAccessLvl, Types } from "../Event/index.js"
 import { Provider } from "../Provider/index.js"
 
-export function memberFactory (validationMsg = false) {
+export function MemberFactory (validationMsg = false) {
 
     const uuid = Types.UUID.Def().rand()
     const subscribedEvents = new Map

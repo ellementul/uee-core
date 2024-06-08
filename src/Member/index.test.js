@@ -1,7 +1,7 @@
 import test from 'ava'
 import sinon from "sinon"
 
-import { memberFactory } from './index.js'
+import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
 import { Provider } from '../Provider/index.js'
 
@@ -13,7 +13,7 @@ import logEvent from './events//log_event.js'
 
 
 test('constructor', t => {
-  const member = new memberFactory
+  const member = new MemberFactory
   t.truthy(member)
 })
 
