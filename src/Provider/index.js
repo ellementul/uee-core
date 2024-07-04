@@ -29,7 +29,7 @@ class Provider {
   }
 
   sendEvent(payload) {
-    this.listenerEvents.forEach((event, sign) => {
+    this.listenerEvents.forEach((event) => {
       if(event.isValid(payload))
         event.call(payload)
     })

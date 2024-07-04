@@ -27,6 +27,24 @@ test('validation', t => {
 	t.falsy(event.getValidError({ payload: {"system": "Log"}, accessLvl: 1 }))
 });
 
+test('Invalid payload for event', t => {
+
+	const type = Types.Object.Def({
+		system: "Test",
+		action: "TestInvalidPayload",
+		state: {
+			correctState: true
+		}
+	})
+	
+	const testEvent = EventFactory(type)
+
+
+	const getError = () => testEvent.createMsg({ state: { correctState: false } }, true)
+
+	t.throws(getError, { instanceOf: TypeError })
+})
+
 test('calling', t => {
 	const event = EventFactory(Types.Key.Def())
 	const payload = "TestPayload"

@@ -12,11 +12,6 @@ export function MemberFactory (validationMsg = false) {
         },
 
         send(typeMsg, payload) {
-            const signEvent = typeMsg.sign()
-
-            if(outsideListeningEvents.has(signEvent))
-                console.warn("You send event what this member listens, it may be cycle in calls of one event!")
-
             const msg = typeMsg.createMsg(payload, validationMsg)
             
             if(checkAccessLvl(msg) && typeof this.outsideRoom)
