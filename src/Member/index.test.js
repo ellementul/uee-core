@@ -36,6 +36,20 @@ test('Subscribe', t => {
   t.true(callback.calledOnceWith({ system: "test" }))
 })
 
+test('onConnectRoom', t => {
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const member = new MemberFactory
+
+  const callback = sinon.fake()
+  member.onConnectRoom = callback
+
+  room.addMember(member)
+
+  t.true(callback.called)
+})
+
 // test('Unsubscribe', t => {})
 
 // test('AddMember', t => {})

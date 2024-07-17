@@ -75,18 +75,17 @@ export function MemberFactory (validationMsg = false) {
 
         setOutsideRoom(room) {
             this.outsideRoom = room
+
+            if(typeof this.onConnectRoom == "function")
+                this.onConnectRoom()
         },
 
-        addMember(Factory) {
+        addMember(newMember) {
             if(!this.isRoom)
                 throw new TypeError(`This member is not Room! Call method "makeRoom" please!`)
 
-            const newMember = Factory()
             newMember.setOutsideRoom(this)
             this.members.set(newMember.uuid, newMember)
-            
-            if(typeof newMember.init === "function")
-                newMember.init()
         },
 
         deleteMember(uuid) {
