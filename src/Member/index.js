@@ -108,8 +108,8 @@ export function MemberFactory (validationMsg = false) {
             if(!this.isRoom)
                 throw new TypeError(`This member is not Room! Call method "makeRoom" please!`)
 
-            newMember.setOutsideRoom(this)
             this.members.set(newMember.uuid, newMember)
+            newMember.setOutsideRoom(this)
         },
 
         deleteMember(uuid) {

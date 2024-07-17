@@ -55,10 +55,14 @@ test('onConnectRoom', t => {
 
   const member = new MemberFactory
 
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
   const callback = sinon.fake()
-  member.onConnectRoom = callback
+  member.onConnectRoom = () => {
+    member.subscribe(event, callback)
+  }
 
   room.addMember(member)
+  member.send(event)
 
   t.true(callback.called)
 })
