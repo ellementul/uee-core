@@ -119,3 +119,12 @@ test('clone event', t => {
 	t.not(event, clonedEvent)
 	t.is(event.sign(), clonedEvent.sign())
 })
+
+test('clone event with new access', t => {
+	const event = EventFactory(Types.Index.Def(7))
+	const clonedEvent = event.clone(1)
+
+	t.not(event, clonedEvent)
+	t.is(event.sign(), clonedEvent.sign())
+	t.is(clonedEvent.accessLvl, 1)
+})

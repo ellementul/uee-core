@@ -14,13 +14,27 @@ export function MemberFactory (validationMsg = false) {
         send(typeMsg, payload) {
             const msg = typeMsg.createMsg(payload, validationMsg)
             
-            if(checkAccessLvl(msg) && typeof this.outsideRoom)
-                this.outsideRoom.send(decreaseAccessLvl(msg))
+            this.sendEvent(msg)
+        },
 
-            if(this.isRoom)
+        sendEvent(msg, payload) {
+            if(this.isRoom && this.outsideRoom) {
+                if(checkAccessLvl(msg))
+                    this.outsideRoom.sendEvent(decreaseAccessLvl(msg))
+
                 this.provider.sendEvent(msg)
+            }
+            else if(this.outsideRoom) {
+                this.outsideRoom.sendEvent(msg)
+            }
+            else if(this.isRoom) {
+                this.provider.sendEvent(msg)
+            }
+            else {
+                throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
+            }   
 
-            if(typeof receiveAll === "function")
+            if(typeof this.receiveAll === "function")
                 this.receiveAll(msg)
         },
 
@@ -28,11 +42,21 @@ export function MemberFactory (validationMsg = false) {
             limit = limit || -1
             memberUuid = memberUuid || uuid
 
-            if(typeof this.outsideRoom && checkAccessLvl(msgType))
-                this.subscribeEventOutside(msgType, callback, memberUuid, limit)
+            if(this.isRoom && this.outsideRoom) {
+                if(checkAccessLvl(msgType))
+                    this.outsideRoom.subscribeEventInside(msgType.decreaseAccessLvl(), callback, memberUuid, limit)
 
-            if(this.isRoom)
                 this.provider.onEvent(msgType, callback, memberUuid, limit)
+            }
+            else if(this.outsideRoom) {
+                this.outsideRoom.subscribeEventInside(msgType, callback, memberUuid, limit)
+            }
+            else if(this.isRoom) {
+                this.provider.onEvent(msgType, callback, memberUuid, limit)
+            }
+            else {
+                throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
+            } 
         },
 
         unsubscribe(msgType, memberUuid) {
@@ -41,12 +65,12 @@ export function MemberFactory (validationMsg = false) {
             this.provider.offEvent(msgType, memberUuid)
         },
 
-        subscribeEventOutside(msgType, callback, memberUuid, limit) {
+        subscribeEventInside(msgType, callback, memberUuid, limit) {
             if(!this.members.has(memberUuid))
                 throw new Error(`This uuid not found: ${memberUuid}`)
 
+            this.subscribe(msgType, callback, memberUuid, limit)
             subscribedEvents.set(memberUuid, msgType)
-            this.outsideRoom.subscribe(msgType, callback, memberUuid, limit)
         },
 
         makeRoom(){

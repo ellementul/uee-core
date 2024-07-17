@@ -20,6 +20,10 @@ function EventFactory(type, accessLvl) {
       return callbacks.size()
     },
 
+    get accessLvl() {
+      return accessLvl
+    },
+
     createMsg: (payload, validation = false) => {
       const msg = type.rand()
       payload = payload || {}
@@ -101,8 +105,15 @@ function EventFactory(type, accessLvl) {
       }
     },
     
-    clone: function() {
-      return EventFactory(this.type)
+    clone: function(newAccessLvl) {
+      if(newAccessLvl != null)
+        return EventFactory(this.type, newAccessLvl)
+      else
+        return EventFactory(this.type, accessLvl)
+    },
+
+    decreaseAccessLvl() {
+      return this.clone(this.accessLvl - 1)
     }
   }
 }
