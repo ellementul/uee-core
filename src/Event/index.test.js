@@ -128,3 +128,15 @@ test('clone event with new access', t => {
 	t.is(event.sign(), clonedEvent.sign())
 	t.is(clonedEvent.accessLvl, 1)
 })
+
+test('Uint8Array', t => {
+	const event = EventFactory(Types.Object.Def({}, true))
+	const uint8 = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])
+	const payload = {
+		buffer: uint8
+	}
+	
+	const msg = event.createMsg(payload, true)
+
+	t.deepEqual(msg.payload, payload)
+})

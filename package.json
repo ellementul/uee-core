@@ -1,6 +1,6 @@
 {
   "name": "@ellementul/uee-core",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "United Environment Events Core",
   "main": "./index.js",
   "type": "module",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@ellementul/message-types": "^3.1.0",
     "@ellementul/uuid-by-string": "^1.0.0",
-    "mergician": "^1.1.0"
+    "mergician": "^2.0.2"
   },
   "devDependencies": {
     "ava": "^5.3.1",

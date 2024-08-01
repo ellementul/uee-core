@@ -1,7 +1,7 @@
 import Types from '@ellementul/message-types'
 import getUuid from '@ellementul/uuid-by-string'
 
-import mergician from 'mergician'
+import { mergician } from './mergician.js'
 
 function EventFactory(type, accessLvl) {
   if(!Types.isType(type))
@@ -24,7 +24,7 @@ function EventFactory(type, accessLvl) {
       return accessLvl
     },
 
-    createMsg: (payload, validation = false) => {
+    createMsg: function (payload, validation = false) {
       const msg = type.rand()
       payload = payload || {}
 
@@ -130,8 +130,8 @@ function decreaseAccessLvl(msg) {
 }
 
 const merge = mergician({
-  filter: ({ srcVal, targetVal }) => {
-    if(Array.isArray(srcVal) && Array.isArray(targetVal))
+  beforeEach({ depth, key, srcObj, srcVal, targetObj, targetVal }) {
+    if(Array.isArray(srcVal))
       return srcVal
   }
 }) 
