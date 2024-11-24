@@ -3,13 +3,12 @@ import sinon from "sinon"
 
 import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
-import { Provider } from '../Provider/index.js'
 
-import connectedEvent from './events/connected_event.js'
-import changeEvent from './events/change_state_event.js'
-import errorEvent from './events/error_event.js'
-import logEvent from './events//log_event.js'
-
+function later(delay) {
+  return new Promise(function(resolve) {
+      setTimeout(resolve, delay)
+  })
+}
 
 
 test('constructor', t => {
@@ -23,7 +22,7 @@ test('makeRoom', t => {
   t.true(member.isRoom)
 })
 
-test('Subscribe', t => {
+test('Subscribe', async t => {
   const member = new MemberFactory
   member.makeRoom()
 
@@ -32,6 +31,8 @@ test('Subscribe', t => {
   
   member.subscribe(event, callback)
   member.send(event)
+
+  await later(0)
 
   t.true(callback.calledOnceWith({ system: "test" }))
 })
@@ -49,7 +50,7 @@ test('reciveAll', t => {
   t.true(callback.calledOnceWith({ accessLvl: 0, payload: { system: 'test' } }))
 })
 
-test('onConnectRoom', t => {
+test('onConnectRoom', async t => {
   const room = new MemberFactory
   room.makeRoom()
 
@@ -63,6 +64,8 @@ test('onConnectRoom', t => {
 
   room.addMember(member)
   member.send(event)
+
+  await later(0)
 
   t.true(callback.called)
 })
@@ -83,7 +86,7 @@ test('receiveAll in room', t => {
   t.true(callback.calledOnceWith({ accessLvl: 0, payload: { system: 'test' } }))
 })
 
-test('subscribeEventOutside', t => {
+test('subscribeEventOutside', async t => {
   const room = new MemberFactory
   room.makeRoom()
 
@@ -95,6 +98,8 @@ test('subscribeEventOutside', t => {
   const callback = sinon.fake()
   member.subscribe(event, callback)
   member.send(event)
+
+  await later(0)
 
   t.true(callback.calledOnceWith({ system: "test" }))
 })
@@ -117,7 +122,7 @@ test('wrong subscribe decrease access level', t => {
   t.false(callback.called)
 })
 
-test('right subscribe decrease access level', t => {
+test('right subscribe decrease access level', async t => {
   const room = new MemberFactory
   room.makeRoom()
 
@@ -130,6 +135,8 @@ test('right subscribe decrease access level', t => {
   const callback = sinon.fake()
   member.subscribe(event.clone(1), callback)
   room.send(event)
+  
+  await later(0)
 
   t.true(callback.calledOnceWith({ system: "test" }))
 })
@@ -151,7 +158,7 @@ test('wrong subscribe increase access level', t => {
   t.false(callback.called)
 })
 
-test('right subscribe increase access level', t => {
+test('right subscribe increase access level', async t => {
   const room = new MemberFactory
   room.makeRoom()
 
@@ -164,6 +171,8 @@ test('right subscribe increase access level', t => {
   const callback = sinon.fake()
   room.subscribe(event, callback)
   member.send(event.clone(1))
+
+  await later(0)
 
   t.true(callback.calledOnceWith({ system: "test" }))
 })

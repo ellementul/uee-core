@@ -17,7 +17,7 @@ function EventFactory(type, accessLvl) {
     },
 
     get callbacksCount() {
-      return callbacks.size()
+      return callbacks.size
     },
 
     get accessLvl() {
@@ -72,15 +72,13 @@ function EventFactory(type, accessLvl) {
     },
 
     on: (id, callback, limit = -1) => {
-      if(typeof callback === "function") {
-        callbacks.set(id, callback)
-
-        if(limit >= 0)
-          limits.set(id, limit)
-      }
-      else {
+      if(typeof callback !== "function")
         throw new TypeError("The recieve callback isn't function!")
-      }
+
+      callbacks.set(id, callback)
+
+      if(limit >= 0)
+        limits.set(id, limit)
     },
 
     off: (id) => {

@@ -1,10 +1,9 @@
-import Types from '@ellementul/message-types'
-
-const getUuid = Types.UUID.Def().rand
+import { EventPull } from "../EventPull/index.js"
 
 class Provider {
   constructor () {
     this.listenerEvents = new Map
+    this.pull = new EventPull(this.callEvent)
   }
 
   onEvent(event, callback, id, limit = -1) {
@@ -31,8 +30,12 @@ class Provider {
   sendEvent(payload) {
     this.listenerEvents.forEach((event) => {
       if(event.isValid(payload))
-        event.call(payload)
+        this.pull.push({ event, payload })
     })
+  }
+
+  callEvent({ event, payload }){
+    event.call(payload)
   }
 }
 
