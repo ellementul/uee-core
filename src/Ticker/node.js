@@ -1,12 +1,21 @@
 export class NodeTicker {
     constructor() {
-        this._timer = setInterval(() => {})
+        this._cb = () => {}
+        this._timer = null
     }
 
     set ontick (cb) {
-        if(this._timer)
-            clearInterval(this._timer)
+        if(typeof cb === "function")
+            this._cb = cb
+        else
+            throw new TypeError("callback is not function!")
+    }
 
-        this._timer = setInterval(cb)
+    start() {
+        this._timer = setInterval(this._cb, 0)
+    }
+
+    stop() {
+        clearInterval(this._timer)
     }
 }

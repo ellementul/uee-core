@@ -7,13 +7,21 @@ export class EventPull extends Array {
 
         super()
 
-        const ticker = new Ticker
-        ticker.ontick = () => this.tick()
+        this._ticker = new Ticker
+        this._ticker.ontick = () => this.tick()
+
         this._callEvent = onCallEvent
+    }
+
+    push(value) {
+        super.push(value)
+        this._ticker.start()
     }
 
     tick() {
         while(this.length > 0)
             this._callEvent(this.pop())
+
+        this._ticker.stop()
     }
 }

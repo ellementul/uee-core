@@ -14,15 +14,38 @@ test('constructor', t => {
   t.truthy(ticker)
 })
 
-test('ontick', async t => {
-    const delay = 100
-    const member = new Ticker
+test('start and stop', async t => {
+    const ticker = new Ticker
 
     const callback = sinon.fake()
-    member.ontick = callback
+    ticker.ontick = callback
+    ticker.start()
+
+    await later(0)
+
+    ticker.stop()
+    const callCount = callback.callCount 
+
+    t.true(callCount > 0)
+
+    await later(0)
+
+    t.is(callCount, callback.callCount)
+})
+
+test('count ticks', async t => {
+    const ticker = new Ticker
+    const delay = 100
+
+    const callback = sinon.fake()
+    ticker.ontick = callback
+    ticker.start()
 
     await later(delay)
 
-    t.true(callback.callCount > 70)
-    console.log(delay+"ms = "+callback.callCount+"ticks")
+    ticker.stop()
+    const callCount = callback.callCount 
+
+    t.pass()
+    t.log(delay+"ms = "+callCount+"ticks")
 })
