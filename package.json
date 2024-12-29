@@ -1,12 +1,14 @@
 {
   "name": "@ellementul/uee-core",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "United Environment Events Core",
   "main": "./index.js",
   "type": "module",
   "scripts": {
     "test": "ava",
-    "test:w": "ava --watch"
+    "test:w": "ava --watch",
+    "test:browser:ticker": "npx parcel ./src/Ticker/test.html",
+    "test:browser:member": "npx parcel ./src/Member/test.html"
   },
   "repository": {
     "type": "git",
@@ -24,8 +26,12 @@
     "mergician": "^2.0.2"
   },
   "devDependencies": {
+    "assert": "^2.1.0",
     "ava": "^5.3.1",
-    "sinon": "^16.1.0"
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "sinon": "^16.1.0",
+    "util": "^0.12.5"
   },
   "ava": {
     "files": [

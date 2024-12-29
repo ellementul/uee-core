@@ -1,1 +1,8 @@
 node_modules/*
+.parcel-cache/9f3981a5b4f7cd8d-AssetGraph
+.parcel-cache/6642bf2f7489577b-BundleGraph
+.parcel-cache/d584decb9d3873fa-RequestGraph
+.parcel-cache/data.mdb
+.parcel-cache/lock.mdb
+.parcel-cache/snapshot-d584decb9d3873fa.txt
+dist/test.html
