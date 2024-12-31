@@ -12,10 +12,14 @@ export class NodeTicker {
     }
 
     start() {
+        if(this._timer)
+            return
+
         this._timer = setInterval(this._cb, 0)
     }
 
     stop() {
         clearInterval(this._timer)
+        this._timer = null
     }
 }
