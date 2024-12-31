@@ -19,8 +19,8 @@ export class EventPull extends Array {
     }
 
     tick() {
-        while(this.length > 0)
-            this._callEvent(this.pop())
+        for(let eventCount = this.length; eventCount > 0; eventCount--)
+            this._callEvent(this.shift())
 
         this._ticker.stop()
     }
