@@ -22,6 +22,8 @@ export class EventPull extends Array {
         for(let eventCount = this.length; eventCount > 0; eventCount--)
             this._callEvent(this.shift())
 
-        this._ticker.stop()
+        
+        if(this.length === 0)
+            this._ticker.stop()
     }
 }
