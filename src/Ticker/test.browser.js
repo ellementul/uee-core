@@ -10,6 +10,7 @@ function later(delay) {
 
 export async function runTests() {
     const ticker = new Ticker
+    const delay = 100
 
     console.log("Constructor: ", !!ticker)
 
@@ -17,7 +18,7 @@ export async function runTests() {
     ticker.ontick = callback
     ticker.start()
 
-    await later(10)
+    await later(delay)
 
     ticker.stop()
     const callCount = callback.callCount 
@@ -27,5 +28,6 @@ export async function runTests() {
     await later(0)
 
     console.log("Are not new calls: ", callCount === callback.callCount)
+    console.log("All ticks: " + callCount + " for " + delay + "ms")
 }
 

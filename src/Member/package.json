@@ -1,4 +1,5 @@
 {
+    "type": "module", 
     "@parcel/resolver-default": {
         "packageExports": true
     },

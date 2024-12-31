@@ -18,8 +18,13 @@ test('constructor', t => {
 
 test('makeRoom', t => {
   const member = new MemberFactory
+  
+  const callback = sinon.fake()
+  member.onMakeRoom = callback
   member.makeRoom()
+
   t.true(member.isRoom)
+  t.true(callback.called)
 })
 
 test('Subscribe', async t => {

@@ -82,6 +82,9 @@ export class MemberFactory {
         this.isRoom = true
         this.provider = new Provider
         this.members = new Map
+
+        if(typeof this.onMakeRoom == "function")
+            this.onMakeRoom()
     }
 
     destroy(){
