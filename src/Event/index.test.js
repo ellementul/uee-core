@@ -9,22 +9,22 @@ test('constructor', t => {
 
 test('signature', t => {
 	const event = EventFactory(Types.Object.Def({ system: "Test" }))
-	t.is(event.sign(), "4a65687e-1443-53f1-924b-cd67a9ddc745")
+	t.is(event.sign(), "4a65687e144393f1524bcd67a9ddc745ce50b21a")
 })
 
 test('create', t => {
 	const event = EventFactory(Types.Object.Def({ system: "Log" }))
-	t.deepEqual(event.createMsg(), { payload: {"system": "Log"}, accessLvl: 0 })
+	t.deepEqual(event.createMsg(), {"system": "Log"})
 })
 
 test('validation', t => {
 	const event = EventFactory(Types.Object.Def({ system: "Log" }))
 
-	t.true(event.isValid({ payload: {"system": "Log"}, accessLvl: 0 }))
-	t.true(event.isValid({ payload: {"system": "Log"}, accessLvl: 1 }))
+	t.true(event.isValid({"system": "Log"}))
+	t.true(event.isValid({"system": "Log"}))
 
 	t.false(event.isValid(7))
-	t.falsy(event.getValidError({ payload: {"system": "Log"}, accessLvl: 1 }))
+	t.falsy(event.getValidError({"system": "Log"}))
 });
 
 test('Invalid payload for event', t => {
@@ -55,7 +55,7 @@ test('calling', t => {
 	event.on("firstId", firstCall)
 	event.on("secondId", secondCall)
 	
-	event.call({ payload })
+	event.call(payload)
 
 	t.truthy(firstCall.calledWith(payload))
 	t.truthy(secondCall.calledWith(payload))
@@ -71,7 +71,7 @@ test('calling with the same uuid', t => {
 	event.on("theSameId", firstCall)
 	event.on("theSameId", secondCall)
 	
-	event.call({ payload })
+	event.call(payload)
 
 	t.truthy(firstCall.notCalled)
 	t.truthy(secondCall.calledOnce)
@@ -85,12 +85,12 @@ test('delete callback', t => {
 
 	event.on("id", callback)
 	
-	event.call({ payload })
+	event.call(payload)
 	t.truthy(callback.calledOnce)
 
 	event.off("id")
 	
-	event.call({ payload })
+	event.call(payload)
 	t.truthy(callback.calledOnce)
 })
 
@@ -102,13 +102,13 @@ test('callback limtly calling', t => {
 
 	event.on("id", callback, 2)
 	
-	event.call({ payload })
+	event.call(payload)
 	t.truthy(callback.calledOnce)
 	
-	event.call({ payload })
+	event.call(payload)
 	t.truthy(callback.calledTwice)
 
-	event.call({ payload })
+	event.call(payload)
 	t.truthy(callback.calledTwice)
 })
 
@@ -120,15 +120,6 @@ test('clone event', t => {
 	t.is(event.sign(), clonedEvent.sign())
 })
 
-test('clone event with new access', t => {
-	const event = EventFactory(Types.Index.Def(7))
-	const clonedEvent = event.clone(1)
-
-	t.not(event, clonedEvent)
-	t.is(event.sign(), clonedEvent.sign())
-	t.is(clonedEvent.accessLvl, 1)
-})
-
 test('Uint8Array', t => {
 	const event = EventFactory(Types.Object.Def({}, true))
 	const uint8 = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])
@@ -138,5 +129,5 @@ test('Uint8Array', t => {
 	
 	const msg = event.createMsg(payload, true)
 
-	t.deepEqual(msg.payload, payload)
+	t.deepEqual(msg, payload)
 })

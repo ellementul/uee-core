@@ -52,7 +52,7 @@ test('reciveAll', t => {
   member.receiveAll = callback
   member.send(event)
 
-  t.true(callback.calledOnceWith({ accessLvl: 0, payload: { system: 'test' } }))
+  t.true(callback.calledOnceWith({ system: 'test' }))
 })
 
 test('onConnectRoom', async t => {
@@ -88,7 +88,7 @@ test('receiveAll in room', t => {
   room.receiveAll = callback
   member.send(event)
 
-  t.true(callback.calledOnceWith({ accessLvl: 0, payload: { system: 'test' } }))
+  t.true(callback.calledOnceWith({ system: 'test' }))
 })
 
 test('subscribeEventOutside', async t => {
@@ -109,78 +109,6 @@ test('subscribeEventOutside', async t => {
   t.true(callback.calledOnceWith({ system: "test" }))
 })
 
-
-test('wrong subscribe decrease access level', t => {
-  const room = new MemberFactory
-  room.makeRoom()
-
-  const member = new MemberFactory
-  member.makeRoom()
-  room.addMember(member)
-
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
-
-  const callback = sinon.fake()
-  member.subscribe(event, callback)
-  room.send(event)
-
-  t.false(callback.called)
-})
-
-test('right subscribe decrease access level', async t => {
-  const room = new MemberFactory
-  room.makeRoom()
-
-  const member = new MemberFactory
-  member.makeRoom()
-  room.addMember(member)
-
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
-
-  const callback = sinon.fake()
-  member.subscribe(event.clone(1), callback)
-  room.send(event)
-  
-  await later(0)
-
-  t.true(callback.calledOnceWith({ system: "test" }))
-})
-
-test('wrong subscribe increase access level', t => {
-  const room = new MemberFactory
-  room.makeRoom()
-
-  const member = new MemberFactory
-  member.makeRoom()
-  room.addMember(member)
-
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
-
-  const callback = sinon.fake()
-  room.subscribe(event, callback)
-  member.send(event)
-
-  t.false(callback.called)
-})
-
-test('right subscribe increase access level', async t => {
-  const room = new MemberFactory
-  room.makeRoom()
-
-  const member = new MemberFactory
-  member.makeRoom()
-  room.addMember(member)
-
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
-
-  const callback = sinon.fake()
-  room.subscribe(event, callback)
-  member.send(event.clone(1))
-
-  await later(0)
-
-  t.true(callback.calledOnceWith({ system: "test" }))
-})
 
 // test('Unsubscribe', t => {})
 

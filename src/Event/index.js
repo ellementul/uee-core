@@ -1,15 +1,14 @@
 import Types from '@ellementul/message-types'
-import getUuid from '@ellementul/uuid-by-string'
+import sha1 from 'sha1'
 
 import { mergician } from './mergician.js'
 
-function EventFactory(type, accessLvl) {
+function EventFactory(type) {
   if(!Types.isType(type))
     throw new TypeError("The type isn't type!")
 
   const callbacks = new Map
   const limits = new Map
-  accessLvl = accessLvl || 0
 
   return {
     get type() {
@@ -20,18 +19,11 @@ function EventFactory(type, accessLvl) {
       return callbacks.size
     },
 
-    get accessLvl() {
-      return accessLvl
-    },
-
     createMsg: function (payload, validation = false) {
       const msg = type.rand()
       payload = payload || {}
 
-      const fullMsg = {
-        accessLvl,
-        payload: merge(msg, payload)
-      }
+      const fullMsg = merge(msg, payload)
 
       if(validation) {
         const validError = this.getValidError(fullMsg)
@@ -54,17 +46,17 @@ function EventFactory(type, accessLvl) {
     },
 
     sign: () => {
-      return getUuid(type.toJSON(), 5)
+      return sha1(type.toJSON(), 5)
     },
 
-    isValid: ({ payload }) => {
+    isValid: (payload) => {
       if(typeof payload !== "object")
         return false
 
       return !type.test(payload)
     },
 
-    getValidError: ({ payload }) => {
+    getValidError: (payload) => {
       if(typeof payload !== "object")
         return 'Payload has to be object!!'
 
@@ -86,7 +78,7 @@ function EventFactory(type, accessLvl) {
       limits.delete(id)
     },
 
-    call: ({ payload }) => {
+    call: (payload) => {
       for (let [id, callback] of callbacks) {
         if(limits.has(id)) {
           if(limits.get(id) <= 0) {
@@ -103,32 +95,14 @@ function EventFactory(type, accessLvl) {
       }
     },
     
-    clone: function(newAccessLvl) {
-      if(newAccessLvl != null)
-        return EventFactory(this.type, newAccessLvl)
-      else
-        return EventFactory(this.type, accessLvl)
-    },
-
-    decreaseAccessLvl() {
-      return this.clone(this.accessLvl - 1)
+    clone: function() {
+      return EventFactory(this.type)
     }
   }
 }
 
-function checkAccessLvl(msg) {
-  return (typeof msg.accessLvl === "number" && msg.accessLvl > 0)
-}
-
-function decreaseAccessLvl(msg) {
-  return {
-    ...msg,
-    accessLvl: msg.accessLvl - 1
-  }
-}
-
 const merge = mergician({
-  beforeEach({ depth, key, srcObj, srcVal, targetObj, targetVal }) {
+  beforeEach({ srcVal }) {
     if(Array.isArray(srcVal))
       return srcVal
   }
@@ -142,4 +116,4 @@ EventFactory.fromJSON = function (json) {
   return EventFactory(type)
 }
 
-export { EventFactory, checkAccessLvl, decreaseAccessLvl, Types }
+export { EventFactory, Types }

@@ -23,7 +23,8 @@
   "dependencies": {
     "@ellementul/message-types": "^3.3.0",
     "@ellementul/uuid-by-string": "^1.0.0",
-    "mergician": "^2.0.2"
+    "mergician": "^2.0.2",
+    "sha1": "^1.1.1"
   },
   "devDependencies": {
     "assert": "^2.1.0",
