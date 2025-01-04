@@ -1,11 +1,12 @@
 import { Types } from "../Event/index.js"
 import { Provider } from "../Provider/index.js"
+import { errorEvent } from "./events.js"
 
 export class MemberFactory {
 
-    constructor(validationMsg = false) {
-        this.validationMsg = validationMsg
+    constructor() {
         this._uuid = Types.UUID.Def().rand()
+
         this.subscribedEvents = new Map
     }
 
@@ -14,7 +15,7 @@ export class MemberFactory {
     }
 
     send(typeMsg, payload) {
-        const msg = typeMsg.createMsg(payload, this.validationMsg)
+        const msg = typeMsg.createMsg(payload, this.debug)
         
         this.sendEvent(msg)
     }
@@ -37,6 +38,24 @@ export class MemberFactory {
         limit = limit || -1
         memberUuid = memberUuid || this.uuid
 
+        if(this.debug) {
+            const rawCallback = callback
+            callback = msg => {
+                try {
+                    rawCallback(msg)
+                } catch (error) {
+                    const erMsg = {
+                        member: this.constructor.name,
+                        gotMsg: msg,
+                        rawError: error
+                    }
+
+                    console.error(erMsg)
+                    this.send(errorEvent, erMsg)
+                }
+            }
+        }
+
         if(this.isRoom)
             this.provider.onEvent(msgType, callback, memberUuid, limit)
 
@@ -53,7 +72,9 @@ export class MemberFactory {
         this.provider.offEvent(msgType, memberUuid)
     }
 
-    makeRoom(){
+    makeRoom({ debug = false } = {}){
+        this.debug = debug
+
         if(this.isRoom)
             return
 

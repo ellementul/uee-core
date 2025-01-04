@@ -3,6 +3,7 @@ import sinon from "sinon"
 
 import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
+import { errorEvent } from './events.js'
 
 function later(delay) {
   return new Promise(function(resolve) {
@@ -34,6 +35,24 @@ test('Subscribe', async t => {
   const event = EventFactory(Types.Object.Def({ system: "test" }))
   const callback = sinon.fake()
   
+  member.subscribe(event, callback)
+  member.send(event)
+
+  await later(0)
+
+  t.true(callback.calledOnceWith({ system: "test" }))
+})
+
+test('subscribeToOutsideRoom', async t => {
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const member = new MemberFactory
+  room.addMember(member)
+
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+
+  const callback = sinon.fake()
   member.subscribe(event, callback)
   member.send(event)
 
@@ -91,22 +110,29 @@ test('receiveAll in room', t => {
   t.true(callback.calledOnceWith({ system: 'test' }))
 })
 
-test('subscribeEventOutside', async t => {
+test('Error in callback', async t => {
   const room = new MemberFactory
-  room.makeRoom()
+  room.makeRoom({ debug: true })
 
   const member = new MemberFactory
-  room.addMember(member)
 
   const event = EventFactory(Types.Object.Def({ system: "test" }))
-
   const callback = sinon.fake()
-  member.subscribe(event, callback)
+  console.error = sinon.fake()
+  room.subscribe(errorEvent, callback)
+
+  const callbackGenError = () => { throw new Error("Test error") }
+
+  member.onConnectRoom = () => {
+    member.subscribe(event, callbackGenError)
+  }
+
+  room.addMember(member)
   member.send(event)
 
-  await later(0)
+  await later(100)
 
-  t.true(callback.calledOnceWith({ system: "test" }))
+  t.true(callback.called)
 })
 
 
