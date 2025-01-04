@@ -7,7 +7,7 @@ export class MemberFactory {
     constructor() {
         this._uuid = Types.UUID.Def().rand()
 
-        this.subscribedEvents = new Map
+        this.subscribedOutEvents = new Map
     }
 
     get uuid() {
@@ -65,17 +65,45 @@ export class MemberFactory {
         if(!this.isRoom && this.outsideRoom)
             this.outsideRoom.subscribe(msgType, callback, memberUuid, limit)
 
-        if(this.isRoom && this.outsideRoom && (!this.inEvents || this.inEvents.has(msgType.sign())))
-            this.outsideRoom.subscribe(msgType, callback, this._uuid + "/" + memberUuid, limit)
-
+        if(this.isRoom && this.outsideRoom)
+            this.subscribeOut(msgType, callback, memberUuid, limit)
+        
         if(!this.isRoom && !this.outsideRoom)
             throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
+    }
+
+    subscribeOut(msgType, callback, memberUuid, limit) {
+        if(this.inEvents && !this.inEvents.has(msgType.sign()))
+            return
+
+        const uid = this._uuid + "/" + memberUuid
+        this.outsideRoom.subscribe(msgType, callback, uid + memberUuid, limit)
+        this.subscribedOutEvents.set(memberUuid, msgType)
     }
 
     unsubscribe(msgType, memberUuid) {
         memberUuid = memberUuid || this.uuid
 
-        this.provider.offEvent(msgType, memberUuid)
+        if(this.isRoom)
+            this.provider.offEvent(msgType, memberUuid)
+
+        if(!this.isRoom && this.outsideRoom)
+            this.outsideRoom.unsubscribe(msgType, memberUuid)
+
+        if(this.isRoom && this.outsideRoom)
+            this.unsubscribeOut(msgType, memberUuid)
+
+        if(!this.isRoom && !this.outsideRoom)
+            throw new Error("It cannot unsubscribe, it isn't Room and it doesn't connect to Room")
+    }
+
+    unsubscribeOut(msgType, memberUuid) {
+        if(this.inEvents && !this.inEvents.has(msgType.sign()))
+            return
+
+        const uid = this._uuid + "/" + memberUuid
+        this.outsideRoom.unsubscribe(msgType, uid)
+        this.subscribedOutEvents.delete(memberUuid)
     }
 
     makeRoom({ debug = false, outEvents = [], inEvents = [] } = {}){
@@ -104,7 +132,7 @@ export class MemberFactory {
         if(this.isRoom)
             this.clearRoom()
 
-        for (const [uuid, typeMsg] of this.subscribedEvents) {
+        for (const [uuid, typeMsg] of this.subscribedOutEvents) {
             this.outsideRoom.unsubscribe(typeMsg, uuid)
         }
     }
