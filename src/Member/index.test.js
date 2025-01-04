@@ -135,6 +135,108 @@ test('Error in callback', async t => {
   t.true(callback.called)
 })
 
+test('Bubble event', async t => {
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const secondRoom = new MemberFactory
+  secondRoom.makeRoom()
+  room.addMember(secondRoom)
+
+  const member = new MemberFactory
+  secondRoom.addMember(member)
+
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  const callback = sinon.fake()
+  room.subscribe(event, callback)
+
+  member.send(event)
+
+  await later(0)
+
+  t.true(callback.called)
+})
+
+test('Bubble filter', async t => {
+  const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
+  const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+
+  const allowCallback = sinon.fake()
+  const deprecatedCallback = sinon.fake()
+
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const secondRoom = new MemberFactory
+  secondRoom.makeRoom({ outEvents: [allowEvent] })
+  room.addMember(secondRoom)
+
+  const member = new MemberFactory
+  secondRoom.addMember(member)
+
+  room.subscribe(allowEvent, allowCallback)
+  room.subscribe(deprecatedEvent, deprecatedCallback)
+
+  member.send(allowEvent)
+  member.send(deprecatedEvent)
+
+  await later(0)
+
+  t.true(allowCallback.called)
+  t.false(deprecatedCallback.called)
+})
+
+test('Subscribe up level', async t => {
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const secondRoom = new MemberFactory
+  secondRoom.makeRoom()
+  room.addMember(secondRoom)
+
+  const member = new MemberFactory
+  secondRoom.addMember(member)
+
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  const callback = sinon.fake()
+  member.subscribe(event, callback)
+
+  room.send(event)
+
+  await later(0)
+
+  t.true(callback.called)
+})
+
+test('Subscribe up level filter', async t => {
+  const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
+  const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+
+  const allowCallback = sinon.fake()
+  const deprecatedCallback = sinon.fake()
+
+  const room = new MemberFactory
+  room.makeRoom()
+
+  const secondRoom = new MemberFactory
+  secondRoom.makeRoom({ inEvents: [allowEvent] })
+  room.addMember(secondRoom)
+
+  const member = new MemberFactory
+  secondRoom.addMember(member)
+
+  member.subscribe(allowEvent, allowCallback)
+  member.subscribe(deprecatedEvent, deprecatedCallback)
+
+  room.send(allowEvent)
+  room.send(deprecatedEvent)
+
+  await later(0)
+
+  t.true(allowCallback.called)
+  t.false(deprecatedCallback.called)
+})
+
 
 // test('Unsubscribe', t => {})
 

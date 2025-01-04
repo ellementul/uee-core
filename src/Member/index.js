@@ -1,4 +1,4 @@
-import { Types } from "../Event/index.js"
+import { EventFactory, Types } from "../Event/index.js"
 import { Provider } from "../Provider/index.js"
 import { errorEvent } from "./events.js"
 
@@ -25,6 +25,9 @@ export class MemberFactory {
             this.provider.sendEvent(msg)
 
         if(!this.isRoom && this.outsideRoom)
+            this.outsideRoom.sendEvent(msg)
+
+        if(this.isRoom && this.outsideRoom && this.outEvent.isValid(msg))
             this.outsideRoom.sendEvent(msg)
 
         if(!this.isRoom && !this.outsideRoom)
@@ -62,6 +65,9 @@ export class MemberFactory {
         if(!this.isRoom && this.outsideRoom)
             this.outsideRoom.subscribe(msgType, callback, memberUuid, limit)
 
+        if(this.isRoom && this.outsideRoom && (!this.inEvents || this.inEvents.has(msgType.sign())))
+            this.outsideRoom.subscribe(msgType, callback, this._uuid + "/" + memberUuid, limit)
+
         if(!this.isRoom && !this.outsideRoom)
             throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
     }
@@ -72,7 +78,7 @@ export class MemberFactory {
         this.provider.offEvent(msgType, memberUuid)
     }
 
-    makeRoom({ debug = false } = {}){
+    makeRoom({ debug = false, outEvents = [], inEvents = [] } = {}){
         this.debug = debug
 
         if(this.isRoom)
@@ -81,6 +87,14 @@ export class MemberFactory {
         this.isRoom = true
         this.provider = new Provider
         this.members = new Map
+
+        if(outEvents.length > 0)
+            this.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
+        else
+            this.outEvent = EventFactory(Types.Any.Def())
+
+        if(inEvents.length > 0)
+            this.inEvents = new Set(inEvents.map(event => event.sign()))
 
         if(typeof this.onMakeRoom == "function")
             this.onMakeRoom()
@@ -99,6 +113,9 @@ export class MemberFactory {
         for (const [uuid, _] of this.members) {
             this.deleteMember(uuid)
         }
+
+        this.outEvent = null
+        this.inEvents = null
     }
 
     setOutsideRoom(room) {
