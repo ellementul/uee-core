@@ -21,11 +21,30 @@ test('makeRoom', t => {
   const member = new MemberFactory
   
   const callback = sinon.fake()
+  const initCallback = sinon.fake()
   member.onMakeRoom = callback
+  member.onReady = initCallback
   member.makeRoom()
 
   t.true(member.isRoom)
   t.true(callback.called)
+  t.true(initCallback.called)
+})
+
+test('entre Room', t => {
+  const room = new MemberFactory
+  room.makeRoom()
+  
+  const callback = sinon.fake()
+  const initCallback = sinon.fake()
+  const member = new MemberFactory
+  member.onJoinRoom = callback
+  member.onReady = initCallback
+
+  room.addMember(member)
+
+  t.true(callback.called)
+  t.true(initCallback.called)
 })
 
 test('Subscribe', async t => {
@@ -74,26 +93,6 @@ test('reciveAll', t => {
   t.true(callback.calledOnceWith({ system: 'test' }))
 })
 
-test('onConnectRoom', async t => {
-  const room = new MemberFactory
-  room.makeRoom()
-
-  const member = new MemberFactory
-
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
-  const callback = sinon.fake()
-  member.onConnectRoom = () => {
-    member.subscribe(event, callback)
-  }
-
-  room.addMember(member)
-  member.send(event)
-
-  await later(0)
-
-  t.true(callback.called)
-})
-
 test('receiveAll in room', t => {
   const room = new MemberFactory
   room.makeRoom()
@@ -123,7 +122,7 @@ test('Error in callback', async t => {
 
   const callbackGenError = () => { throw new Error("Test error") }
 
-  member.onConnectRoom = () => {
+  member.onJoinRoom = () => {
     member.subscribe(event, callbackGenError)
   }
 

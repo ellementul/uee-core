@@ -126,6 +126,19 @@ export class MemberFactory {
 
         if(typeof this.onMakeRoom == "function")
             this.onMakeRoom()
+
+        if(typeof this.onReady == "function")
+            this.onReady()
+    }
+
+    setOutsideRoom(room) {
+        this.outsideRoom = room
+
+        if(typeof this.onJoinRoom == "function")
+            this.onJoinRoom()
+
+        if(typeof this.onReady == "function")
+            this.onReady()
     }
 
     destroy(){
@@ -144,13 +157,6 @@ export class MemberFactory {
 
         this.outEvent = null
         this.inEvents = null
-    }
-
-    setOutsideRoom(room) {
-        this.outsideRoom = room
-
-        if(typeof this.onConnectRoom == "function")
-            this.onConnectRoom()
     }
 
     addMember(newMember) {
