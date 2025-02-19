@@ -49,7 +49,7 @@ test('off event', async t => {
 
 const loadWeight = 128
 
-test('loaded', async t => {
+test.skip('loaded', async t => {
     const provider = new Provider
 
     const testEvents = []

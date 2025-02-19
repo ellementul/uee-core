@@ -37,6 +37,7 @@
   "ava": {
     "files": [
       "**/*.test.js"
-    ]
+    ],
+    "serial": true
   }
 }

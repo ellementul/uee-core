@@ -7,6 +7,7 @@ Event is a message type
 Room is a member with Provider to process messages and events
 Member can send message if it connect to Provider or Room
 Member can get messages of defined type via subscribing on event in Room(or Provider)
+Transport is a tunnel join two rooms in one via any connection
 
 ## Usage
 
@@ -65,4 +66,24 @@ const type = Types.Object.Def({ system: "Test", action: Types.Any.Def("Switch On
 const event = EventFactory(type)
 const callbackForEvent = () => { console.log("Got message") }
 member.subscribe(event, callbackForEvent) // Subscribe message
+```
+
+### Join two Room via Transport
+In first file
+```js
+import { MemberFactory, InMemory } from "@ellementul/uee-core"
+
+const room = new MemberFactory
+const transoport = new InMemory({ id: "TestTransport", isHost: true })
+
+room.makeRoom(transoport)
+```
+In second file
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+const room = new MemberFactory
+const transoport = new InMemory({ id: "TestTransport", isHost: false })
+
+room.makeRoom(transoport)
 ```
