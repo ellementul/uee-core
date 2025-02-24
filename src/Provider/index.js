@@ -1,9 +1,45 @@
 import { EventPull } from "../EventPull/index.js"
 
 class Provider {
-  constructor () {
+  constructor ({ transport } = {}) {
     this.listenerEvents = new Map
+
+    this.setPull()
+      
+    if(transport)
+      this.setTransport(transport)
+  }
+
+  setPull() {
+    this.isTransport = false
+
     this.pull = new EventPull(this.callEvent)
+
+    this.sendEvent = function (payload) {
+
+      this.listenerEvents.forEach((event) => {
+        if(event.isValid(payload))
+          this.pull.push({ event, payload })
+      })
+    }
+  }
+
+  setTransport(transport) {
+    this.isTransport = true
+
+    this.sendEvent = function (payload) {
+
+      transport.send(payload)
+
+      this.listenerEvents.forEach((event) => {
+        if(event.isValid(payload))
+          this.pull.push({ event, payload })
+      })
+    }
+
+    this.connect = function () {
+      transport.connect(this.receiveFromTransport)
+    }
   }
 
   onEvent(event, callback, id, limit = -1) {
@@ -27,15 +63,15 @@ class Provider {
       this.listenerEvents.delete(signature)
   }
 
-  sendEvent(payload) {
-    this.listenerEvents.forEach((event) => {
-      if(event.isValid(payload))
-        this.pull.push({ event, payload })
-    })
-  }
-
   callEvent({ event, payload }){
     event.call(payload)
+  }
+
+  receiveFromTransport(payload){
+    this.listenerEvents.forEach((event) => {
+      if(event.isValid(payload))
+        event.call(payload)
+    })
   }
 }
 

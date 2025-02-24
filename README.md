@@ -77,6 +77,7 @@ const room = new MemberFactory
 const transoport = new InMemory({ id: "TestTransport", isHost: true })
 
 room.makeRoom(transoport)
+room.connect()
 ```
 In second file
 ```js
@@ -86,4 +87,5 @@ const room = new MemberFactory
 const transoport = new InMemory({ id: "TestTransport", isHost: false })
 
 room.makeRoom(transoport)
+room.connect()
 ```
