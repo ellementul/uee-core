@@ -38,8 +38,8 @@ test('connection', t => {
 
     client.connect(client.receiveCallback)
 
-    t.true(host.connectCallback.called)
-    t.true(client.connectCallback.called)
+    t.true(host.connectCallback.calledOnceWith({ isHost: true}))
+    t.true(client.connectCallback.calledOnceWith({ isHost: false}))
 })
 
 test('send', async t => {
