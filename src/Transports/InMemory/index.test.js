@@ -20,20 +20,26 @@ test('connection', t => {
     const host = t.context.host
     const client = t.context.client
 
-    const hostCallback = sinon.fake()
-    host.onConnection(hostCallback)
+    host.connectCallback = sinon.fake()
+    host.onConnection(host.connectCallback)
+    host.onDisconnection(host.connectCallback)
 
     host.receiveCallback = sinon.fake()
     host.connect(host.receiveCallback)
 
-    const clientCallback = sinon.fake()
-    client.onConnection(clientCallback)
+    client.connectCallback = sinon.fake()
+    client.onConnection(client.connectCallback)
+    client.onDisconnection(client.connectCallback)
 
     client.receiveCallback = sinon.fake()
+
+    t.false(client.connectCallback.called)
+    t.false(host.connectCallback.called)
+
     client.connect(client.receiveCallback)
 
-    t.true(hostCallback.called)
-    t.true(clientCallback.called)
+    t.true(host.connectCallback.called)
+    t.true(client.connectCallback.called)
 })
 
 test('send', async t => {
@@ -54,9 +60,20 @@ test('send', async t => {
     
 })
 
-// test('disconnection', t => {
-//     const host = t.context.host
-//     const client = t.context.client
+test('disconnection', t => {
+    const host = t.context.host
+    const client = t.context.client
 
-    
-// })
+    t.true(host.connectCallback.calledOnce)
+    t.true(client.connectCallback.calledOnce)
+
+    client.disconnect()
+
+    t.is(host.connectCallback.getCalls().length, 2)
+    t.is(client.connectCallback.getCalls().length, 2)
+
+    host.disconnect()
+
+    t.is(host.connectCallback.getCalls().length, 2)
+    t.is(client.connectCallback.getCalls().length, 2)
+})

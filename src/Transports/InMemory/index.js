@@ -13,8 +13,15 @@ export class InMemory {
         if(typeof cb == "function")
             this.receive = cb
 
-        connectionPull.addConnection(this.id, this.isHost, this.receive)
-        this.connectionCallback()
+        connectionPull.addConnection({ 
+            id: this.id, 
+            isHost: this.isHost, 
+            callbacks: {
+                connect: this.connectionCallback,
+                receive: this.receive,
+                disconnect: this.disconnectionCallback
+            }
+        })
     }
 
     send(msg) {
@@ -23,7 +30,6 @@ export class InMemory {
 
     disconnect() {
         connectionPull.deleteConnection(this.id, this.isHost)
-        this.disconnectionCallback()
     }
 
     onConnection(cb) {

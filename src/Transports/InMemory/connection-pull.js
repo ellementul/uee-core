@@ -1,14 +1,43 @@
 export class ConnectionPull extends Map {
 
-    addConnection(id, isHost, cb) {
+    addConnection({ 
+        id, 
+        isHost,
+        callbacks: {
+            connect,
+            receive,
+            disconnect
+        }
+    }) {
 
         if(isHost) {
-            this.set(id, { host: { cb, out: [] } })
+            this.set(id, { 
+                host: { 
+                    callbacks: {
+                        connect,
+                        receive,
+                        disconnect
+                    }, 
+                    out: [] 
+                },
+                isConnection: false 
+            })
         }
         else {
             const connection = this.get(id)
 
-            connection.client = { cb, out: [] }
+            connection.client = { 
+                callbacks: {
+                    connect,
+                    receive,
+                    disconnect
+                }, 
+                out: [] 
+            }
+
+            connection.isConnection = true
+            connection.host.callbacks.connect({ isHost: true })
+            connection.client.callbacks.connect({ isHost: false })
         }
     }
 
@@ -25,6 +54,17 @@ export class ConnectionPull extends Map {
     }
 
     deleteConnection(id, isHost) {
+        const connection = this.get(id)
+
+        if(!connection)
+            return
+
+        if(connection.isConnection) {
+            connection.isConnection = false
+
+            connection.client.callbacks.disconnect({ isHost: false })
+            connection.host.callbacks.disconnect({ isHost: true })
+        }
 
         if(isHost) {
             this.delete(id)
@@ -53,12 +93,12 @@ export class ConnectionPull extends Map {
                 continue
 
             while(connection.host.out.length > 0) {
-                connection.client.cb(connection.host.out.pop())
+                connection.client.callbacks.receive(connection.host.out.pop())
                 isNeedStop &&= false
             }
 
             while(connection.client.out.length > 0) {
-                connection.host.cb(connection.client.out.pop())
+                connection.host.callbacks.receive(connection.client.out.pop())
                 isNeedStop &&= false
             }
         }
