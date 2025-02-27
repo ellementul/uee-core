@@ -113,7 +113,7 @@ export class MemberFactory {
             return
 
         this.isRoom = true
-        this.provider = new Provider
+        this.provider = new Provider({ idMember: this._uuid })
         this.members = new Map
 
         if(outEvents.length > 0)

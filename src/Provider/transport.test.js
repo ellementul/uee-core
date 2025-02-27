@@ -4,6 +4,7 @@ import sinon from "sinon"
 import { Provider } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
 import { InMemory } from '../Transports/InMemory/index.js'
+import { connectionEvent, disconnectionEvent } from './events.js'
 
 function later(delay) {
     return new Promise(function(resolve) {
@@ -24,64 +25,97 @@ test('constructor', t => {
   t.truthy(t.context.client.isTransport)
 })
 
+test('connection', async t => {
+    const host = t.context.host
+    const client = t.context.client
 
-// test('send event', async t => {
-//     const provider = new Provider
+    const connectHostCallback = sinon.fake()
+    host.onEvent(connectionEvent, connectHostCallback)
 
-//     const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
-//     const eventCallback = sinon.fake()
-//     provider.onEvent(testEvent, eventCallback, "test")
+    host.connect()
+    await later(250)
 
-//     provider.sendEvent(testEvent.createMsg())
+    t.false(connectHostCallback.called)
 
-//     await later(0)
+    client.connect()
+    await later(250)
 
-//     t.true(eventCallback.called)
-// })
+    t.true(connectHostCallback.calledOnce)
+})
 
-// test('off event', async t => {
-//     const provider = new Provider
 
-//     const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
-//     const eventCallback = sinon.fake()
-//     provider.onEvent(testEvent, eventCallback, "test")
+test('send from client to host event', async t => {
+    const host = t.context.host
+    const client = t.context.client
 
-//     provider.sendEvent(testEvent.createMsg())
-//     provider.offEvent(testEvent, "test")
-//     provider.sendEvent(testEvent.createMsg())
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    host.onEvent(testEvent, eventCallback)
 
-//     await later(0)
+    client.sendEvent(testEvent.createMsg())
 
-//     t.false(eventCallback.called)
-// })
+    await later(0)
 
-// const loadWeight = 128
+    t.true(eventCallback.calledOnce)
+})
 
-// test.skip('loaded', async t => {
-//     const provider = new Provider
+test('send from host to client event', async t => {
+    const host = t.context.host
+    const client = t.context.client
 
-//     const testEvents = []
-//     const eventCallbacks = []
-//     const randKey = Types.Key.Def().rand
-//     for (let index = 0; index < loadWeight; index++) {
-//         const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
-//         testEvents.push(EventFactory(eventType))
-//         eventCallbacks.push(sinon.fake())
-//     }
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    client.onEvent(testEvent, eventCallback)
 
-//     const start = Date.now()
+    host.sendEvent(testEvent.createMsg())
+
+    await later(0)
+
+    t.true(eventCallback.calledOnce)
+})
+
+const loadWeight = 128
+
+test.skip('loaded', async t => {
+    const host = t.context.host
+    const client = t.context.client
+
+    const testEvents = []
+    const eventCallbacks = []
+    const randKey = Types.Key.Def().rand
+    for (let index = 0; index < loadWeight; index++) {
+        const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
+        testEvents.push(EventFactory(eventType))
+        eventCallbacks.push(sinon.fake())
+    }
+
+    const start = Date.now()
     
-//     testEvents.forEach((testEvent , i) => provider.onEvent(testEvent, eventCallbacks[i], "test"))
+    testEvents.forEach((testEvent , i) => host.onEvent(testEvent, eventCallbacks[i], "test"))
 
-//     for (let index = 0; index < loadWeight; index++) {
-//         testEvents.forEach(testEvent => provider.sendEvent(testEvent.createMsg()))
-//         await later(0)
-//     }
+    for (let index = 0; index < loadWeight; index++) {
+        testEvents.forEach(testEvent => client.sendEvent(testEvent.createMsg()))
+        await later(0)
+    }
 
-//     const end = Date.now()
-//     const delta = end - start
+    const end = Date.now()
+    const delta = end - start
 
-//     console.log("loadWeight: ", loadWeight, delta + "ms", "processed events: " + eventCallbacks.reduce((sum, callback) => sum + callback.callCount, 0))
+    console.log("loadWeight: ", loadWeight, delta + "ms", "processed events: " + eventCallbacks.reduce((sum, callback) => sum + callback.callCount, 0))
 
-//     t.true(eventCallbacks.every(callback => callback.called))
+    t.true(eventCallbacks.every(callback => callback.called))
+})
+
+// test('disconnection', t => {
+//     const host = t.context.host
+//     const client = t.context.client
+
+//     const disconnectHostCallback = sinon.fake()
+//     host.onEvent(disconnectionEvent, disconnectHostCallback)
+
+//     t.false(disconnectHostCallback.called)
+
+//     client.disconnect()
+
+//     t.true(disconnectHostCallback.calledOnce)
 // })

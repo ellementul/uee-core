@@ -1,8 +1,12 @@
+import { Types } from "../Event/index.js"
 import { EventPull } from "../EventPull/index.js"
+import { connectionEvent, disconnectionEvent } from "./events.js"
 
 class Provider {
-  constructor ({ transport } = {}) {
+  constructor ({ transport, idMember } = {}) {
     this.listenerEvents = new Map
+
+    this.id = idMember || Types.UUID.Def().rand()
 
     this.setPull()
       
@@ -27,6 +31,9 @@ class Provider {
   setTransport(transport) {
     this.isTransport = true
 
+    transport.onConnection(result => this.connectEvent(result))
+    transport.onDisconnection(result => this.disconnectEvent(result))
+
     this.sendEvent = function (payload) {
 
       transport.send(payload)
@@ -38,11 +45,18 @@ class Provider {
     }
 
     this.connect = function () {
-      transport.connect(this.receiveFromTransport)
+      transport.connect(msg => this.receiveFromTransport(msg))
+    }
+
+    this.disconnect = function () {
+      transport.disconnect()
     }
   }
 
   onEvent(event, callback, id, limit = -1) {
+
+    id = id || this.id
+
     const signature = event.sign()
     
     if(!this.listenerEvents.has(signature))
@@ -52,6 +66,9 @@ class Provider {
   }
 
   offEvent(event, id) {
+
+    id = id || this.id
+
     const signature = event.sign()
     
     if(!this.listenerEvents.has(signature))
@@ -65,6 +82,14 @@ class Provider {
 
   callEvent({ event, payload }){
     event.call(payload)
+  }
+
+  connectEvent({ isHost }) {
+    this.receiveFromTransport(connectionEvent.createMsg({ isHost }))
+  }
+
+  disconnectEvent({ isHost }) {
+    this.receiveFromTransport(disconnectionEvent.createMsg({ isHost }))
   }
 
   receiveFromTransport(payload){
