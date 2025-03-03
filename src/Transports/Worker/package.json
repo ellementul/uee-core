@@ -1,0 +1,9 @@
+{
+    "type": "module", 
+    "@parcel/resolver-default": {
+        "packageExports": true
+    },
+    "alias": {
+        "sinon": "../../../node_modules/sinon"
+    }
+}
