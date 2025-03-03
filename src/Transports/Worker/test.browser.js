@@ -1,19 +1,8 @@
 import sinon from "sinon"
 
+import { assertLog, later, successfulColor } from './test.utils.js'
+
 import { WorkerTransport } from './index.js'
-import { EventFactory, Types } from '../../Event/index.js'
-
-function later(delay) {
-    return new Promise(function(resolve) {
-        setTimeout(resolve, delay)
-    })
-}
-
-const successfulColor = 'color:rgb(39, 170, 57)'
-const warnfulColor = 'color:rgb(161, 170, 39)'
-const failColor = 'color:rgb(170, 70, 39)'
-
-const assertLog = (title, isSuccessful) => console.log(`%c ${title}: ${!!isSuccessful}`, isSuccessful ? successfulColor : failColor)
 
 export async function runTests() {
     console.log('%c Worker Transport test is running', successfulColor + "; text-decoration:underline")
@@ -25,8 +14,57 @@ export async function runTests() {
     assertLog("Constructor", transport)
 
     transport.onConnection(msg => assertLog("onConnectionHost", msg.isHost))
-    transport.onDisconnection(console.log)
+    transport.onDisconnection(msg => assertLog("onDisconnectionHost", msg.isHost))
 
-    transport.connect(console.log)
+    const testMessage = "Test Msg" + Math.random()
+    let reciveCallback = msg => assertLog("First message", msg == testMessage)
+
+    transport.connect(msg => reciveCallback(msg))
+    transport.send(testMessage)
+
+    await later(100)
+
+    const secondTestMessage = "Second Test Msg" + Math.random()
+    reciveCallback = msg => assertLog("Second message", msg == secondTestMessage)
+
+    transport.send(secondTestMessage)
+
+    await later(100)
+
+    transport.disconnect()
+}
+
+export async function loadingTests() {
+    console.log('%c Loading test is running', successfulColor + "; text-decoration:underline")
+
+    const url = new URL('./test.client.js', import.meta.url)
+
+    const transport = new WorkerTransport({ isHost: true, url })
+
+    const testEvents = []
+    const eventCallbacks = []
+    const randKey = Types.Key.Def().rand
+    for (let index = 0; index < loadWeight; index++) {
+        const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
+        testEvents.push(EventFactory(eventType))
+        eventCallbacks.push(sinon.fake())
+    }
+
+    const start = Date.now()
+    
+    testEvents.forEach((testEvent , i) => host.onEvent(testEvent, eventCallbacks[i], "test"))
+
+    for (let index = 0; index < loadWeight; index++) {
+        testEvents.forEach(testEvent => client.sendEvent(testEvent.createMsg()))
+        await later(0)
+    }
+
+    const end = Date.now()
+    const delta = end - start
+
+    console.log("loadWeight: ", loadWeight, delta + "ms", "processed events: " + eventCallbacks.reduce((sum, callback) => sum + callback.callCount, 0))
+
+    t.true(eventCallbacks.every(callback => callback.called))
+
 }
 
