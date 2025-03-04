@@ -1,7 +1,7 @@
 import sinon from "sinon"
-
 import { assertLog, later, successfulColor } from './test.utils.js'
 
+import { EventFactory, Types } from '../../Event/index.js'
 import { WorkerTransport } from './index.js'
 
 export async function runTests() {
@@ -35,36 +35,42 @@ export async function runTests() {
 }
 
 export async function loadingTests() {
-    console.log('%c Loading test is running', successfulColor + "; text-decoration:underline")
+    const loadWeight = 1024
+
+    console.log(`%c Loading test is running, loadWeight: ${loadWeight}`, successfulColor + "; text-decoration:underline")
+
+    const testEvents = []
+    const messages = []
+    const randKey = Types.Key.Def().rand
+    for (let index = 0; index < loadWeight; index++) {
+        const eventType = Types.Object.Def({["test"+index]: "Test" + randKey(), index: Types.Index.Def(loadWeight) })
+        const event = EventFactory(eventType)
+        testEvents.push(event)
+        messages.push(event.createMsg({ index }))
+    }
+
+    let successfulCount = 0
+    const reciveCallback = msg => testEvents[msg.index].isValid(msg) && successfulCount++
 
     const url = new URL('./test.client.js', import.meta.url)
 
     const transport = new WorkerTransport({ isHost: true, url })
+    transport.onConnection(() => {})
+    transport.onDisconnection(() => {})
 
-    const testEvents = []
-    const eventCallbacks = []
-    const randKey = Types.Key.Def().rand
-    for (let index = 0; index < loadWeight; index++) {
-        const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
-        testEvents.push(EventFactory(eventType))
-        eventCallbacks.push(sinon.fake())
-    }
+    transport.connect(reciveCallback)
 
     const start = Date.now()
-    
-    testEvents.forEach((testEvent , i) => host.onEvent(testEvent, eventCallbacks[i], "test"))
 
-    for (let index = 0; index < loadWeight; index++) {
-        testEvents.forEach(testEvent => client.sendEvent(testEvent.createMsg()))
-        await later(0)
-    }
+    messages.forEach(msg => transport.send(msg))
+
+    await later(100)
+
+    assertLog("Was get all messages", successfulCount == loadWeight)
 
     const end = Date.now()
     const delta = end - start
 
-    console.log("loadWeight: ", loadWeight, delta + "ms", "processed events: " + eventCallbacks.reduce((sum, callback) => sum + callback.callCount, 0))
-
-    t.true(eventCallbacks.every(callback => callback.called))
-
+    console.log("loadWeight: ", loadWeight, delta + "ms")
 }
 
