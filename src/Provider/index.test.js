@@ -49,7 +49,7 @@ test('off event', async t => {
 
 const loadWeight = 128
 
-test.skip('loaded', async t => {
+test('loaded', async t => {
     const provider = new Provider
 
     const testEvents = []
@@ -66,7 +66,7 @@ test.skip('loaded', async t => {
     testEvents.forEach((testEvent , i) => provider.onEvent(testEvent, eventCallbacks[i], "test"))
 
     for (let index = 0; index < loadWeight; index++) {
-        testEvents.forEach(testEvent => provider.sendEvent(testEvent.createMsg()))
+        provider.sendEvent(testEvents[index].createMsg())
         await later(0)
     }
 
