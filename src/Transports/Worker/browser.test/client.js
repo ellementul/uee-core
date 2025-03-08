@@ -1,4 +1,4 @@
-import { WorkerTransport } from './index.js'
+import { WorkerTransport } from '../index.js'
 import { assertLog } from './test.utils.js'
 
 const transport = new WorkerTransport({ isHost: false })

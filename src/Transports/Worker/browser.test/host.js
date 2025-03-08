@@ -1,13 +1,13 @@
 import sinon from "sinon"
 import { assertLog, later, successfulColor } from './test.utils.js'
 
-import { EventFactory, Types } from '../../Event/index.js'
-import { WorkerTransport } from './index.js'
+import { EventFactory, Types } from '../../../Event/index.js'
+import { WorkerTransport } from '../index.js'
 
 export async function runTests() {
     console.log('%c Worker Transport test is running', successfulColor + "; text-decoration:underline")
 
-    const url = new URL('./test.client.js', import.meta.url)
+    const url = new URL('./client.js', import.meta.url)
 
     const transport = new WorkerTransport({ isHost: true, url })
 
@@ -52,7 +52,7 @@ export async function loadingTests() {
     let successfulCount = 0
     const reciveCallback = msg => testEvents[msg.index].isValid(msg) && successfulCount++
 
-    const url = new URL('./test.client.js', import.meta.url)
+    const url = new URL('./client.js', import.meta.url)
 
     const transport = new WorkerTransport({ isHost: true, url })
     transport.onConnection(() => {})
