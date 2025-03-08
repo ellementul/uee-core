@@ -106,15 +106,20 @@ export class MemberFactory {
         this.subscribedOutEvents.delete(memberUuid)
     }
 
-    makeRoom({ debug = false, outEvents = [], inEvents = [] } = {}){
+    makeRoom({ transport, debug = false, outEvents = [], inEvents = [] } = {}){
         this.debug = debug
 
         if(this.isRoom)
             return
 
         this.isRoom = true
-        this.provider = new Provider({ idMember: this._uuid })
+        this.provider = new Provider({ transport, idMember: this._uuid })
         this.members = new Map
+
+        if(transport) {
+            this.connect = () => this.provider.connect()
+            this.disconnect = () => this.provider.disconnect()
+        }
 
         if(outEvents.length > 0)
             this.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))

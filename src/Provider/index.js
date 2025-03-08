@@ -85,11 +85,11 @@ class Provider {
   }
 
   connectEvent({ isHost }) {
-    this.receiveFromTransport(connectionEvent.createMsg({ isHost }))
+    setTimeout(() => this.receiveFromTransport(connectionEvent.createMsg({ isHost })), 0)
   }
 
   disconnectEvent({ isHost }) {
-    this.receiveFromTransport(disconnectionEvent.createMsg({ isHost }))
+    setTimeout(() => this.receiveFromTransport(disconnectionEvent.createMsg({ isHost })), 0)
   }
 
   receiveFromTransport(payload){

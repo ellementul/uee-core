@@ -106,16 +106,18 @@ test.skip('loaded', async t => {
     t.true(eventCallbacks.every(callback => callback.called))
 })
 
-// test('disconnection', t => {
-//     const host = t.context.host
-//     const client = t.context.client
+test('disconnection', async t => {
+    const host = t.context.host
+    const client = t.context.client
 
-//     const disconnectHostCallback = sinon.fake()
-//     host.onEvent(disconnectionEvent, disconnectHostCallback)
+    const disconnectHostCallback = sinon.fake()
+    host.onEvent(disconnectionEvent, disconnectHostCallback)
 
-//     t.false(disconnectHostCallback.called)
+    t.false(disconnectHostCallback.called)
 
-//     client.disconnect()
+    client.disconnect()
 
-//     t.true(disconnectHostCallback.calledOnce)
-// })
+    await later(1)
+
+    t.true(disconnectHostCallback.calledOnce)
+})
