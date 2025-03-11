@@ -48,11 +48,9 @@ class Provider {
 
     this.connect = function () {
       transport.connect(msg => this.receiveFromTransport(msg))
-      this.readyConnection = true
     }
 
     this.disconnect = function () {
-      this.readyConnection = false
       transport.disconnect()
     }
   }
@@ -89,10 +87,12 @@ class Provider {
   }
 
   connectEvent({ isHost }) {
+    this.readyConnection = true
     setTimeout(() => this.receiveFromTransport(connectionEvent.createMsg({ isHost })), 0)
   }
 
   disconnectEvent({ isHost }) {
+    this.readyConnection = false
     setTimeout(() => this.receiveFromTransport(disconnectionEvent.createMsg({ isHost })), 0)
   }
 
