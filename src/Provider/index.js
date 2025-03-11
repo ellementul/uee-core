@@ -30,13 +30,15 @@ class Provider {
 
   setTransport(transport) {
     this.isTransport = true
+    this.readyConnection = false
 
     transport.onConnection(result => this.connectEvent(result))
     transport.onDisconnection(result => this.disconnectEvent(result))
 
     this.sendEvent = function (payload) {
 
-      transport.send(payload)
+      if(this.readyConnection)
+        transport.send(payload)
 
       this.listenerEvents.forEach((event) => {
         if(event.isValid(payload))
@@ -46,9 +48,11 @@ class Provider {
 
     this.connect = function () {
       transport.connect(msg => this.receiveFromTransport(msg))
+      this.readyConnection = true
     }
 
     this.disconnect = function () {
+      this.readyConnection = false
       transport.disconnect()
     }
   }
