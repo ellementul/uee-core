@@ -236,8 +236,28 @@ test('Subscribe up level filter', async t => {
   t.false(deprecatedCallback.called)
 })
 
+test('Unsubscribe', async t => {
+  const member = new MemberFactory
+  member.makeRoom()
 
-// test('Unsubscribe', t => {})
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  const callback = sinon.fake()
+  
+  member.subscribe(event, callback)
+  member.send(event)
+  await later(0)
+  t.true(callback.calledOnceWith({ system: "test" }))
+
+  // Reset the callback
+  callback.resetHistory()
+  
+  // Unsubscribe and send event again
+  member.unsubscribe(event)
+  member.send(event)
+  await later(0)
+  
+  t.false(callback.called, 'Callback should not be called after unsubscribe')
+})
 
 
 // test('DeleteMember', t => {})
