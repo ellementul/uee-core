@@ -147,6 +147,12 @@ export class MemberFactory {
     }
 
     destroy(){
+        if(typeof this.onDestroy === "function")
+            this.onDestroy()
+
+        if(this.outsideRoom)
+            this.outsideRoom = null
+
         if(this.isRoom)
             this.clearRoom()
 
@@ -173,10 +179,11 @@ export class MemberFactory {
     }
 
     deleteMember(uuid) {
-        const member = this.members.delete(uuid)
+        const member = this.members.get(uuid)
 
         if(member) {
+            this.members.delete(uuid)
             member.destroy()
-        }          
+        }
     }
 }

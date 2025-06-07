@@ -23,7 +23,22 @@ npm install @ellementul/uee-core
 ## Core Concepts
 
 ### Member
-A component that can send and receive messages. Members can be organized into rooms and communicate through events.
+
+Member is a class that can be used to create a room or join a room. It can be used to send and receive messages.
+
+#### Callbacks
+
+- `onMakeRoom` - Called when a member becomes a room
+- `onJoinRoom` - Called when a member joins a room
+- `onReady` - Called when a member is ready to send and receive messages
+- `onDestroy` - Called when a member is destroyed (e.g., when removed from a room)
+
+#### Methods
+
+- `makeRoom()`: Creates a new room or joins an existing room
+- `addMember(member)`: Adds a member to a room
+- `send(event, payload)`: Sends an event with a payload to a member
+- `subscribe(event, handler)`: Subscribes to an event and provides a handler for the event
 
 ### Event
 A typed message that defines the structure of communication between members. Events are type-safe and can be validated.
@@ -80,6 +95,24 @@ member.onReady = () => { console.log("Member is ready") }
 
 // Add member to room
 room.addMember(member)
+```
+
+### Deleting a Member from a Room
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+// Create and initialize the room
+const room = new MemberFactory()
+room.makeRoom()
+
+// Create a member
+const member = new MemberFactory()
+member.onDestroy = () => { console.log("Member is being destroyed") }
+room.addMember(member)
+
+// Delete member from room
+room.deleteMember(member.uuid)
 ```
 
 ### Creating and Sending Events

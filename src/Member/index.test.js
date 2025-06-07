@@ -259,5 +259,52 @@ test('Unsubscribe', async t => {
   t.false(callback.called, 'Callback should not be called after unsubscribe')
 })
 
+test('DeleteMember', t => {
+  // Create main room
+  const mainRoom = new MemberFactory
+  mainRoom.makeRoom()
 
-// test('DeleteMember', t => {})
+  // Create child room
+  const childRoom = new MemberFactory
+  childRoom.makeRoom()
+  mainRoom.addMember(childRoom)
+
+  // Create member in child room
+  const member = new MemberFactory
+  childRoom.addMember(member)
+
+  // Create another member in main room
+  const mainMember = new MemberFactory
+  mainRoom.addMember(mainMember)
+
+  // Verify initial setup
+  t.true(mainRoom.members.has(childRoom.uuid))
+  t.true(mainRoom.members.has(mainMember.uuid))
+  t.true(childRoom.members.has(member.uuid))
+
+  // Setup onDestroy callbacks
+  const childRoomDestroyed = sinon.fake()
+  const memberDestroyed = sinon.fake()
+  childRoom.onDestroy = childRoomDestroyed
+  member.onDestroy = memberDestroyed
+
+  // Delete the child room
+  mainRoom.deleteMember(childRoom.uuid)
+
+  // Verify child room is removed from main room
+  t.false(mainRoom.members.has(childRoom.uuid))
+  t.true(mainRoom.members.has(mainMember.uuid))
+  
+  // Verify child room's outsideRoom is cleared
+  t.falsy(childRoom.outsideRoom)
+  
+  // Verify member's outsideRoom is cleared
+  t.falsy(member.outsideRoom)
+  
+  // Verify child room's members map is empty
+  t.is(childRoom.members.size, 0)
+
+  // Verify onDestroy callbacks were called
+  t.true(childRoomDestroyed.calledOnce, 'Child room onDestroy should be called')
+  t.true(memberDestroyed.calledOnce, 'Member onDestroy should be called')
+})
