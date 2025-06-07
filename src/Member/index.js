@@ -14,6 +14,10 @@ export class MemberFactory {
         return this._uuid
     }
 
+    get isReadyToSend() {
+        return this.isRoom || this.outsideRoom
+    }
+ 
     send(typeMsg, payload) {
         const msg = typeMsg.createMsg(payload, this.debug)
         
@@ -30,7 +34,7 @@ export class MemberFactory {
         if(this.isRoom && this.outsideRoom && this.outEvent.isValid(msg))
             this.outsideRoom.sendEvent(msg)
 
-        if(!this.isRoom && !this.outsideRoom)
+        if(!this.isReadyToSend)
             throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room") 
 
         if(typeof this.receiveAll === "function")

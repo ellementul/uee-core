@@ -1,7 +1,9 @@
 import { MemberFactory } from '../Member/index.js'
 import { errorEvent } from '../Member/events.js'
-import { errorEvent, memeberChangedEvent } from './events.js'
+import { memberChangedEvent } from './events.js'
 
+export const DEFAULT_STATE = "default"
+export const ANY_STATE = "any"
 
 export class StatesMember extends MemberFactory {
     constructor(possibleValues) {
@@ -11,8 +13,10 @@ export class StatesMember extends MemberFactory {
             throw new Error('possibleValues cannot be empty')
         }
 
-        this._state = possibleValues[0]
-        this._possibleValues = new Set(possibleValues)
+        this._possibleValues = new Set(possibleValues.map(value => value.toLowerCase()).concat([DEFAULT_STATE]))
+        this._transitionCallbacks = new Map()
+
+        this._state = DEFAULT_STATE
     }
 
     get state() {
@@ -26,9 +30,35 @@ export class StatesMember extends MemberFactory {
     setState(value) {
         const oldValue = this._state
 
+        if(value == oldValue)
+            return
+
         if (this.checkValue(value)) {
             this._state = value
-            this.send(memeberChangedEvent, { value, oldValue })
+            this.send(memberChangedEvent, { uuid: this.uuid, value, oldValue })
+            
+            // Call transition callback if exists
+            const callbacks = this._transitionCallbacks.get(oldValue)
+            if (callbacks) {
+                const callback = callbacks.get(value)
+                if (callback)
+                    callback(value, oldValue)
+
+                const anyCallback = callbacks.get(ANY_STATE)
+                if (anyCallback)
+                    anyCallback(value, oldValue)
+            }
+
+            const anyCallbacks = this._transitionCallbacks.get(ANY_STATE)
+            if(anyCallbacks) {
+                const callback = anyCallbacks.get(value)
+                if (callback)
+                    callback(value, oldValue)
+
+                const anyCallback = anyCallbacks.get(ANY_STATE)
+                if (anyCallback)
+                    anyCallback(value, oldValue)
+            }
         }
     }
 
@@ -36,11 +66,17 @@ export class StatesMember extends MemberFactory {
         const isValid = this._possibleValues.has(value)
 
         if (!isValid) {
-            this.send(errorEvent, {
-                uuid: this.uuid,
-                message: `Value "${value}" is not in the list of possible values: ${this.possibleValues.join(', ')}`, 
-                oldValue
-            })
+            const errorMessage = `Value "${value}" is not in the list of possible values: ${this.possibleValues.join(', ')}`
+            
+            if (this.isReadyToSend) {
+                this.send(errorEvent, {
+                    uuid: this.uuid,
+                    message: errorMessage,
+                    oldValue: this._state
+                })
+            } else {
+                throw new Error(errorMessage)
+            }
         }
 
         return isValid
@@ -51,5 +87,31 @@ export class StatesMember extends MemberFactory {
             this.checkState(value)
         
         return this._state === value
+    }
+
+    onTransition(fromState, toState, callback) {
+        if(!this.checkValue(fromState) || !this.checkValue(toState))
+            return
+
+        if (!this._transitionCallbacks.has(fromState)) {
+            this._transitionCallbacks.set(fromState, new Map())
+        }
+        
+        const callbacks = this._transitionCallbacks.get(fromState)
+        callbacks.set(toState, callback)
+    }
+
+    removeTransitionCallback(fromState, toState) {
+        if (!this._transitionCallbacks.has(fromState)) {
+            return
+        }
+
+        const callbacks = this._transitionCallbacks.get(fromState)
+        callbacks.delete(toState)
+
+        // Clean up empty maps
+        if (callbacks.size === 0) {
+            this._transitionCallbacks.delete(fromState)
+        }
     }
 } 

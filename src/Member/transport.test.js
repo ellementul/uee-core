@@ -3,7 +3,6 @@ import sinon from "sinon"
 
 import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
-import { errorEvent } from './events.js'
 import { InMemory } from '../Transports/InMemory/index.js'
 import { connectionEvent } from '../Provider/events.js'
 
