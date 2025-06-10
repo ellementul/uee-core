@@ -1,8 +1,9 @@
 import test from 'ava'
 import sinon from 'sinon'
-import { DEFAULT_STATE, StatesMember } from './index.js'
+import { ANY_STATE, DEFAULT_STATE, StatesMember } from './index.js'
 import { errorEvent } from '../Member/events.js'
 import { memberChangedEvent } from './events.js'
+import { EventFactory, Types } from '../Event/index.js'
 
 function later(delay) {
   return new Promise(function(resolve) {
@@ -79,111 +80,146 @@ test('setState with invalid value when ready to send', async t => {
     t.is(member.state, DEFAULT_STATE)
 })
 
-// test('state transition callback', t => {
-//     const possibleValues = ['idle', 'active', 'finished']
-//     const member = new StatesMember(possibleValues)
-//     const callback = sinon.fake()
+test('state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const callback = sinon.fake()
     
-//     member.onTransition('idle', 'active', callback)
-//     member.setState('idle')
-//     member.setState('active')
+    member.onTransition('idle', 'active', callback)
+    member.setState('idle')
+    member.setState('active')
     
-//     t.true(callback.calledOnce)
-//     t.true(callback.calledWith('active', 'idle'))
-// })
+    t.true(callback.calledOnce)
+    t.true(callback.calledWith('active', 'idle'))
+})
 
-// test('any state transition callbacks', t => {
-//     const possibleValues = ['idle', 'active', 'finished']
-//     const member = new StatesMember(possibleValues)
-//     const anyToActive = sinon.fake()
-//     const idleToAny = sinon.fake()
-//     const anyToAny = sinon.fake()
+test('any state transition callbacks', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const anyToActive = sinon.fake()
+    const idleToAny = sinon.fake()
+    const anyToAny = sinon.fake()
     
-//     member.onTransition('any', 'active', anyToActive)
-//     member.onTransition('idle', 'any', idleToAny)
-//     member.onTransition('any', 'any', anyToAny)
-    
-//     member.setState('idle')
-//     member.setState('active')
-//     t.true(anyToActive.calledOnce)
-//     t.true(idleToAny.calledOnce)
-//     t.true(anyToAny.calledOnce)
-    
-//     member.setState('finished')
-//     t.true(anyToActive.calledOnce) // Not called again
-//     t.false(idleToAny.called) // Not called for this transition
-//     t.true(anyToAny.calledTwice) // Called for all transitions
-// })
+    member.setState('idle')
 
-// test('invalid state transition callback', t => {
-//     const possibleValues = ['idle', 'active']
-//     const member = new StatesMember(possibleValues)
+    member.onTransition(ANY_STATE, 'active', anyToActive)
+    member.onTransition('idle', ANY_STATE, idleToAny)
+    member.onTransition(ANY_STATE, ANY_STATE, anyToAny)
     
-//     t.throws(() => {
-//         member.onTransition('invalid', 'active', () => {})
-//     }, { message: /Invalid from state/ })
-    
-//     t.throws(() => {
-//         member.onTransition('idle', 'invalid', () => {})
-//     }, { message: /Invalid to state/ })
-// })
+    member.setState('active')
 
-// test('remove state transition callback', t => {
-//     const possibleValues = ['idle', 'active', 'finished']
-//     const member = new StatesMember(possibleValues)
-//     const callback = sinon.fake()
+    t.true(anyToActive.calledOnce)
+    t.true(idleToAny.calledOnce)
+    t.true(anyToAny.calledOnce)
     
-//     member.onTransition('idle', 'active', callback)
-//     member.removeTransitionCallback('idle', 'active')
+    member.setState('finished')
     
-//     member.setState('idle')
-//     member.setState('active')
-//     t.false(callback.called)
-// })
 
-// test('remove any state transition callback', t => {
-//     const possibleValues = ['idle', 'active', 'finished']
-//     const member = new StatesMember(possibleValues)
-//     const anyToActive = sinon.fake()
-//     const idleToAny = sinon.fake()
-    
-//     member.onTransition('any', 'active', anyToActive)
-//     member.onTransition('idle', 'any', idleToAny)
-    
-//     member.removeTransitionCallback('any', 'active')
-//     member.removeTransitionCallback('idle', 'any')
-    
-//     member.setState('idle')
-//     member.setState('active')
-//     t.false(anyToActive.called)
-//     t.false(idleToAny.called)
-// })
+    t.true(anyToActive.calledOnce) // Not called again
+    t.false(idleToAny.calledTwice) // Not called for this transition
+    t.true(anyToAny.calledTwice) // Called for all transitions
+})
 
-// test('onTransition with invalid states when not ready to send', t => {
-//     const possibleValues = ['value1', 'value2']
-//     const member = new StatesMember(possibleValues)
-//     member.isReadyToSend = false
+test('invalid state transition callback', t => {
+    const possibleValues = ['idle', 'active']
+    const member = new StatesMember(possibleValues)
     
-//     t.throws(() => {
-//         member.onTransition('invalid', 'value1', () => {})
-//     }, { message: /Value "invalid" is not in the list of possible values/ })
+    t.throws(() => {
+        member.onTransition('invalid', 'active', () => {})
+    }, { message: /Value "invalid" is not/ })
     
-//     t.throws(() => {
-//         member.onTransition('value1', 'invalid', () => {})
-//     }, { message: /Value "invalid" is not in the list of possible values/ })
-// })
+    t.throws(() => {
+        member.onTransition('idle', 'invalid', () => {})
+    }, { message: /Value "invalid" is not/ })
+})
 
-// test('onTransition with invalid states when ready to send', t => {
-//     const possibleValues = ['value1', 'value2']
-//     const member = new StatesMember(possibleValues)
-//     member.isReadyToSend = true
-//     const errorCallback = sinon.fake()
+test('remove state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const callback = sinon.fake()
     
-//     member.subscribe(errorEvent, errorCallback)
+    member.onTransition('idle', 'active', callback)
+
+    member.setState('idle')
+    member.setState('active')
+    member.setState('idle')
+    t.true(callback.calledOnce)
+
+    member.removeTransitionCallback('idle', 'active')
     
-//     member.onTransition('invalid', 'value1', () => {})
-//     t.true(errorCallback.calledOnce)
+    member.setState('idle')
+    member.setState('active')
+    t.true(callback.calledOnce)
+})
+
+test('remove any state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const anyToActive = sinon.fake()
+    const idleToAny = sinon.fake()
     
-//     member.onTransition('value1', 'invalid', () => {})
-//     t.true(errorCallback.calledTwice)
-// }) 
+    member.onTransition('any', 'active', anyToActive)
+    member.onTransition('idle', 'any', idleToAny)
+    
+    member.removeTransitionCallback('any', 'active')
+    member.removeTransitionCallback('idle', 'any')
+    
+    member.setState('idle')
+    member.setState('active')
+    t.false(anyToActive.called)
+    t.false(idleToAny.called)
+})
+
+test('onTransition with invalid states when not ready to send', t => {
+    const possibleValues = ['value1', 'value2']
+    const member = new StatesMember(possibleValues)
+    
+    t.throws(() => {
+        member.onTransition('invalid', 'value1', () => {})
+    }, { message: /Value "invalid" is not in the list of possible values/ })
+    
+    t.throws(() => {
+        member.onTransition('value1', 'invalid', () => {})
+    }, { message: /Value "invalid" is not in the list of possible values/ })
+})
+
+test('onTransition with invalid states when ready to send', async t => {
+    const possibleValues = ['value1', 'value2']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const errorCallback = sinon.fake()
+    
+    member.subscribe(errorEvent, errorCallback)
+    
+    member.onTransition('invalid', 'value1', () => {})
+    member.onTransition('value1', 'invalid', () => {})
+
+    await later(0)
+    t.true(errorCallback.calledTwice)
+})
+
+test('Subscribe', async t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    
+    member.setState('idle')
+    member.subscribeForState('active', event, callback)
+    member.send(event)
+
+    await later(0)
+    t.true(callback.notCalled)
+
+    member.setState('active')
+    member.send(event)
+
+    await later(0)
+    t.true(callback.calledOnceWith({ system: "test" }))
+})

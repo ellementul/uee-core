@@ -13,7 +13,7 @@ export class StatesMember extends MemberFactory {
             throw new Error('possibleValues cannot be empty')
         }
 
-        this._possibleValues = new Set(possibleValues.map(value => value.toLowerCase()).concat([DEFAULT_STATE]))
+        this._possibleValues = new Set(possibleValues.concat([DEFAULT_STATE]))
         this._transitionCallbacks = new Map()
 
         this._state = DEFAULT_STATE
@@ -63,7 +63,7 @@ export class StatesMember extends MemberFactory {
     }
 
     checkValue(value) {
-        const isValid = this._possibleValues.has(value)
+        const isValid = this._possibleValues.has(value) || value == ANY_STATE
 
         if (!isValid) {
             const errorMessage = `Value "${value}" is not in the list of possible values: ${this.possibleValues.join(', ')}`
@@ -113,5 +113,18 @@ export class StatesMember extends MemberFactory {
         if (callbacks.size === 0) {
             this._transitionCallbacks.delete(fromState)
         }
+    }
+
+    subscribeForState() {
+        const [sate, event, callback, ...otherArgs] = arguments
+        if(!this.checkValue(sate)) {
+            return
+        }
+
+        super.subscribe(event, msg => {
+            if(this.checkState(sate)) {
+                callback(msg)
+            }
+        }, ...otherArgs)
     }
 } 
