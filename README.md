@@ -2,6 +2,9 @@
 
 A powerful event-driven communication framework for building distributed systems and real-time applications. UEE Core provides a flexible architecture for managing event-based communication between different components in your application.
 
+### Other langs
+#### [Russian](README.ru.md)
+
 ## Features
 
 - **Event-Driven Architecture**: Built on a robust event system for flexible communication
@@ -46,8 +49,24 @@ A typed message that defines the structure of communication between members. Eve
 ### Room
 A special member that includes a Provider for processing messages and events. Rooms can contain multiple members and manage their communication.
 
-### Transport
-A communication channel that connects two rooms, enabling message exchange between them. Supports various transport mechanisms.
+## StatesMember
+
+The `StatesMember` class is a specialized member implementation designed for managing state transitions and value validation in event-driven systems. It extends the base `MemberFactory` to provide:
+
+- State management with possible value constraints
+- Transition callbacks for state changes
+- Value validation against allowed states
+- Event-based state updates and notifications
+- Subscribing to events to only defined state
+
+#### Methods
+- `setState`- Sets the member's state to a specified value. Triggers transition callbacks and emits a memberChangedEvent if the state changes.
+- `checkValue` - Validates whether a given value is allowed (either a predefined possible value or ANY_STATE). If invalid, throws an error or sends an error event depending on context.
+- `checkState` - Checks if the current state matches the provided value. Used for validation in callback handlers.
+- `onTransition` - Registers a callback function to be invoked when transitioning from fromState to toState. Supports wildcard transitions using ANY_STATE.
+- `removeTransitionCallback` - Removes a previously registered transition callback for the specified state pair.
+- `subscribeForState` - Subscribes to events specifically related to state changes. Invokes the callback only when the member's state matches the provided 
+state value.
 
 ## Usage Examples
 
@@ -153,30 +172,32 @@ const handleEvent = (payload) => {
 member.subscribe(event, handleEvent)
 ```
 
-### Connecting Rooms with Transport
+### Create Member with States
 
 ```js
-// First room (Host)
-import { MemberFactory, InMemory } from "@ellementul/uee-core"
+import { StatesMember, DEFAULT_STATE, ANY_STATE } from './StateMember/index.js'
 
-const room1 = new MemberFactory()
-const transport1 = new InMemory({ 
-    id: "TestTransport", 
-    isHost: true 
+const STATE_ONE = 'state1'
+const STATE_TWO = 'state2'
+
+// Create a member with possible values
+const myMember = new StatesMember([STATE_ONE, STATE_TWO])
+
+console.log(myMember.checkState(DEFAULT_STATE)) // true
+
+// Set state to valid value
+myMember.setState(STATE_ONE)
+
+// Check if current state is 'state1'
+console.log(myMember.checkState(STATE_ONE)) // true
+
+// Add transition callback from state 'state1' to 'state2'
+myMember.onTransition(ANY_STATE, STATE_TWO, () => {
+    console.log('Transitioning from any state to state2')
 })
 
-room1.makeRoom(transport1)
-room1.connect()
-
-// Second room (Client)
-const room2 = new MemberFactory()
-const transport2 = new InMemory({ 
-    id: "TestTransport", 
-    isHost: false 
-})
-
-room2.makeRoom(transport2)
-room2.connect()
+// Getting events when the state is state2
+member.subscribeForState(STATE_TWO, event, callback)
 ```
 
 ## Development
