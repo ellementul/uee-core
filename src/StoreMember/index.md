@@ -23,11 +23,11 @@ flowchart TD
         UUID([UUid item])
         DATA([Item Data single uint8Array with length less 64 kb])
         UUID --> GetItem --> DATA
-        UUID --> LoadItem
-        DATA --> LoadItem
+        UUID --> SaveItem
+        DATA --> SaveItem
 
         GetItem -->|Asyn function| GetFile
-        LoadItem -->|Asyn function| SaveFile
+        SaveItem -->|Asyn function| SaveFile
 
         GetAllData --> Serializer --> IteratorData([Iterator with element uint8Array])
         IteratorData([Iterator with element uint8Array]) --> Parser --> LoadData
