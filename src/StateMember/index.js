@@ -84,7 +84,7 @@ export class StatesMember extends MemberFactory {
 
     checkState(value) {
         if(this.debug)
-            this.checkState(value)
+            this.checkValue(value)
         
         return this._state === value
     }
