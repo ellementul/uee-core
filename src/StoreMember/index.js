@@ -1,7 +1,7 @@
 import { v3 as uuidv3 } from 'uuid'
 import { StatesMember } from '../StateMember/index.js'
 import { objectCreatedEvent, versionConflictEvent } from './events.js'
-import { convertDataToUint8Array } from './untilities.js';
+import { convertDataToUint8Array } from '../utils/deepFreeze.js';
 
 // Основной класс хранилища
 export class DataStore extends StatesMember {
