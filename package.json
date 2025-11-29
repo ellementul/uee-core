@@ -25,6 +25,7 @@
   "dependencies": {
     "@ellementul/message-types": "^3.3.0",
     "@ellementul/uuid-by-string": "^1.0.0",
+    "@msgpack/msgpack": "^3.1.2",
     "mergician": "^2.0.2",
     "peerjs": "^1.5.4",
     "sha1": "^1.1.1"
