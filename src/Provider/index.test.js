@@ -1,7 +1,7 @@
 import test from 'ava'
 import sinon from "sinon"
 
-import { Provider } from './index.js'
+import { AsyncProvider, Provider } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
 
 function later(delay) {
@@ -31,8 +31,24 @@ test('send event', async t => {
     t.true(eventCallback.called)
 })
 
-test('off event', async t => {
+test('off event sync', async t => {
     const provider = new Provider
+
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    provider.onEvent(testEvent, eventCallback, "test")
+
+    provider.sendEvent(testEvent.createMsg())
+    provider.offEvent(testEvent, "test")
+    provider.sendEvent(testEvent.createMsg())
+
+    await later(0)
+
+    t.true(eventCallback.called)
+})
+
+test('off event async', async t => {
+    const provider = new AsyncProvider
 
     const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
     const eventCallback = sinon.fake()
