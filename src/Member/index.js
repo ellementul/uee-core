@@ -20,115 +20,174 @@ export class MemberFactory {
 
     addTool({ name, ToolFactory, depends: { required }}) {
 
-        const depends = { currentMember: this }
+        try {
+            const depends = { currentMember: this }
 
-        if(required)
-            for (const [requiredName, requiredMethods] of required) {
-                if(!this.tools[requiredName])
-                    throw TypeError(`Not found depend: ${requiredName}`)
+            if(required)
+                for (const [requiredName, requiredMethods] of required) {
+                    if(!this.tools[requiredName])
+                        throw TypeError(`Not found depend: ${requiredName}`)
 
-                const requiredTool = this.tools[requiredName]
-                for (const requiredMethod of requiredMethods) {
-                    if(typeof requiredTool[requiredMethod] !== "function")
-                         throw TypeError(`Not found method on depend tool: ${requiredName}.${requiredMethod}`)
+                    const requiredTool = this.tools[requiredName]
+                    for (const requiredMethod of requiredMethods) {
+                        if(typeof requiredTool[requiredMethod] !== "function")
+                            throw TypeError(`Not found method on depend tool: ${requiredName}.${requiredMethod}`)
+                    }
+
+                    depends[requiredName] = requiredTool
                 }
 
-                depends[requiredName] = requiredTool
-            }
-
-        this.tools[name] = ToolFactory(depends)
+            this.tools[name] = ToolFactory(depends)
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     makeRoom({ inEvents, outEvents } = {}) {
-        if(inEvents?.length > 0)
-            this.inEvents = new Set(inEvents.map(event => event.sign()))
+        try {
+            if(inEvents?.length > 0)
+                this.inEvents = new Set(inEvents.map(event => event.sign()))
 
-        this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: {}})
+            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: {}})
 
-        this.addMember = this.tools.room.addMember
-        this.deleteMember = this.tools.room.deleteMember
+            this.addMember = this.tools.room.addMember
+            this.deleteMember = this.tools.room.deleteMember
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
  
     send(typeMsg, payload) {
-        const msg = typeMsg.createMsg(payload, this.debug)
-        
-        this.sendEvent(msg)
+        try {
+            const msg = typeMsg.createMsg(payload, this.debug)
+            
+            this.sendEvent(msg)
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
-    sendEvent(msg) {        
-        if(this.tools.room)
-            this.tools.room.sendEvent(msg)
-        else if(this.outsideRoom)
-            this.outsideRoom.sendEvent(msg)
-        else
-            throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
+    sendEvent(msg) {
+        try {        
+            if(this.tools.room)
+                this.tools.room.sendEvent(msg)
+            else if(this.outsideRoom)
+                this.outsideRoom.sendEvent(msg)
+            else
+                throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     subscribe(msgType, callback, memberUuid, limit) {
-        limit = limit || -1
-        memberUuid = memberUuid || this.uuid
+        try {
+            limit = limit || -1
+            memberUuid = memberUuid || this.uuid
 
-        if(this.tools.room)
-            this.tools.room.subscribe(msgType, callback, memberUuid, limit)
-        else if(this.outsideRoom)
-            this.subscribeOut(msgType, callback, memberUuid, limit)
-        else
-            throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
+            if(this.tools.room)
+                this.tools.room.subscribe(msgType, callback, memberUuid, limit)
+            else if(this.outsideRoom)
+                this.subscribeOut(msgType, callback, memberUuid, limit)
+            else
+                throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     unsubscribe(msgType, memberUuid) {
-        memberUuid = memberUuid || this.uuid
+        try {
+            memberUuid = memberUuid || this.uuid
 
-        if(this.tools.room)
-            this.tools.room.unsubscribe(msgType, memberUuid)
-        else if(this.outsideRoom)
-            this.unsubscribeOut(msgType, memberUuid)
-        else
-            throw new Error("It cannot unsubscribe, it isn't Room and it doesn't connect to Room")
+            if(this.tools.room)
+                this.tools.room.unsubscribe(msgType, memberUuid)
+            else if(this.outsideRoom)
+                this.unsubscribeOut(msgType, memberUuid)
+            else
+                throw new Error("It cannot unsubscribe, it isn't Room and it doesn't connect to Room")
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     setOutsideRoom(room) {
-        this.outsideRoom = room
+        try {
+            this.outsideRoom = room
 
-        if(typeof this.onJoinRoom == "function")
-            this.onJoinRoom()
+            if(typeof this.onJoinRoom == "function")
+                this.onJoinRoom()
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     subscribeOut(msgType, callback, memberUuid, limit) {
-        if(this.inEvents && !this.inEvents.has(msgType.sign()))
-            return
+        try {
+            if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                return
 
-        const uid = this._uuid + "/" + memberUuid
-        this.outsideRoom.subscribe(msgType, callback, uid + memberUuid, limit)
-        this.subscribedOutEvents.set(memberUuid, msgType)
+            const uid = this._uuid + "/" + memberUuid
+            this.outsideRoom.subscribe(msgType, callback, uid + memberUuid, limit)
+            this.subscribedOutEvents.set(memberUuid, msgType)
+
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
     unsubscribeOut(msgType, memberUuid) {
-        if(this.inEvents && !this.inEvents.has(msgType.sign()))
-            return
+        try {
+            if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                return
 
-        const uid = this._uuid + "/" + memberUuid
-        this.outsideRoom.unsubscribe(msgType, uid)
-        this.subscribedOutEvents.delete(memberUuid)
+            const uid = this._uuid + "/" + memberUuid
+            this.outsideRoom.unsubscribe(msgType, uid)
+            this.subscribedOutEvents.delete(memberUuid)
+
+        }
+        catch(err) {
+            this.throwError(err)
+        }
     }
 
-    destroy(){
-        if(typeof this.onDestroy === "function")
-            this.onDestroy()
+    destroy() {
+        try {
+            if(typeof this.onDestroy === "function")
+                this.onDestroy()
 
-        for (const toolName in this.tools) {
-            const tool = this.tools[toolName]
-            if(typeof tool.destroy === "function")
-                tool.destroy()
-        }
-
-        if(this.outsideRoom) {
-            for (const [uuid, typeMsg] of this.subscribedOutEvents) {
-                this.outsideRoom.unsubscribe(typeMsg, uuid)
+            for (const toolName in this.tools) {
+                const tool = this.tools[toolName]
+                if(typeof tool.destroy === "function")
+                    tool.destroy()
             }
-            this.outsideRoom = null
-        }
 
-        this.inEvents = null
+            if(this.outsideRoom) {
+                for (const [uuid, typeMsg] of this.subscribedOutEvents) {
+                    this.outsideRoom.unsubscribe(typeMsg, uuid)
+                }
+                this.outsideRoom = null
+            }
+
+            this.inEvents = null
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    throwError(err) {
+        if(this.tools.logging)
+            this.tools.logging.sendError(err)
+        else
+            console.error(err)
     }
 }
