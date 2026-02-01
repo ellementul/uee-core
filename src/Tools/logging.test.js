@@ -51,74 +51,73 @@ test('add tool in member', t => {
     t.true(errorCallback.getCall(0).firstArg.error.message === errorName)
 })
 
-// test('log to console when member is not ready', t => {
-//   const mockMember = {
-//     uuid: 'test-member-uuid',
-//     get isReadyToSend() { return false }
-//   }
+test('log to console when member is not ready', t => {
+  const mockMember = {
+    uuid: 'test-member-uuid',
+    get isReadyToSend() { return false }
+  }
   
-//   const tool = loggingTool.ToolFactory({ currentMember: mockMember })
+  const tool = Tool.ToolFactory({ currentMember: mockMember })
   
-//   const testError = new Error('Test error not ready')
+  const testError = new Error('Test error not ready')
   
-//   tool.sendError(testError)
+  tool.sendError(testError)
   
-//   // Проверяем, что в консоль вывели ошибку
-//   t.true(t.context.consoleStub.calledOnce)
+  t.true(t.context.consoleStub.calledOnce)
   
-//   const consoleArgs = t.context.consoleStub.firstCall.args
-//   t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
-//   t.is(consoleArgs[1], testError)
-// })
+  const consoleArgs = t.context.consoleStub.firstCall.args
+  t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
+  t.is(consoleArgs[1], testError)
+})
 
-// test('always log to console when flag is set', t => {
-//   const sendStub = sinon.stub()
-  
-//   const mockMember = {
-//     uuid: 'test-member-uuid',
-//     get isReadyToSend() { return true },
-//     send: sendStub
-//   }
-  
-//   const tool = loggingTool.ToolFactory({ currentMember: mockMember })
-  
-//   // Устанавливаем флаг дублирования в консоль
-//   tool.setAlwaysConsole(true)
-  
-//   const testError = new Error('Test error with alwaysConsole')
-  
-//   tool.sendError(testError)
-  
-//   // Проверяем, что событие отправлено
-//   t.true(sendStub.calledOnce)
-  
-//   // Проверяем, что ошибка также выведена в консоль
-//   t.true(t.context.consoleStub.calledOnce)
-// })
+test('always log to console when flag is set', t => {
+    const sendStub = sinon.stub()
+    
+    const mockMember = {
+      uuid: 'test-member-uuid',
+      get isReadyToSend() { return true },
+      send: sendStub
+    }
+    
+    const tool = Tool.ToolFactory({ currentMember: mockMember })
+    
+    // Устанавливаем флаг дублирования в консоль
+    tool.setAlwaysConsole(true)
+    
+    const testError = new Error('Test error with alwaysConsole')
+    
+    tool.sendError(testError)
+    
+    // Проверяем, что событие отправлено
+    t.true(sendStub.calledOnce)
+    
+    // Проверяем, что ошибка также выведена в консоль
+    t.true(t.context.consoleStub.calledOnce)
+})
 
-// test('handle error with missing properties', t => {
-//   const mockMember = {
-//     uuid: 'test-member-uuid',
-//     get isReadyToSend() { return false }
-//   }
-  
-//   const tool = loggingTool.ToolFactory({ currentMember: mockMember })
-  
-//   // Ошибка без message и stack
-//   const rawError = {}
-  
-//   tool.sendError(rawError)
-  
-//   // Проверяем форматирование ошибки
-//   t.true(t.context.consoleStub.calledOnce)
-  
-//   const consoleCall = t.context.consoleStub.firstCall
-//   t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
-  
-//   // Проверяем, что обрабатываются ошибки без стека и сообщения
-//   const testErrorWithoutStack = new Error('No stack')
-//   delete testErrorWithoutStack.stack
-  
-//   tool.sendError(testErrorWithoutStack)
-//   t.true(t.context.consoleStub.calledTwice)
-// })
+test('handle error with missing properties', t => {
+    const mockMember = {
+      uuid: 'test-member-uuid',
+      get isReadyToSend() { return false }
+    }
+    
+    const tool = Tool.ToolFactory({ currentMember: mockMember })
+    
+    // Ошибка без message и stack
+    const rawError = {}
+    
+    tool.sendError(rawError)
+    
+    // Проверяем форматирование ошибки
+    t.true(t.context.consoleStub.calledOnce)
+    
+    const consoleCall = t.context.consoleStub.firstCall
+    t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
+    
+    // Проверяем, что обрабатываются ошибки без стека и сообщения
+    const testErrorWithoutStack = new Error('No stack')
+    delete testErrorWithoutStack.stack
+    
+    tool.sendError(testErrorWithoutStack)
+  t.true(t.context.consoleStub.calledTwice)
+})

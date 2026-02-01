@@ -163,7 +163,7 @@ test('Error objects are converted to plain objects', t => {
 })
 
 test('Map is converted to plain object with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = sinon.stub(console, 'warn').callsFake(() => {})
   
   try {
     const payload = {
@@ -176,6 +176,9 @@ test('Map is converted to plain object with warning', t => {
     const frozen = deepFreezeMsg(payload)
     
     t.true(Object.isFrozen(frozen.map))
+
+    
+
     t.deepEqual(frozen.map, { key1: 'value1', key2: 'value2' })
     t.true(warnStub.calledWithMatch(/Map.*will be converted to plain object/))
   } finally {
