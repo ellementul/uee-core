@@ -20,11 +20,16 @@ export class MemberFactory {
 
     addTool({ name, ToolFactory, depends: { required }}) {
 
+        const selfLinkName = "currentMember"
+
         try {
-            const depends = { currentMember: this }
+            const depends = { [selfLinkName]: this }
 
             if(required)
                 for (const [requiredName, requiredMethods] of required) {
+                    if(requiredName === selfLinkName)
+                        continue
+
                     if(!this.tools[requiredName])
                         throw TypeError(`Not found depend: ${requiredName}`)
 
@@ -60,28 +65,17 @@ export class MemberFactory {
     }
  
     send(typeMsg, payload) {
-        try {
-            const msg = typeMsg.createMsg(payload, this.debug)
-            
-            this.sendEvent(msg)
-        }
-        catch(err) {
-            this.throwError(err)
-        }
+        const msg = typeMsg.createMsg(payload, this.debug)
+        this.sendEvent(msg)
     }
 
     sendEvent(msg) {
-        try {        
-            if(this.tools.room)
-                this.tools.room.sendEvent(msg)
-            else if(this.outsideRoom)
-                this.outsideRoom.sendEvent(msg)
-            else
-                throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
-        }
-        catch(err) {
-            this.throwError(err)
-        }
+        if(this.tools.room)
+            this.tools.room.sendEvent(msg)
+        else if(this.outsideRoom)
+            this.outsideRoom.sendEvent(msg)
+        else
+            throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
     }
 
     subscribe(msgType, callback, memberUuid, limit) {
@@ -188,6 +182,6 @@ export class MemberFactory {
         if(this.tools.logging)
             this.tools.logging.sendError(err)
         else
-            console.error(err)
+            throw err
     }
 }

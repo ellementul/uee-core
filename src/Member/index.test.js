@@ -3,7 +3,6 @@ import sinon from "sinon"
 
 import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
-import { errorEvent } from './events.js'
 
 function later(delay) {
     return new Promise(function(resolve) {

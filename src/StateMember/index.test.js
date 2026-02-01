@@ -1,7 +1,6 @@
 import test from 'ava'
 import sinon from 'sinon'
 import { ANY_STATE, DEFAULT_STATE, StatesMember } from './index.js'
-import { errorEvent } from '../Member/events.js'
 import { memberChangedEvent } from './events.js'
 import { EventFactory, Types } from '../Event/index.js'
 
@@ -61,24 +60,21 @@ test('setState with invalid value when not ready to send', t => {
     }, { message: /Value "invalid" is not in the list of possible values/ })
 })
 
-test('setState with invalid value when ready to send', async t => {
-    const possibleValues = ['value1', 'value2']
-    const member = new StatesMember(possibleValues)
-    member.makeRoom()
-    const errorCallback = sinon.fake()
-    const changeCallback = sinon.fake()
+// test('setState with invalid value when ready to send', async t => {
+//     const possibleValues = ['value1', 'value2']
+//     const member = new StatesMember(possibleValues)
+//     member.makeRoom()
+//     const changeCallback = sinon.fake()
     
-    member.subscribe(errorEvent, errorCallback)
-    member.subscribe(memberChangedEvent, changeCallback)
+//     member.subscribe(memberChangedEvent, changeCallback)
     
-    member.setState('invalid')
+//     member.setState('invalid')
 
-    await later(0)
+//     await later(0)
     
-    t.true(errorCallback.calledOnce)
-    t.false(changeCallback.calledOnce)
-    t.is(member.state, DEFAULT_STATE)
-})
+//     t.false(changeCallback.calledOnce)
+//     t.is(member.state, DEFAULT_STATE)
+// })
 
 test('state transition callback', t => {
     const possibleValues = ['idle', 'active', 'finished']
@@ -185,21 +181,6 @@ test('onTransition with invalid states when not ready to send', t => {
     t.throws(() => {
         member.onTransition('value1', 'invalid', () => {})
     }, { message: /Value "invalid" is not in the list of possible values/ })
-})
-
-test('onTransition with invalid states when ready to send', async t => {
-    const possibleValues = ['value1', 'value2']
-    const member = new StatesMember(possibleValues)
-    member.makeRoom()
-    const errorCallback = sinon.fake()
-    
-    member.subscribe(errorEvent, errorCallback)
-    
-    member.onTransition('invalid', 'value1', () => {})
-    member.onTransition('value1', 'invalid', () => {})
-
-    await later(0)
-    t.true(errorCallback.calledTwice)
 })
 
 test('Subscribe', async t => {

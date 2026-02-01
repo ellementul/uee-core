@@ -40,7 +40,12 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             if(currentMember.outsideRoom && ( !room.outEvent || room.outEvent.isValid(msg) ))
                 currentMember.outsideRoom.sendEvent(msg)
 
-            provider.sendEvent(msg)
+            try {
+                provider.sendEvent(msg)
+            }
+            catch(err) {
+                currentMember.throwError(err)
+            }
         }
 
         room.subscribe = (msgType, callback, memberUuid, limit) => {

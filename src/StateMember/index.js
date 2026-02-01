@@ -1,5 +1,4 @@
 import { MemberFactory } from '../Member/index.js'
-import { errorEvent } from '../Member/events.js'
 import { memberChangedEvent } from './events.js'
 
 export const DEFAULT_STATE = "default"
@@ -68,15 +67,7 @@ export class StatesMember extends MemberFactory {
         if (!isValid) {
             const errorMessage = `Value "${value}" is not in the list of possible values: ${this.possibleValues.join(', ')}`
             
-            if (this.isReadyToSend) {
-                this.send(errorEvent, {
-                    uuid: this.uuid,
-                    message: errorMessage,
-                    oldValue: this._state
-                })
-            } else {
-                throw new Error(errorMessage)
-            }
+            throw new Error(errorMessage)
         }
 
         return isValid
