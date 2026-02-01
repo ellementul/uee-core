@@ -46,7 +46,7 @@ function EventFactory(type) {
     },
 
     sign: () => {
-      return sha1(type.toJSON(), 5)
+      return sha1(type.toJSON())
     },
 
     isValid: (payload) => {
