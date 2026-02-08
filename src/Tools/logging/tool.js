@@ -1,4 +1,5 @@
-import { loggingErrorEvent, loggingSubscriptionEvent } from "./events.js"
+import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, outputEventsType } from "./events.js"
+import sha1 from 'sha1'
 
 function ToolFactory({ currentMember }) {
     let alwaysConsole = false
@@ -8,7 +9,7 @@ function ToolFactory({ currentMember }) {
         setAlwaysConsole (value) { 
             alwaysConsole = value 
         },
-        sendError (error) {
+        sendError(error) {
             const timestamp = Date.now().toString()
             const errorPayload = {
                 timestamp,
@@ -19,10 +20,11 @@ function ToolFactory({ currentMember }) {
                     name: error.name || "Error"
                 }
             }
+            const msg = loggingErrorEvent.createMsg(errorPayload)
             
             try {
                 if (this.currentMember.isReadyToSend())
-                    currentMember.send(loggingErrorEvent, errorPayload)
+                    this.currentMember.sendEvent(msg)
                 
                 if (!this.currentMember.isReadyToSend() || alwaysConsole)
                     console.error(
@@ -38,13 +40,45 @@ function ToolFactory({ currentMember }) {
         },
         subscribe(msgType, memberUuid, getSelfEvent, limit) {
             const timestamp = Date.now().toString()
-            this.currentMember.send(loggingSubscriptionEvent, {
+            const msg = loggingSubscriptionEvent.createMsg({
                 timestamp,
                 sourceUuid: this.currentMember.uid(),
                 subscribedMemberUuid: memberUuid,
-                eventHash: msgType.sign(),
-                limit
+                eventHash: sha1(msgType.toJSON().type),
+                limit,
+                getSelfEvent
             })
+
+            if (this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        },
+        send(typeMsg, payload) {
+            const timestamp = Date.now().toString()
+            const msg = loggingSendingEvent.createMsg({
+                timestamp,
+                sourceUuid: this.currentMember.uid(),
+                eventHash: sha1(typeMsg.toJSON().type),
+                msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
+                isSendEvent: this.currentMember.isReadyToSend()
+            })
+            
+            if(this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        },
+        receive(typeMsg, fullMsg) {
+            if(!outputEventsType.test(fullMsg))
+                return
+
+            const timestamp = Date.now().toString()
+            const msg = loggingReceivingEvent.createMsg({
+                timestamp,
+                sourceUuid: this.currentMember.uid(),
+                eventHash: sha1(typeMsg.toJSON().type),
+                msgHash: sha1(JSON.stringify(fullMsg))
+            })
+
+            if(this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
         }
     }
 }
@@ -52,5 +86,5 @@ function ToolFactory({ currentMember }) {
 export const Tool = {
     name: "logging",
     ToolFactory,
-    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "send"]}] }
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "sendEvent"]}] }
 }

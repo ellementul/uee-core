@@ -1,6 +1,7 @@
 import test from 'ava'
 import sinon from 'sinon'
-import { loggingErrorEvent, loggingSubscriptionEvent } from './events.js'
+import sha1 from 'sha1'
+import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent } from './events.js'
 import { Tool } from './tool.js'
 import { EventFactory, Types } from '../../Event/index.js'
 import { MemberFactory } from '../../Member/index.js'
@@ -76,7 +77,7 @@ test('always log to console when flag is set', t => {
     const mockMember = {
       uid() { return 'test-member-uuid'},
       isReadyToSend() { return true },
-      send: sendStub
+      sendEvent: sendStub
     }
     
     const tool = Tool.ToolFactory({ currentMember: mockMember })
@@ -129,19 +130,48 @@ test('log subscription events', t => {
   member.addTool(Tool)
   member.makeRoom()
   
-  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  
   const subscriptionCallback = sinon.fake()
-  const loggingCallback = sinon.fake()
+  const sendingCallback = sinon.fake()
+  const receiveCallback = sinon.fake()
+  const memberCallback = sinon.fake()
   
-  member.subscribe(loggingSubscriptionEvent, loggingCallback)
+  member.subscribe(loggingSubscriptionEvent, subscriptionCallback)
   
-  member.subscribe(event, subscriptionCallback)
+  t.true(subscriptionCallback.calledOnce)
   
-  t.true(loggingCallback.calledOnce)
-  
-  const logPayload = loggingCallback.getCall(0).firstArg
+  const logPayload = subscriptionCallback.getCall(0).firstArg
   t.truthy(logPayload.timestamp)
   t.is(logPayload.sourceUuid, member.uid())
-  t.is(logPayload.eventHash, event.sign())
+  t.is(logPayload.eventHash, sha1(loggingSubscriptionEvent.toJSON().type))
   t.is(logPayload.action, 'Subscription')
+
+
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  member.subscribe(loggingSendingEvent, sendingCallback)
+  member.subscribe(loggingReceivingEvent, receiveCallback)
+  member.subscribe(event, memberCallback)
+  member.send(event)
+
+  t.true(sendingCallback.calledOnce)
+  
+  const logSending = sendingCallback.getCall(0).firstArg
+  t.truthy(logSending.timestamp)
+  t.is(logSending.sourceUuid, member.uid())
+  t.is(logSending.eventHash, sha1(event.toJSON().type))
+  t.is(logSending.msgHash, sha1(JSON.stringify(event.createMsg())))
+  t.is(logSending.action, 'Sending')
+
+
+  t.true(receiveCallback.calledOnce)
+  t.true(memberCallback.calledOnce)
+  
+  const logReciving = receiveCallback.getCall(0).firstArg
+  t.truthy(logReciving.timestamp)
+  t.is(logReciving.sourceUuid, member.uid())
+  t.is(logReciving.eventHash, sha1(event.toJSON().type))
+  t.is(logReciving.msgHash, sha1(JSON.stringify(event.createMsg())))
+  t.is(logReciving.action, 'Receiving')
+
+
 })

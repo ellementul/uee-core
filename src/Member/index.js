@@ -85,7 +85,7 @@ export class MemberFactory {
                     "subscribeOut",
                     "unsubscribeOut"
                 ] }],
-                optional: [{ requiredName: "logging", requiredMethods: ["subscribe"]}]
+                optional: [{ requiredName: "logging", requiredMethods: ["subscribe", "receive"]}]
             }})
 
             this.addMember = this.tools.room.addMember
@@ -98,6 +98,10 @@ export class MemberFactory {
  
     send(typeMsg, payload) {
         const msg = typeMsg.createMsg(payload, this.strictValidationEvent)
+
+        if(this.tools.logging)
+            this.tools.logging.send(typeMsg, payload)
+
         this.sendEvent(msg)
     }
 

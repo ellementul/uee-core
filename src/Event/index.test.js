@@ -1,5 +1,6 @@
 import test from 'ava'
 import sinon from "sinon"
+import sha1 from 'sha1'
 import { EventFactory, Types } from './index.js'
 
 test('constructor', t => {
@@ -10,6 +11,7 @@ test('constructor', t => {
 test('signature', t => {
 	const event = EventFactory(Types.Object.Def({ system: "Test" }))
 	t.is(event.sign(), "4a65687e144393f1524bcd67a9ddc745ce50b21a")
+	t.is(event.sign(), sha1(event.toJSON().type))
 })
 
 test('create', t => {

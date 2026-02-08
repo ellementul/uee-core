@@ -67,10 +67,19 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             if(currentMember.isOutsideRoom())
                 currentMember.subscribeOut(msgType, callback, memberUuid, getSelfEvent, limit)
 
-            if(logging)
-                logging.subscribe(msgType, memberUuid, getSelfEvent, limit)
+            if(logging) {
+                const oldCallback = callback
+
+                callback = (msg) => {
+                    oldCallback(msg)
+                    logging.receive(msgType, msg)
+                }
+            }
 
             provider.onEvent(msgType, callback, memberUuid, limit)
+
+            if(logging)
+                logging.subscribe(msgType, memberUuid, getSelfEvent, limit)
         }
 
         room.unsubscribe = (msgType, memberUuid) => {
