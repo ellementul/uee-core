@@ -1,8 +1,8 @@
-import { EventFactory, Types } from "../Event/index.js"
-import { Provider } from "../Provider/index.js"
+import { EventFactory, Types } from "../../Event/index.js"
+import { Provider } from "../../Provider/index.js"
 
 export function RoomFactory({ ProviderFactory, outEvents }) {
-    return function ToolFactory({ provider, currentMember }) {
+    return function ToolFactory({ provider, currentMember, logging }) {
 
         const room = {}
 
@@ -23,7 +23,7 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
         }
 
         room.addMember = (newMember) => {
-            room.members.set(newMember.uuid, newMember)
+            room.members.set(newMember.uid(), newMember)
             newMember.setOutsideRoom(room)
         }
 
@@ -37,8 +37,8 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
         }
 
         room.sendEvent = (msg) => {
-            if(currentMember.outsideRoom && ( !room.outEvent || room.outEvent.isValid(msg) ))
-                currentMember.outsideRoom.sendEvent(msg)
+            if(currentMember.isOutsideRoom() && ( !room.outEvent || room.outEvent.isValid(msg) ))
+                currentMember.sendOutside(msg)
 
             try {
                 provider.sendEvent(msg)
@@ -50,15 +50,18 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
 
         room.subscribe = (msgType, callback, memberUuid, limit) => {
 
-            if(currentMember.outsideRoom)
+            if(currentMember.isOutsideRoom())
                 currentMember.subscribeOut(msgType, callback, memberUuid, limit)
+
+            if(logging)
+                logging.subscribe(msgType, memberUuid, limit)
 
             provider.onEvent(msgType, callback, memberUuid, limit)
         }
 
         room.unsubscribe = (msgType, memberUuid) => {
 
-            if(currentMember.outsideRoom)
+            if(currentMember.isOutsideRoom())
                 currentMember.unsubscribeOut(msgType, memberUuid)
 
             provider.offEvent(msgType, memberUuid)

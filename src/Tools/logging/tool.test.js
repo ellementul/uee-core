@@ -1,37 +1,41 @@
 import test from 'ava'
 import sinon from 'sinon'
-import { loggingErrorEvent, loggingErrorType, Tool } from './logging.js'
-import { EventFactory, Types } from '../Event/index.js'
-import { MemberFactory } from '../Member/index.js'
+import { loggingErrorEvent, loggingSubscriptionEvent } from './events.js'
+import { Tool } from './tool.js'
+import { EventFactory, Types } from '../../Event/index.js'
+import { MemberFactory } from '../../Member/index.js'
 
 function later(delay) {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
 test.beforeEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+    
   t.context.consoleStub = sinon.stub(console, 'error')
 })
 
 test.afterEach(t => {
-  t.context.consoleStub.restore()
+    t.context.consoleStub.restore()
 })
 
 test('tool_initialization', t => {
     const mockMember = {
-        uuid: 'test-member-uuid',
-        get isReadyToSend() { return true }
+        uid() { return 'test-member-uuid'},
+        isReadyToSend() { return true }
     }
   
     const tool = Tool.ToolFactory({ currentMember: mockMember })
   
-    t.truthy(loggingErrorType)
     t.is(typeof tool.sendError, 'function')
     t.is(typeof tool.setAlwaysConsole, 'function')
 })
 
 test('add tool in member', t => {
     const member = new MemberFactory
-    member.debug = true
+    member.strictValidationEvent = true
 
     member.addTool(Tool)
     member.makeRoom()
@@ -53,8 +57,8 @@ test('add tool in member', t => {
 
 test('log to console when member is not ready', t => {
   const mockMember = {
-    uuid: 'test-member-uuid',
-    get isReadyToSend() { return false }
+    uid() { return 'test-member-uuid'},
+    isReadyToSend() { return false }
   }
   
   const tool = Tool.ToolFactory({ currentMember: mockMember })
@@ -74,8 +78,8 @@ test('always log to console when flag is set', t => {
     const sendStub = sinon.stub()
     
     const mockMember = {
-      uuid: 'test-member-uuid',
-      get isReadyToSend() { return true },
+      uid() { return 'test-member-uuid'},
+      isReadyToSend() { return true },
       send: sendStub
     }
     
@@ -97,8 +101,8 @@ test('always log to console when flag is set', t => {
 
 test('handle error with missing properties', t => {
     const mockMember = {
-      uuid: 'test-member-uuid',
-      get isReadyToSend() { return false }
+      uid() { return 'test-member-uuid'},
+      isReadyToSend() { return false }
     }
     
     const tool = Tool.ToolFactory({ currentMember: mockMember })
@@ -120,4 +124,28 @@ test('handle error with missing properties', t => {
     
     tool.sendError(testErrorWithoutStack)
   t.true(t.context.consoleStub.calledTwice)
+})
+
+
+test('log subscription events', t => {
+  const member = new MemberFactory()
+  member.strictValidationEvent = true
+  member.addTool(Tool)
+  member.makeRoom()
+  
+  const event = EventFactory(Types.Object.Def({ system: "test" }))
+  const subscriptionCallback = sinon.fake()
+  const loggingCallback = sinon.fake()
+  
+  member.subscribe(loggingSubscriptionEvent, loggingCallback)
+  
+  member.subscribe(event, subscriptionCallback)
+  
+  t.true(loggingCallback.calledOnce)
+  
+  const logPayload = loggingCallback.getCall(0).firstArg
+  t.truthy(logPayload.timestamp)
+  t.is(logPayload.sourceUuid, member.uid())
+  t.is(logPayload.eventHash, event.sign())
+  t.is(logPayload.action, 'Subscription')
 })

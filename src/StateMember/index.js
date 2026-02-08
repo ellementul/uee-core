@@ -34,7 +34,7 @@ export class StatesMember extends MemberFactory {
 
         if (this.checkValue(value)) {
             this._state = value
-            this.send(memberChangedEvent, { uuid: this.uuid, value, oldValue })
+            this.send(memberChangedEvent, { uuid: this.uid(), value, oldValue })
             
             // Call transition callback if exists
             const callbacks = this._transitionCallbacks.get(oldValue)
@@ -74,7 +74,7 @@ export class StatesMember extends MemberFactory {
     }
 
     checkState(value) {
-        if(this.debug)
+        if(this.strictValidationEvent)
             this.checkValue(value)
         
         return this._state === value

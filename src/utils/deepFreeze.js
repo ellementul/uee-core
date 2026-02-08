@@ -80,7 +80,7 @@ export function deepFreezeMsg(obj) {
     
     // Обработка Set
     if (currentObj instanceof Set) {
-      console.warn(`Set at path ${path.join('.')} will be converted to array`);
+      console.warn(`Set at path ${path.join('.').toString()} will be converted to array`);
       const array = [];
       for (const value of currentObj) {
         array.push(_deepFreeze(value, path));

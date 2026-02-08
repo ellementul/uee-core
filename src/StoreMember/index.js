@@ -1,4 +1,3 @@
-import { v3 as uuidv3 } from 'uuid'
 import { StatesMember } from '../StateMember/index.js'
 import { objectCreatedEvent, versionConflictEvent } from './events.js'
 import { convertDataToUint8Array } from '../utils/deepFreeze.js';
@@ -66,7 +65,7 @@ export class DataStore extends StatesMember {
       version,
       data: uint8Array,
       namespace: this.namespace,
-      storeUuid: this.uuid
+      storeUuid: this.uid()
     });
     
     // Обновление состояния
@@ -142,7 +141,7 @@ export class DataStore extends StatesMember {
         originalKey,
         conflictingVersion: localVersion,
         namespace: this.namespace,
-        storeUuid: this.uuid
+        storeUuid: this.uid()
       });
     }
     
@@ -151,7 +150,7 @@ export class DataStore extends StatesMember {
   
   handleObjectCreated(event) {
     // 1. Игнорируем события от самого себя
-    if (event.storeUuid === this.uuid) {
+    if (event.storeUuid === this.uid()) {
       console.log('Ignored self-created object event');
       return;
     }
@@ -220,7 +219,7 @@ export class DataStore extends StatesMember {
   
   handleVersionConflict(event) {
     // 1. Игнорируем события от самого себя
-    if (event.storeUuid === this.uuid) {
+    if (event.storeUuid === this.uid()) {
       console.log('Ignored self-generated conflict event');
       return;
     }

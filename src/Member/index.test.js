@@ -20,7 +20,7 @@ test('makeRoom', t => {
     const member = new MemberFactory
     member.makeRoom()
 
-    t.true(member.isReadyToSend)
+    t.true(member.isReadyToSend())
 })
 
 test('entre Room', t => {
@@ -213,9 +213,9 @@ test('DeleteMember', t => {
   mainRoom.addMember(mainMember)
 
   // Verify initial setup
-  t.true(mainRoom.tools.room.members.has(childRoom.uuid))
-  t.true(mainRoom.tools.room.members.has(mainMember.uuid))
-  t.true(childRoom.tools.room.members.has(member.uuid))
+  t.true(mainRoom.tools.room.members.has(childRoom.uid()))
+  t.true(mainRoom.tools.room.members.has(mainMember.uid()))
+  t.true(childRoom.tools.room.members.has(member.uid()))
 
   // Setup onDestroy callbacks
   const childRoomDestroyed = sinon.fake()
@@ -224,17 +224,17 @@ test('DeleteMember', t => {
   member.onDestroy = memberDestroyed
 
   // Delete the child room
-  mainRoom.deleteMember(childRoom.uuid)
+  mainRoom.deleteMember(childRoom.uid())
 
   // Verify child room is removed from main room
-  t.false(mainRoom.tools.room.members.has(childRoom.uuid))
-  t.true(mainRoom.tools.room.members.has(mainMember.uuid))
+  t.false(mainRoom.tools.room.members.has(childRoom.uid()))
+  t.true(mainRoom.tools.room.members.has(mainMember.uid()))
   
   // Verify child room's outsideRoom is cleared
-  t.falsy(childRoom.outsideRoom)
+  t.falsy(childRoom.isOutsideRoom())
   
   // Verify member's outsideRoom is cleared
-  t.falsy(member.outsideRoom)
+  t.falsy(member.isOutsideRoom())
   
   // Verify child room's members map is empty
   t.is(childRoom.tools.room.members.size, 0)

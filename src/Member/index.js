@@ -1,5 +1,5 @@
 import { Types } from "../Event/index.js"
-import { RoomFactory } from "../Tools/room.js"
+import { RoomFactory } from "../Tools/room/tool.js"
 
 export class MemberFactory {
 
@@ -10,15 +10,19 @@ export class MemberFactory {
         this.subscribedOutEvents = new Map
     }
 
-    get uuid() {
+    uid() {
         return this._uuid
     }
 
-    get isReadyToSend() {
+    isReadyToSend() {
         return !!(this.tools.room || this.outsideRoom)
     }
 
-    addTool({ name, ToolFactory, depends: { required }}) {
+    isOutsideRoom() {
+        return !!this.outsideRoom
+    }
+
+    addTool({ name, ToolFactory, depends: { required, optional }}) {
 
         const selfLinkName = "currentMember"
 
@@ -26,7 +30,7 @@ export class MemberFactory {
             const depends = { [selfLinkName]: this }
 
             if(required)
-                for (const [requiredName, requiredMethods] of required) {
+                for (const { requiredName, requiredMethods = [] } of required) {
                     if(requiredName === selfLinkName)
                         continue
 
@@ -42,6 +46,25 @@ export class MemberFactory {
                     depends[requiredName] = requiredTool
                 }
 
+            if(optional)
+                for (const  { requiredName, requiredMethods = [] } of optional) {
+                    if(requiredName === selfLinkName)
+                        continue
+
+                    
+                    if(this.tools[requiredName]) {
+                        let isOptionalTool = true
+                        const optionalTool = this.tools[requiredName]
+                        for (const requiredMethod of requiredMethods) {
+                            if(typeof optionalTool[requiredMethod] !== "function")
+                                isOptionalTool = false
+                        }
+
+                        if(isOptionalTool)
+                            depends[requiredName] = optionalTool
+                    }
+                }
+
             this.tools[name] = ToolFactory(depends)
         }
         catch(err) {
@@ -54,7 +77,16 @@ export class MemberFactory {
             if(inEvents?.length > 0)
                 this.inEvents = new Set(inEvents.map(event => event.sign()))
 
-            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: {}})
+            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: { 
+                required: [{ requiredName: "currentMember", requiredMethods: [
+                    "isOutsideRoom",
+                    "sendOutside",
+                    "throwError",
+                    "subscribeOut",
+                    "unsubscribeOut"
+                ] }],
+                optional: [{ requiredName: "logging", requiredMethods: ["subscribe"]}]
+            }})
 
             this.addMember = this.tools.room.addMember
             this.deleteMember = this.tools.room.deleteMember
@@ -65,7 +97,7 @@ export class MemberFactory {
     }
  
     send(typeMsg, payload) {
-        const msg = typeMsg.createMsg(payload, this.debug)
+        const msg = typeMsg.createMsg(payload, this.strictValidationEvent)
         this.sendEvent(msg)
     }
 
@@ -78,14 +110,18 @@ export class MemberFactory {
             throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
     }
 
+    sendOutside(msg) {
+        this.outsideRoom.sendEvent(msg)
+    }
+
     subscribe(msgType, callback, memberUuid, limit) {
         try {
             limit = limit || -1
-            memberUuid = memberUuid || this.uuid
+            memberUuid = memberUuid || this.uid()
 
-            if(this.tools.room)
+            if(this.tools.room) {
                 this.tools.room.subscribe(msgType, callback, memberUuid, limit)
-            else if(this.outsideRoom)
+            } else if(this.outsideRoom)
                 this.subscribeOut(msgType, callback, memberUuid, limit)
             else
                 throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
@@ -97,7 +133,7 @@ export class MemberFactory {
 
     unsubscribe(msgType, memberUuid) {
         try {
-            memberUuid = memberUuid || this.uuid
+            memberUuid = memberUuid || this.uid()
 
             if(this.tools.room)
                 this.tools.room.unsubscribe(msgType, memberUuid)
@@ -128,7 +164,7 @@ export class MemberFactory {
             if(this.inEvents && !this.inEvents.has(msgType.sign()))
                 return
 
-            const uid = this._uuid + "/" + memberUuid
+            const uid = this.uid() + "/" + memberUuid
             this.outsideRoom.subscribe(msgType, callback, uid + memberUuid, limit)
             this.subscribedOutEvents.set(memberUuid, msgType)
 
@@ -143,7 +179,7 @@ export class MemberFactory {
             if(this.inEvents && !this.inEvents.has(msgType.sign()))
                 return
 
-            const uid = this._uuid + "/" + memberUuid
+            const uid = this.uid() + "/" + memberUuid
             this.outsideRoom.unsubscribe(msgType, uid)
             this.subscribedOutEvents.delete(memberUuid)
 

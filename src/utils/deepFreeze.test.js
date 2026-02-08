@@ -2,6 +2,20 @@ import test from 'ava'
 import sinon from 'sinon'
 import { deepFreezeMsg } from './deepFreeze.js'
 
+test.beforeEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+    
+  t.context.consoleStub = sinon.stub(console, 'warn')
+})
+
+test.afterEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+})
+
 test('throws error for non-object payload', t => {
   t.throws(() => {
     deepFreezeMsg(null)
@@ -99,9 +113,9 @@ test('Uint8Array is not copied or frozen', t => {
 })
 
 test('other binary types are ignored with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = t.context.consoleStub
   
-  try {
+  
     const payload = {
       buffer: new ArrayBuffer(8),
       dataView: new DataView(new ArrayBuffer(8)),
@@ -116,30 +130,25 @@ test('other binary types are ignored with warning', t => {
     
     t.true(warnStub.calledWithMatch(/Binary type.*will be ignored/))
     t.is(warnStub.callCount, 3)
-  } finally {
-    warnStub.restore()
-  }
+  
 })
 
 test('Date objects are converted to timestamp objects with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = t.context.consoleStub
   
     const date = new Date('2023-01-01T00:00:00Z')
 
-    try {
-        const payload = {
-            date
-        }
-        
-        const frozen = deepFreezeMsg(payload)
-        
-        t.true(Object.isFrozen(frozen.date))
-        t.is(frozen.date._date, true)
-        t.is(frozen.date.timestamp, date.getTime())
-        t.true(warnStub.calledWithMatch(/Date object.*will be converted to unix timestamp/))
-    } finally {
-        warnStub.restore()
+    
+    const payload = {
+        date
     }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.true(Object.isFrozen(frozen.date))
+    t.is(frozen.date._date, true)
+    t.is(frozen.date.timestamp, date.getTime())
+    t.true(warnStub.calledWithMatch(/Date object.*will be converted to unix timestamp/))
 })
 
 test('Error objects are converted to plain objects', t => {
@@ -163,9 +172,9 @@ test('Error objects are converted to plain objects', t => {
 })
 
 test('Map is converted to plain object with warning', t => {
-  const warnStub = sinon.stub(console, 'warn').callsFake(() => {})
+  const warnStub = t.context.consoleStub.callsFake(() => {})
   
-  try {
+  
     const payload = {
       map: new Map([
         ['key1', 'value1'],
@@ -181,9 +190,7 @@ test('Map is converted to plain object with warning', t => {
 
     t.deepEqual(frozen.map, { key1: 'value1', key2: 'value2' })
     t.true(warnStub.calledWithMatch(/Map.*will be converted to plain object/))
-  } finally {
-    warnStub.restore()
-  }
+  
 })
 
 test('Map with non-string keys throws error', t => {
@@ -199,9 +206,9 @@ test('Map with non-string keys throws error', t => {
 })
 
 test('Set is converted to array with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = t.context.consoleStub
   
-  try {
+  
     const payload = {
       set: new Set(['value1', 'value2', 'value3'])
     }
@@ -211,15 +218,13 @@ test('Set is converted to array with warning', t => {
     t.true(Object.isFrozen(frozen.set))
     t.deepEqual(frozen.set, ['value1', 'value2', 'value3'])
     t.true(warnStub.calledWithMatch(/Set.*will be converted to array/))
-  } finally {
-    warnStub.restore()
-  }
+  
 })
 
 test('WeakMap and WeakSet are ignored with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = t.context.consoleStub
   
-  try {
+  
     const payload = {
       weakMap: new WeakMap(),
       weakSet: new WeakSet()
@@ -231,15 +236,13 @@ test('WeakMap and WeakSet are ignored with warning', t => {
     t.deepEqual(frozen.weakSet, {})
     t.true(warnStub.calledWithMatch(/WeakMap.*will be ignored/))
     t.true(warnStub.calledWithMatch(/WeakSet.*will be ignored/))
-  } finally {
-    warnStub.restore()
-  }
+  
 })
 
 test('RegExp is ignored with warning', t => {
-  const warnStub = sinon.stub(console, 'warn')
+  const warnStub = t.context.consoleStub
   
-  try {
+  
     const payload = {
       regex: /test/i
     }
@@ -248,9 +251,7 @@ test('RegExp is ignored with warning', t => {
     
     t.is(frozen.regex, null)
     t.true(warnStub.calledWithMatch(/RegExp.*will be ignored/))
-  } finally {
-    warnStub.restore()
-  }
+  
 })
 
 test('cyclic references throw error with path', t => {

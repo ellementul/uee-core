@@ -1,18 +1,4 @@
-import { EventFactory, Types } from '../Event/index.js'
-
-export const loggingErrorType = Types.Object.Def({
-    system: "Logging",
-    action: "Error",
-    timestamp: Types.Key.Def(),
-    sourceUuid: Types.UUID.Def(),
-    error: {
-        message: Types.String.Def(),
-        stack: Types.String.Def(),
-        name: Types.String.Def()
-    }
-}, true)
-
-export const loggingErrorEvent = EventFactory(loggingErrorType)
+import { loggingErrorEvent, loggingSubscriptionEvent } from "./events.js"
 
 function ToolFactory({ currentMember }) {
     let alwaysConsole = false
@@ -26,7 +12,7 @@ function ToolFactory({ currentMember }) {
             const timestamp = Date.now().toString()
             const errorPayload = {
                 timestamp,
-                sourceUuid: this.currentMember.uuid,
+                sourceUuid: this.currentMember.uid(),
                 error: {
                     message: error.message || "Unknown error",
                     stack: error.stack || "",
@@ -35,20 +21,30 @@ function ToolFactory({ currentMember }) {
             }
             
             try {
-                if (this.currentMember.isReadyToSend)
+                if (this.currentMember.isReadyToSend())
                     currentMember.send(loggingErrorEvent, errorPayload)
                 
-                if (!this.currentMember.isReadyToSend || alwaysConsole)
+                if (!this.currentMember.isReadyToSend() || alwaysConsole)
                     console.error(
-                        `[${(new Date()).toISOString()}] [${currentMember.uuid}]`,
+                        `[${(new Date()).toISOString()}] [${currentMember.uid()}]`,
                         error
                     )
             } catch(err) {
                 console.log(
-                    `[${(new Date()).toISOString()}] [${currentMember.uuid}]`,
+                    `[${(new Date()).toISOString()}] [${currentMember.uid()}]`,
                     err
                 )
             }
+        },
+        subscribe(msgType, memberUuid, limit) {
+            const timestamp = Date.now().toString()
+            this.currentMember.send(loggingSubscriptionEvent, {
+                timestamp,
+                uuid: this.currentMember.uid(),
+                sourceUuid: memberUuid,
+                eventHash: msgType.sign(),
+                limit
+            })
         }
     }
 }
@@ -56,5 +52,5 @@ function ToolFactory({ currentMember }) {
 export const Tool = {
     name: "logging",
     ToolFactory,
-    depends: { required: [["currentMember", []]] }
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "send"]}] }
 }
