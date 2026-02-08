@@ -6,8 +6,8 @@ export const loggingSubscriptionEvent = EventFactory(Types.Object.Def({
     system,
     action: "Subscription",
     timestamp: Types.Key.Def(),
-    uuid: Types.UUID.Def(),
     sourceUuid: Types.UUID.Def(),
+    subscribedMemberUuid: Types.UUID.Def(),
     eventHash: Types.Key.Def(),
     limit: Types.Number.Def(1024, -1, 0)
 }))

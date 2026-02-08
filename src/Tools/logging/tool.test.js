@@ -5,10 +5,6 @@ import { Tool } from './tool.js'
 import { EventFactory, Types } from '../../Event/index.js'
 import { MemberFactory } from '../../Member/index.js'
 
-function later(delay) {
-  return new Promise(resolve => setTimeout(resolve, delay))
-}
-
 test.beforeEach(t => {
   ['error', 'log', 'warn'].forEach(method => {
     if (console[method].restore) console[method].restore()

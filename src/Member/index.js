@@ -114,15 +114,20 @@ export class MemberFactory {
         this.outsideRoom.sendEvent(msg)
     }
 
-    subscribe(msgType, callback, memberUuid, limit) {
+    subscribe(msgType, callback, getSelfEvent, memberUuid, limit) {
+
+        if(getSelfEvent === undefined || getSelfEvent === null)
+            getSelfEvent = true
+
         try {
+
             limit = limit || -1
             memberUuid = memberUuid || this.uid()
 
             if(this.tools.room) {
-                this.tools.room.subscribe(msgType, callback, memberUuid, limit)
+                this.tools.room.subscribe(msgType, callback, memberUuid, getSelfEvent, limit)
             } else if(this.outsideRoom)
-                this.subscribeOut(msgType, callback, memberUuid, limit)
+                this.subscribeOut(msgType, callback, memberUuid, getSelfEvent, limit)
             else
                 throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
         }
@@ -159,13 +164,12 @@ export class MemberFactory {
         }
     }
 
-    subscribeOut(msgType, callback, memberUuid, limit) {
+    subscribeOut(msgType, callback, memberUuid, getSelfEvent, limit) {
         try {
             if(this.inEvents && !this.inEvents.has(msgType.sign()))
                 return
 
-            const uid = this.uid() + "/" + memberUuid
-            this.outsideRoom.subscribe(msgType, callback, uid + memberUuid, limit)
+            this.outsideRoom.subscribe(msgType, callback, memberUuid, getSelfEvent, limit)
             this.subscribedOutEvents.set(memberUuid, msgType)
 
         }

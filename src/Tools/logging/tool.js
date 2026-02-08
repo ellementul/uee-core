@@ -36,12 +36,12 @@ function ToolFactory({ currentMember }) {
                 )
             }
         },
-        subscribe(msgType, memberUuid, limit) {
+        subscribe(msgType, memberUuid, getSelfEvent, limit) {
             const timestamp = Date.now().toString()
             this.currentMember.send(loggingSubscriptionEvent, {
                 timestamp,
-                uuid: this.currentMember.uid(),
-                sourceUuid: memberUuid,
+                sourceUuid: this.currentMember.uid(),
+                subscribedMemberUuid: memberUuid,
                 eventHash: msgType.sign(),
                 limit
             })

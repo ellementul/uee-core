@@ -48,13 +48,27 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             }
         }
 
-        room.subscribe = (msgType, callback, memberUuid, limit) => {
+        room.subscribe = (msgType, callback, memberUuid, getSelfEvent, limit) => {
+
+            if(!getSelfEvent) {
+                const oldCallback = callback
+
+                const structureEvent = JSON.parse(msgType.toJSON().type)
+
+                if(!structureEvent.struct.sourceUuid)
+                    throw TypeError("Type message require sourceUuid to not get self event!")
+
+                callback = (msg) => {
+                    if(memberUuid !== msg.sourceUuid)
+                        oldCallback(msg)
+                }
+            }
 
             if(currentMember.isOutsideRoom())
-                currentMember.subscribeOut(msgType, callback, memberUuid, limit)
+                currentMember.subscribeOut(msgType, callback, memberUuid, getSelfEvent, limit)
 
             if(logging)
-                logging.subscribe(msgType, memberUuid, limit)
+                logging.subscribe(msgType, memberUuid, getSelfEvent, limit)
 
             provider.onEvent(msgType, callback, memberUuid, limit)
         }
