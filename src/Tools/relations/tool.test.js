@@ -27,6 +27,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   t.is(receivedPings[1].pingNumber, 2)
   t.is(receivedPings[1].receivedPings, 0)
   t.is(receivedPings[0].sourceUuid, member.uid())
+  t.is(receivedPings[0].status, "Created")
 })
 
 test('sendPing: периодическая отправка каждые 250мс', async t => {

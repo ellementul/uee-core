@@ -6,6 +6,7 @@ function ToolFactory({ currentMember, room }) {
     let pingNumber = 0
     let receivedPings = 0
     let role = "DefaultMember"
+    let status = "Created"
     let runTimestamp = Date.now()
 
     const memberList = new Map
@@ -26,6 +27,7 @@ function ToolFactory({ currentMember, room }) {
             timestamp,
             sourceUuid: currentMember.uid(),
             role,
+            status,
             runtime,
             parentUid: roomUuid,
             children,
@@ -53,6 +55,15 @@ function ToolFactory({ currentMember, room }) {
     return {
         setRole(newRole) {
             role = newRole || role
+        },
+        role() {
+            return role
+        },
+        setStatus(newStatus) {
+            status = newStatus || status
+        },
+        status() {
+            return status
         },
         sendPing
     }

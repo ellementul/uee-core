@@ -9,6 +9,7 @@ export const pingEvent = EventFactory(Types.Object.Def({
     timestamp: Types.Key.Def(),
     sourceUuid: Types.UUID.Def(),
     role: Types.Key.Def(),
+    status: Types.Key.Def(),
     runtime: Types.Key.Def(),
     parentUid: Types.Any.Def(Types.Const.Def(undefined), Types.UUID.Def()),
     children: Types.Array.Def(Types.UUID.Def(), 256, true),
