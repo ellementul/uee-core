@@ -14,6 +14,10 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
         if(outEvents?.length > 0)
             room.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
 
+        room.memberUid = () => currentMember.uid()
+
+        room.children = () =>[...room.members.keys()]
+
         room.destroy = () => {
             for (const [uuid, _] of room.members) {
                 room.deleteMember(uuid)

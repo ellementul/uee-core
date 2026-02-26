@@ -22,6 +22,10 @@ export class MemberFactory {
         return !!this.outsideRoom
     }
 
+    outsideRoomMemberUid() {
+        return this?.outsideRoom?.memberUid()
+    }
+
     addTool({ name, ToolFactory, depends: { required, optional }}) {
 
         const selfLinkName = "currentMember"
