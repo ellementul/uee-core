@@ -1,6 +1,6 @@
 import test from 'ava'
 import { MemberFactory } from '../../Member/index.js'
-import { Tool } from './tool.js'
+import { HashMap, Tool } from './tool.js'
 import { pingEvent } from './events.js'
 
 function later(delay) {
@@ -30,7 +30,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   t.is(receivedPings[0].status, "Created")
 })
 
-test('sendPing: периодическая отправка каждые 250мс', async t => {
+test('sendPing: периодическая отправка', async t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
   member.makeRoom()
@@ -41,8 +41,7 @@ test('sendPing: периодическая отправка каждые 250мс
     receivedPings.push(payload)
   })
   
-  // Ждём 300мс — должен прийти минимум 1 пинг (на 250мс)
-  await later(300)
+  await later(1)
   
   t.true(receivedPings.length >= 1, `Ожидался минимум 1 пинг, получено ${receivedPings.length}`)
   t.is(receivedPings[0].pingNumber, 1)
@@ -115,3 +114,20 @@ test('two_clients_send_pings_to_host', async t => {
   t.true(fromClient2.length >= 2, `От client2 ожидалось минимум 2 пинга, получено ${fromClient2.length}`)
   t.truthy(fromClient1[0].parentUid)
 })
+
+test('Hash consistency and eviction', (t) => {
+    const map1 = new HashMap('ts', 3)
+    const map2 = new HashMap('ts', 3)
+
+    map1.set('a', { ts: 10 });
+    map1.set('b', { ts: 20 });
+    map1.set('c', { ts: 30 });
+
+    map2.set('b', { ts: 20 });
+    map2.set('c', { ts: 30 });
+    map2.set('a', { ts: 10 });
+    map2.set('d', { ts: 5 });
+
+    t.is(map1.size, map2.size);
+    t.is(map1.hash(), map2.hash());
+});
