@@ -2,7 +2,7 @@ import test from 'ava'
 import sinon from 'sinon'
 import sha1 from 'sha1'
 import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent } from './events.js'
-import { Tool } from './tool.js'
+import { LogTool } from './tool.js'
 import { EventFactory, Types } from '../../Event/index.js'
 import { MemberFactory } from '../../Member/index.js'
 
@@ -24,7 +24,7 @@ test('tool_initialization', t => {
         isReadyToSend() { return true }
     }
   
-    const tool = Tool.ToolFactory({ currentMember: mockMember })
+    const tool = LogTool.ToolFactory({ currentMember: mockMember })
   
     t.is(typeof tool.sendError, 'function')
     t.is(typeof tool.setAlwaysConsole, 'function')
@@ -34,7 +34,7 @@ test('add tool in member', t => {
     const member = new MemberFactory
     member.strictValidationEvent = true
 
-    member.addTool(Tool)
+    member.addTool(LogTool)
     member.makeRoom()
 
     const event = EventFactory(Types.Object.Def({ system: "test" }))
@@ -58,7 +58,7 @@ test('log to console when member is not ready', t => {
     isReadyToSend() { return false }
   }
   
-  const tool = Tool.ToolFactory({ currentMember: mockMember })
+  const tool = LogTool.ToolFactory({ currentMember: mockMember })
   
   const testError = new Error('Test error not ready')
   
@@ -80,7 +80,7 @@ test('always log to console when flag is set', t => {
       sendEvent: sendStub
     }
     
-    const tool = Tool.ToolFactory({ currentMember: mockMember })
+    const tool = LogTool.ToolFactory({ currentMember: mockMember })
     
     // Устанавливаем флаг дублирования в консоль
     tool.setAlwaysConsole(true)
@@ -102,7 +102,7 @@ test('handle error with missing properties', t => {
       isReadyToSend() { return false }
     }
     
-    const tool = Tool.ToolFactory({ currentMember: mockMember })
+    const tool = LogTool.ToolFactory({ currentMember: mockMember })
     
     // Ошибка без message и stack
     const rawError = {}
@@ -127,7 +127,7 @@ test('handle error with missing properties', t => {
 test('log subscription events', t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
-  member.addTool(Tool)
+  member.addTool(LogTool)
   member.makeRoom()
   
   

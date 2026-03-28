@@ -1,6 +1,6 @@
 import test from 'ava'
 import { MemberFactory } from '../../Member/index.js'
-import { HashMap, Tool } from './tool.js'
+import { HashMap, RelationTool as Tool } from './tool.js'
 import { pingEvent } from './events.js'
 
 function later(delay) {

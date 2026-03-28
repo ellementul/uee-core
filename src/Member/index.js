@@ -85,7 +85,7 @@ export class MemberFactory {
 
             const tool = this.tools[name]
             if(typeof tool.subscribeEvents == "function" && this.isReadyToSend())
-                tool.subscribeEvents(this.subscribe.bind(this))
+                tool.subscribeEvents(this.subscribeTool.bind(this))
         }
         catch(err) {
             this.throwError(err)
@@ -114,7 +114,7 @@ export class MemberFactory {
             for(const toolName in this.tools){
                 const tool = this.tools[toolName]
                 if(typeof tool.subscribeEvents == "function")
-                    tool.subscribeEvents(this.subscribe.bind(this))
+                    tool.subscribeEvents(this.subscribeTool.bind(this))
             }
         }
         catch(err) {
@@ -166,6 +166,10 @@ export class MemberFactory {
         }
     }
 
+    subscribeTool(msgType, callback, toolName) {
+        this.subscribe(msgType, callback, `${this.uid()}:tool:${toolName}`)
+    }
+
     unsubscribe(msgType, memberUuid) {
         try {
             memberUuid = memberUuid || this.uid()
@@ -192,7 +196,7 @@ export class MemberFactory {
             for(const toolName in this.tools){
                 const tool = this.tools[toolName]
                 if(typeof tool.subscribeEvents == "function")
-                    tool.subscribeEvents(this.subscribe.bind(this))
+                    tool.subscribeEvents(this.subscribeTool.bind(this))
             }
         }
         catch(err) {

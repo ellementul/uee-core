@@ -83,7 +83,7 @@ function ToolFactory({ currentMember }) {
     }
 }
 
-export const Tool = {
+export const LogTool = {
     name: "logging",
     ToolFactory,
     depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "sendEvent"]}] }

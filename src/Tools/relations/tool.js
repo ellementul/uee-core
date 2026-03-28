@@ -8,7 +8,7 @@ function ToolFactory({ currentMember, room }) {
     let role = "DefaultRole"
     let status = "Created"
     let runTimestamp = Date.now()
-    let pingDelay = Tool.pingDelay || 250
+    let pingDelay = RelationTool.pingDelay || 250
 
     let makeJitter = delay => delay + delay * Math.random() / 10
 
@@ -123,7 +123,7 @@ function ToolFactory({ currentMember, room }) {
     }
 }
 
-export const Tool = {
+export const RelationTool = {
     name: "Relations",
     ToolFactory,
     pingDelay: 250,
