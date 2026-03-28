@@ -16,7 +16,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   const receivedPings = []
   member.subscribe(pingEvent, (payload) => {
     receivedPings.push(payload)
-  })
+  }, true, "TestEnv")
   
   member.tools.Relations.setRole('Tester')
   member.tools.Relations.sendPing()
@@ -24,10 +24,16 @@ test('sendPing: отправляет ping при вызове', async t => {
   
   t.is(receivedPings[0].role, 'Tester')
   t.is(receivedPings[0].pingNumber, 1)
-  t.is(receivedPings[1].pingNumber, 2)
-  t.is(receivedPings[1].receivedPings, 0)
+  t.is(receivedPings[0].receivedPings, 0)
   t.is(receivedPings[0].sourceUuid, member.uid())
   t.is(receivedPings[0].status, "Created")
+  t.is(receivedPings[0].memberListSize, 0)
+  t.falsy(receivedPings[0].memberListHash)
+
+  t.is(receivedPings[1].pingNumber, 2)
+  t.is(receivedPings[1].receivedPings, 1)
+  t.is(receivedPings[1].memberListSize, 1)
+  t.truthy(receivedPings[1].memberListHash)
 })
 
 test('sendPing: периодическая отправка', async t => {
@@ -35,6 +41,7 @@ test('sendPing: периодическая отправка', async t => {
   member.strictValidationEvent = true
   member.makeRoom()
   member.addTool(Tool)
+  member.tools.Relations.setRole("member")
   
   const receivedPings = []
   member.subscribe(pingEvent, (payload) => {
@@ -72,6 +79,7 @@ test('tool_requires_room_dependency', t => {
     receivedPings.push(payload)
   })
   
+  host.tools.Relations.setRole("host")
   host.tools.Relations.sendPing()
   
   t.is(receivedPings.length, 1)
@@ -90,29 +98,49 @@ test('two_clients_send_pings_to_host', async t => {
   client2.makeRoom()
   
   // Инструмент только у клиентов
+  Tool.pingDelay = 50
   client1.addTool(Tool)
   client2.addTool(Tool)
+  client1.tools.Relations.setRole("client1")
+  client2.tools.Relations.setRole("client2")
   
   // Клиенты подключаются к host
   host.addMember(client1)
   host.addMember(client2)
   
-  const receivedPings = []
-  host.subscribe(pingEvent, (payload) => {
-    receivedPings.push(payload)
-  })
+  const gotClient1 = []
+  client1.subscribe(pingEvent, (payload) => {
+    if(payload.sourceUuid != client1.uid()) {
+      gotClient1.push(payload)
+    }
+  }, null, "TestEnvClient1")
+
+  // client1.subscribe(pingEvent, console.log, false, client1.uid())
+
+  const gotClient2 = []
+  client2.subscribe(pingEvent, (payload) => {
+    if(payload.sourceUuid != client2.uid())
+      gotClient2.push(payload)
+  }, null, "TestEnvClient2")
+
+  client2.tools.Relations.sendPing()
   
-  await later(600)
+  await later(100)
   
-  t.true(receivedPings.length >= 4, `Ожидалось минимум 4 пинга, получено ${receivedPings.length}`)
-  t.true(receivedPings.length <= 6, `Ожидалось максимум 6 пингов, получено ${receivedPings.length}`)
-  
-  const fromClient1 = receivedPings.filter(p => p.sourceUuid === client1.uid())
-  const fromClient2 = receivedPings.filter(p => p.sourceUuid === client2.uid())
-  
-  t.true(fromClient1.length >= 2, `От client1 ожидалось минимум 2 пинга, получено ${fromClient1.length}`)
-  t.true(fromClient2.length >= 2, `От client2 ожидалось минимум 2 пинга, получено ${fromClient2.length}`)
-  t.truthy(fromClient1[0].parentUid)
+  t.true(gotClient1.length >= 2, `От client1 ожидалось минимум 2 пинга, получено ${gotClient1.length}`)
+  t.is(gotClient1[0].parentUid, host.uid())
+  t.is(gotClient1[0].children.length, 0)
+  t.is(gotClient1[0].sourceUuid, client2.uid())
+  t.is(gotClient1[1].memberListSize, 2)
+
+
+  t.true(gotClient2.length >= 2, `От client2 ожидалось минимум 2 пинга, получено ${gotClient2.length}`)
+  t.is(gotClient2[0].parentUid, host.uid())
+  t.is(gotClient2[0].children.length, 0)
+  t.is(gotClient2[0].sourceUuid, client1.uid())
+  t.is(gotClient2[1].memberListSize, 2)
+
+  t.is(gotClient2[1].memberListHash, gotClient1[1].memberListHash)
 })
 
 test('Hash consistency and eviction', (t) => {

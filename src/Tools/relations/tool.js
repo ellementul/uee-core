@@ -5,12 +5,14 @@ import { pingEvent } from "./events.js"
 function ToolFactory({ currentMember, room }) {
     let pingNumber = 0
     let receivedPings = 0
-    let role = "DefaultMember"
+    let role = "DefaultRole"
     let status = "Created"
     let runTimestamp = Date.now()
-    let pingDelay = 250
+    let pingDelay = Tool.pingDelay || 250
 
-    const memberList = new HashMap("receivingTime")
+    let makeJitter = delay => delay + delay * Math.random() / 10
+
+    const memberList = new HashMap("receivedLastPingTime")
 
     const sendPing = () => {
         if(!currentMember.isReadyToSend())
@@ -44,21 +46,67 @@ function ToolFactory({ currentMember, room }) {
         } catch (error) {
             currentMember.throwError(error)
         } finally {
-            setTimeout(recursiveTimer, pingDelay)
+            setTimeout(recursiveTimer, makeJitter(pingDelay))
         }
     }
 
     setTimeout(recursiveTimer, 0)
 
-    currentMember.subscribe(pingEvent, (ping) => {
+    const receivePing = ({ 
+        role: memberRole, 
+        memberStatus, 
+        sourceUuid, 
+        timestamp, 
+        receivedPings: 
+        memberReceivedPings,  
+        memberListSize, 
+        memberListHash, 
+        parentUid, 
+        children 
+    }) => {
         receivedPings += 1
 
-        // add member
-        console.log(ping)
-        //memberList.set(memberInfo)
-    }, false)
+        const memberRecord = memberList.get(sourceUuid) 
+
+        let pingCount = 1
+        let receivedFirstPingTime = Date.now().toString()
+        let receivedLastPingTime = Date.now().toString()
+        let memberSentFirstPingTime = timestamp
+        let memberSentLastPingTime = timestamp
+
+        if(memberRecord) {
+            pingCount += memberRecord.pingsInfo.pingCount
+            receivedFirstPingTime = memberRecord.pingsInfo.receivedFirstPingTime
+            memberSentFirstPingTime = memberRecord.pingsInfo.sentFirstPingTime
+        }
+
+
+        const memberInfo = {
+            memberRole,
+            memberStatus,
+            receivedLastPingTime,
+            memberListSize,
+            memberListHash,
+            pingsInfo: {
+                pingCount,
+                memberReceivedPings,
+                receivedFirstPingTime,
+                memberSentFirstPingTime,
+                memberSentLastPingTime
+            },
+            relations: {
+                parentUid, 
+                children
+            }
+        }
+
+        memberList.set(sourceUuid, memberInfo)
+    }
 
     return {
+        subscribeEvents(subscribe) {
+            subscribe(pingEvent, receivePing)
+        },
         setRole(newRole) {
             role = newRole || role
         },
@@ -78,6 +126,7 @@ function ToolFactory({ currentMember, room }) {
 export const Tool = {
     name: "Relations",
     ToolFactory,
+    pingDelay: 250,
     depends: { 
         required: [
             { requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "send", "throwError"]},
@@ -105,6 +154,10 @@ export class HashMap  {
 
     hash() {
         return this._hash
+    }
+
+    keys() {
+        return [...this.map.keys()]
     }
 
     get(key) {

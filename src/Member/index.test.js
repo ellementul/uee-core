@@ -69,6 +69,34 @@ test('subscribeToOutsideRoom', async t => {
     t.true(callback.calledOnceWith({ system: "test" }))
 })
 
+test('three room: bubbling and subscribe level up', async t => {
+  const host = new MemberFactory()
+  const client1 = new MemberFactory()
+  const client2 = new MemberFactory()
+  
+  host.makeRoom()
+  client1.makeRoom()
+  client2.makeRoom()
+  
+  host.addMember(client1)
+  host.addMember(client2)
+  
+    const event = EventFactory(Types.Object.Def({ system: "test", sourceUuid: Types.UUID.Def() }))
+
+    const gotClient1 = []
+    client1.subscribe(event, (payload) => gotClient1.push(payload), false, client1.uid())
+
+    const gotClient2 = []
+    client2.subscribe(event, (payload) => gotClient2.push(payload))
+
+    client2.send(event, { sourceUuid: client2.uid() })
+    
+    await later(100)
+    
+    t.is(gotClient1.length, 1)
+    t.is(gotClient2.length, 2)
+})
+
 test('Bubble event', async t => {
     const room = new MemberFactory
     room.makeRoom()

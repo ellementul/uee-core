@@ -35,8 +35,20 @@ export class MemberFactory {
 
             if(required)
                 for (const { requiredName, requiredMethods = [] } of required) {
-                    if(requiredName === selfLinkName)
+                    if(requiredName === selfLinkName){
+                        for (const requiredMethod of requiredMethods) {
+                            if(requiredMethod == "subscribe")
+                                throw TypeError(`
+                                    Not use subscribe outside subscribeEvents method in tool!
+                                    Or use room.subscribe tool method direct!
+                                `)
+
+                            if(typeof this[requiredMethod] !== "function")
+                                throw TypeError(`Not found method on depend tool: ${requiredName}.${requiredMethod}`)
+                        }
+
                         continue
+                    }
 
                     if(!this.tools[requiredName])
                         throw TypeError(`Not found depend: ${requiredName}`)
@@ -70,6 +82,10 @@ export class MemberFactory {
                 }
 
             this.tools[name] = ToolFactory(depends)
+
+            const tool = this.tools[name]
+            if(typeof tool.subscribeEvents == "function" && this.isReadyToSend())
+                tool.subscribeEvents(this.subscribe.bind(this))
         }
         catch(err) {
             this.throwError(err)
@@ -94,6 +110,12 @@ export class MemberFactory {
 
             this.addMember = this.tools.room.addMember
             this.deleteMember = this.tools.room.deleteMember
+
+            for(const toolName in this.tools){
+                const tool = this.tools[toolName]
+                if(typeof tool.subscribeEvents == "function")
+                    tool.subscribeEvents(this.subscribe.bind(this))
+            }
         }
         catch(err) {
             this.throwError(err)
@@ -166,6 +188,12 @@ export class MemberFactory {
 
             if(typeof this.onJoinRoom == "function")
                 this.onJoinRoom()
+
+            for(const toolName in this.tools){
+                const tool = this.tools[toolName]
+                if(typeof tool.subscribeEvents == "function")
+                    tool.subscribeEvents(this.subscribe.bind(this))
+            }
         }
         catch(err) {
             this.throwError(err)
