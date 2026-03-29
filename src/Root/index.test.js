@@ -1,17 +1,17 @@
 import test from 'ava'
-import { RootFactory } from './index.js'
+import { LoggerFactory } from './index.js'
 
 function later(delay) {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
 test('Build tree', async t => {
-  const root = new RootFactory()
+  const root = new LoggerFactory()
   root.strictValidationEvent = true
 
-  root.addMember(new RootFactory())
-  root.addMember(new RootFactory())
-  root.addMember(new RootFactory())
+  root.addMember(new LoggerFactory())
+  root.addMember(new LoggerFactory())
+  root.addMember(new LoggerFactory())
 
   await later(1)
 

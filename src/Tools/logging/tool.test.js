@@ -20,7 +20,7 @@ test.afterEach(t => {
 
 test('tool_initialization', t => {
     const mockMember = {
-        uid() { return 'test-member-uuid'},
+        uid() { return 'test-member-uid'},
         isReadyToSend() { return true }
     }
   
@@ -54,7 +54,7 @@ test('add tool in member', t => {
 
 test('log to console when member is not ready', t => {
   const mockMember = {
-    uid() { return 'test-member-uuid'},
+    uid() { return 'test-member-uid'},
     isReadyToSend() { return false }
   }
   
@@ -67,7 +67,7 @@ test('log to console when member is not ready', t => {
   t.true(t.context.consoleStub.calledOnce)
   
   const consoleArgs = t.context.consoleStub.firstCall.args
-  t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
+  t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
   t.is(consoleArgs[1], testError)
 })
 
@@ -75,7 +75,7 @@ test('always log to console when flag is set', t => {
     const sendStub = sinon.stub()
     
     const mockMember = {
-      uid() { return 'test-member-uuid'},
+      uid() { return 'test-member-uid'},
       isReadyToSend() { return true },
       sendEvent: sendStub
     }
@@ -98,7 +98,7 @@ test('always log to console when flag is set', t => {
 
 test('handle error with missing properties', t => {
     const mockMember = {
-      uid() { return 'test-member-uuid'},
+      uid() { return 'test-member-uid'},
       isReadyToSend() { return false }
     }
     
@@ -113,7 +113,7 @@ test('handle error with missing properties', t => {
     t.true(t.context.consoleStub.calledOnce)
     
     const consoleCall = t.context.consoleStub.firstCall
-    t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uuid\]/)
+    t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
     
     // Проверяем, что обрабатываются ошибки без стека и сообщения
     const testErrorWithoutStack = new Error('No stack')

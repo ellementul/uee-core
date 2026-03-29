@@ -29,6 +29,7 @@ function ToolFactory({ currentMember, room }) {
             pingNumber,
             timestamp,
             sourceUid: currentMember.uid(),
+            name: currentMember.name(),
             role,
             status,
             runtime,
@@ -129,7 +130,7 @@ export const RelationTool = {
     pingDelay: 250,
     depends: { 
         required: [
-            { requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "send", "throwError"]},
+            { requiredName: "currentMember" , requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError"]},
             { requiredName: "room", requiredMethods: ["children"]}
         ]
     }

@@ -19,8 +19,8 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
         room.children = () =>[...room.members.keys()]
 
         room.destroy = () => {
-            for (const [uuid, _] of room.members) {
-                room.deleteMember(uuid)
+            for (const [uid, _] of room.members) {
+                room.deleteMember(uid)
             }
 
             room.outEvent = null
@@ -31,11 +31,11 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             newMember.setOutsideRoom(room)
         }
 
-        room.deleteMember = (uuid) => {
-            const member = room.members.get(uuid)
+        room.deleteMember = (uid) => {
+            const member = room.members.get(uid)
 
             if(member) {
-                room.members.delete(uuid)
+                room.members.delete(uid)
                 member.destroy()
             }
         }

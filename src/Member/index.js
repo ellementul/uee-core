@@ -3,15 +3,20 @@ import { RoomFactory } from "../Tools/room/tool.js"
 
 export class MemberFactory {
 
-    constructor() {
+    constructor(name = "Member") {
         this.tools = {}
-        this._uuid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
+        this._uid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
+        this._name = name
 
         this.subscribedOutEvents = new Map
     }
 
     uid() {
-        return this._uuid
+        return this._uid
+    }
+
+    name() {
+        return this._name
     }
 
     isReadyToSend() {
@@ -245,8 +250,8 @@ export class MemberFactory {
             }
 
             if(this.outsideRoom) {
-                for (const [uuid, typeMsg] of this.subscribedOutEvents) {
-                    this.outsideRoom.unsubscribe(typeMsg, uuid)
+                for (const [uid, typeMsg] of this.subscribedOutEvents) {
+                    this.outsideRoom.unsubscribe(typeMsg, uid)
                 }
                 this.outsideRoom = null
             }

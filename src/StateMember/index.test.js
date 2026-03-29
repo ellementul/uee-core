@@ -48,7 +48,7 @@ test('setState with valid value', async t => {
 
     await later(0)
     const message = callback.getCalls()[0].firstArg
-    t.deepEqual(message, memberChangedEvent.createMsg({ uuid: member.uid(), oldValue: DEFAULT_STATE, value }))
+    t.deepEqual(message, memberChangedEvent.createMsg({ uid: member.uid(), oldValue: DEFAULT_STATE, value }))
 })
 
 test('setState with invalid value when not ready to send', t => {

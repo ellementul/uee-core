@@ -6,14 +6,14 @@ import { LoggingTreeTool } from "../Tools/relationsTree/tool.js"
 
 import fs from 'fs'
 
-export class RootFactory extends MemberFactory {
-    constructor() {
-        super()
+export class LoggerFactory extends MemberFactory {
+    constructor(name = "LoggerMember") {
+        super(name)
 
         this.makeRoom()
         this.addTool(LogTool)
         this.addTool(RelationTool)
-        this.tools.Relations.setRole("Root")
+        this.tools.Relations.setRole("Logger")
         this.addTool(LoggingTreeTool)
     }
 

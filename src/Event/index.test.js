@@ -63,7 +63,7 @@ test('calling', t => {
 	t.truthy(secondCall.calledWith(payload))
 })
 
-test('calling with the same uuid', t => {
+test('calling with the same uid', t => {
 	const event = EventFactory(Types.Key.Def(3))
 	const payload = "TestPayload"
 

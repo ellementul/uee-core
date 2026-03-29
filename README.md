@@ -131,7 +131,7 @@ member.onDestroy = () => { console.log("Member is being destroyed") }
 room.addMember(member)
 
 // Delete member from room
-room.deleteMember(member.uuid)
+room.deleteMember(member.uid)
 ```
 
 ### Creating and Sending Events
