@@ -18,8 +18,9 @@ export class LoggerFactory extends MemberFactory {
     }
 
     genTopologyToMd() {
-        const { roles, edges } = this.tools.LoggingTree.topology()
-        const mdCode = generateMermaid(roles, edges)
+        const { roles, edges, names } = this.tools.LoggingTree.topology()
+
+        const mdCode = generateMermaid(names, edges)
 
         writeFileSync("./mermaid.md", mdCode)
     }
@@ -28,10 +29,7 @@ export class LoggerFactory extends MemberFactory {
 function generateMermaid(defs, connections) {
     let code = '```mermaid\n flowchart TD\n'
 
-    defs.forEach(([id, name]) => {
-        const label = `${name}:${id.replace('-', '').slice(-4)}`
-        code += `    ${id}[${label}]\n`
-    })
+    defs.forEach(([id, name]) => code += `    ${id}[${name}]\n`)
 
     code += `\n`
 

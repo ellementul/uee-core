@@ -3,6 +3,7 @@ import { pingEvent } from "./events.js"
 function ToolFactory() {
     
     const nodes = new Map
+    const names = new Map
 
     const upsertNode = (nodeId) => {
         if(!nodes.has(nodeId) && nodeId)
@@ -18,6 +19,21 @@ function ToolFactory() {
             childSet.add(child)
     }
 
+    const upsertName = (name, nodeId) => {
+
+        let uid = names.get(name)
+        for (let charsFromId = 0; uid !== nodeId; charsFromId++) {
+            if(!names.has(name))
+                names.set(name, nodeId)
+            else
+                name += nodeId[charsFromId]
+
+            uid = names.get(name)
+        }
+        
+        return name
+    }
+
     const addNodeAttr = (nodeId, attrName, data) =>  {
         upsertNode(nodeId)
 
@@ -26,11 +42,14 @@ function ToolFactory() {
 
     const receivePing = ({
         role,
+        name,
         sourceUid, 
         parentUid, 
         children 
     }) => {
         addNodeAttr(sourceUid, "role", role)
+        addNodeAttr(sourceUid, "name", upsertName(name, sourceUid))
+        
 
         if(parentUid) {
             upsertNode(parentUid)
@@ -61,17 +80,19 @@ function ToolFactory() {
         topology() {
             const edges = []
             const roles = []
+            const names = []
 
             for (const [nodeId] of nodes) {
 
                 roles.push([nodeId, this.getNodeAttr(nodeId, "role")])
+                names.push([nodeId, this.getNodeAttr(nodeId, "name")])
 
                 for (const childId of nodes.get(nodeId).children) {
                     edges.push([nodeId, childId])
                 }
             }
 
-            return { edges, roles }
+            return { edges, roles, names }
         }
     }
 }

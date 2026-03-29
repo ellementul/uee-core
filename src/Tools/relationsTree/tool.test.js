@@ -2,6 +2,7 @@ import test from 'ava'
 import { MemberFactory } from '../../Member/index.js'
 import { LoggingTreeTool as Tool } from './tool.js'
 import { pingEvent } from './events.js'
+import { LoggerFactory } from '../../LoggerMember/index.js'
 
 function later(delay) {
   return new Promise(resolve => setTimeout(resolve, delay))
@@ -21,15 +22,18 @@ test('Build tree', async t => {
   member.send(pingEvent, {
     sourceUid: rootId,
     parentUid: undefined,
-    role: "Root",
+    role: "Logger",
+    name: "Root",
     children: []
   })
 
   t.truthy(member.tools.LoggingTree)
   t.truthy(member.tools.LoggingTree.getNode(rootId))
+  t.is(member.tools.LoggingTree.getNodeAttr(rootId, "name"), "Root")
 
   member.send(pingEvent, {
     role: "child1",
+    name: "Child",
     parentUid: rootId,
     sourceUid: childId1,
     children: []
@@ -37,6 +41,7 @@ test('Build tree', async t => {
 
   t.truthy(member.tools.LoggingTree.getNode(childId1))
   t.deepEqual(member.tools.LoggingTree.getChildren(rootId), [childId1])
+  t.is(member.tools.LoggingTree.getNodeAttr(childId1, "name"), "Child")
 
   member.send(pingEvent, {
     role: "child1",
@@ -69,4 +74,18 @@ test('Attrs', async t => {
 
   t.deepEqual(member.tools.LoggingTree.getNode(rootId), { test: true })
 
+})
+
+
+test('Duplicate names', async t => {
+  const member = new LoggerFactory()
+  member.strictValidationEvent = true
+  
+  const member2 = new LoggerFactory()
+  member.addMember(member2)
+
+  await later(1)
+
+  t.is(member.tools.LoggingTree.getNodeAttr(member.uid(), "name"), "LoggerMember")
+  t.is(member.tools.LoggingTree.getNodeAttr(member2.uid(), "name"), "LoggerMember" + member2.uid()[0])
 })

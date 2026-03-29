@@ -1,11 +1,11 @@
 ```mermaid
  flowchart TD
-    eY1Yvx4ZXwZQSTstXbcW2bEYK969HQr67dfRx1lq[Logger:x1lq]
-    BCXeOafmHJ1kGq0YdLue2cuyQL2hDHYO_HNrWxI[Logger:rWxI]
-    ZTqRH0ezntRN4Dn4qcuyIz3w6IDgfTCeSjhAiqLZ[Logger:iqLZ]
-    A7mD8p3A4dqghIGgdSt3CqiqdbUeJ79kGadBKeVg[Logger:KeVg]
+    Z0XsZ5iZe1zG9kzBP53LcuHSx1TfZ_GejFGr2j1[LoggerMember]
+    BV2Gc4v9Dbd9x0PH6KkAtgAlOvDf1phjjrXtBWBs[LoggerMemberB]
+    7QxQjg6ORqecj0839jolAcg0D0anTwFgH8f8BqZe[LoggerMember7]
+    HWw6wc36Wc1xQly6M0j0u4xuyo1TmC3SQd3Rs4hw[LoggerMemberH]
 
-    eY1Yvx4ZXwZQSTstXbcW2bEYK969HQr67dfRx1lq --> BCXeOafmHJ1kGq0YdLue2cuyQL2hDHYO_HNrWxI
-    eY1Yvx4ZXwZQSTstXbcW2bEYK969HQr67dfRx1lq --> ZTqRH0ezntRN4Dn4qcuyIz3w6IDgfTCeSjhAiqLZ
-    eY1Yvx4ZXwZQSTstXbcW2bEYK969HQr67dfRx1lq --> A7mD8p3A4dqghIGgdSt3CqiqdbUeJ79kGadBKeVg
+    Z0XsZ5iZe1zG9kzBP53LcuHSx1TfZ_GejFGr2j1 --> BV2Gc4v9Dbd9x0PH6KkAtgAlOvDf1phjjrXtBWBs
+    Z0XsZ5iZe1zG9kzBP53LcuHSx1TfZ_GejFGr2j1 --> 7QxQjg6ORqecj0839jolAcg0D0anTwFgH8f8BqZe
+    Z0XsZ5iZe1zG9kzBP53LcuHSx1TfZ_GejFGr2j1 --> HWw6wc36Wc1xQly6M0j0u4xuyo1TmC3SQd3Rs4hw
 ```
