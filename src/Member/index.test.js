@@ -81,7 +81,7 @@ test('three room: bubbling and subscribe level up', async t => {
   host.addMember(client1)
   host.addMember(client2)
   
-    const event = EventFactory(Types.Object.Def({ system: "test", sourceUuid: Types.UUID.Def() }))
+    const event = EventFactory(Types.Object.Def({ system: "test", sourceUid: Types.Key.Def(3) }))
 
     const gotClient1 = []
     client1.subscribe(event, (payload) => gotClient1.push(payload), false, client1.uid())
@@ -89,7 +89,7 @@ test('three room: bubbling and subscribe level up', async t => {
     const gotClient2 = []
     client2.subscribe(event, (payload) => gotClient2.push(payload))
 
-    client2.send(event, { sourceUuid: client2.uid() })
+    client2.send(event, { sourceUid: client2.uid() })
     
     await later(100)
     

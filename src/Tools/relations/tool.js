@@ -22,17 +22,17 @@ function ToolFactory({ currentMember, room }) {
         const timestamp = Date.now().toString()
         const runtime = (Date.now() - runTimestamp).toString()
 
-        const roomUuid = currentMember.outsideRoomMemberUid()
+        const roomUid = currentMember.outsideRoomMemberUid()
         const children = room.children()
 
         currentMember.send(pingEvent, {
             pingNumber,
             timestamp,
-            sourceUuid: currentMember.uid(),
+            sourceUid: currentMember.uid(),
             role,
             status,
             runtime,
-            parentUid: roomUuid,
+            parentUid: roomUid,
             children,
             memberListSize: memberList.size,
             memberListHash: memberList.hash(),
@@ -55,7 +55,7 @@ function ToolFactory({ currentMember, room }) {
     const receivePing = ({ 
         role: memberRole, 
         memberStatus, 
-        sourceUuid, 
+        sourceUid, 
         timestamp, 
         receivedPings: 
         memberReceivedPings,  
@@ -66,7 +66,7 @@ function ToolFactory({ currentMember, room }) {
     }) => {
         receivedPings += 1
 
-        const memberRecord = memberList.get(sourceUuid) 
+        const memberRecord = memberList.get(sourceUid) 
 
         let pingCount = 1
         let receivedFirstPingTime = Date.now().toString()
@@ -100,7 +100,7 @@ function ToolFactory({ currentMember, room }) {
             }
         }
 
-        memberList.set(sourceUuid, memberInfo)
+        memberList.set(sourceUid, memberInfo)
     }
 
     return {

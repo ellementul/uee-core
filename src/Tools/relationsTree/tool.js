@@ -26,18 +26,18 @@ function ToolFactory() {
 
     const receivePing = ({
         role,
-        sourceUuid, 
+        sourceUid, 
         parentUid, 
         children 
     }) => {
-        addNodeAttr(sourceUuid, "role", role)
+        addNodeAttr(sourceUid, "role", role)
 
         if(parentUid) {
             upsertNode(parentUid)
-            upsertRelation(parentUid, sourceUuid)
+            upsertRelation(parentUid, sourceUid)
         }
 
-        children.forEach(child => upsertRelation(sourceUuid, child))
+        children.forEach(child => upsertRelation(sourceUid, child))
     }
 
     return {

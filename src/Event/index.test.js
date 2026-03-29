@@ -48,7 +48,7 @@ test('Invalid payload for event', t => {
 })
 
 test('calling', t => {
-	const event = EventFactory(Types.Key.Def())
+	const event = EventFactory(Types.Key.Def(3))
 	const payload = "TestPayload"
 
 	const firstCall = sinon.fake()
@@ -64,7 +64,7 @@ test('calling', t => {
 })
 
 test('calling with the same uuid', t => {
-	const event = EventFactory(Types.Key.Def())
+	const event = EventFactory(Types.Key.Def(3))
 	const payload = "TestPayload"
 
 	const firstCall = sinon.fake()
@@ -80,7 +80,7 @@ test('calling with the same uuid', t => {
 })
 
 test('delete callback', t => {
-	const event = EventFactory(Types.Key.Def())
+	const event = EventFactory(Types.Key.Def(3))
 	const payload = "TestPayload"
 
 	const callback = sinon.fake()
@@ -97,7 +97,7 @@ test('delete callback', t => {
 })
 
 test('callback limtly calling', t => {
-	const event = EventFactory(Types.Key.Def())
+	const event = EventFactory(Types.Key.Def(3))
 	const payload = "TestPayload"
 
 	const callback = sinon.fake()

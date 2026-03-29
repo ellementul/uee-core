@@ -52,24 +52,24 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             }
         }
 
-        room.subscribe = (msgType, callback, memberUuid, getSelfEvent, limit) => {
+        room.subscribe = (msgType, callback, memberUid, getSelfEvent, limit) => {
 
             if(!getSelfEvent) {
                 const oldCallback = callback
 
                 const structureEvent = JSON.parse(msgType.toJSON().type)
 
-                if(!structureEvent.struct.sourceUuid)
-                    throw TypeError("Type message require sourceUuid to not get self event!")
+                if(!structureEvent.struct.sourceUid)
+                    throw TypeError("Type message require sourceUid to not get self event!")
 
                 callback = (msg) => {
-                    if(memberUuid !== msg.sourceUuid)
+                    if(memberUid !== msg.sourceUid)
                         oldCallback(msg)
                 }
             }
 
             if(currentMember.isOutsideRoom())
-                currentMember.subscribeOut(msgType, callback, memberUuid, getSelfEvent, limit)
+                currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
 
             if(logging) {
                 const oldCallback = callback
@@ -80,18 +80,18 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
                 }
             }
 
-            provider.onEvent(msgType, callback, memberUuid, limit)
+            provider.onEvent(msgType, callback, memberUid, limit)
 
             if(logging)
-                logging.subscribe(msgType, memberUuid, getSelfEvent, limit)
+                logging.subscribe(msgType, memberUid, getSelfEvent, limit)
         }
 
-        room.unsubscribe = (msgType, memberUuid) => {
+        room.unsubscribe = (msgType, memberUid) => {
 
             if(currentMember.isOutsideRoom())
-                currentMember.unsubscribeOut(msgType, memberUuid)
+                currentMember.unsubscribeOut(msgType, memberUid)
 
-            provider.offEvent(msgType, memberUuid)
+            provider.offEvent(msgType, memberUid)
         }
 
         return room

@@ -8,7 +8,7 @@ export const objectCreatedEvent = EventFactory(Types.Object.Def({
   version: Types.String.Def(),
   data: Types.Any.Def(),
   namespace: Types.String.Def(),
-  storeUuid: Types.UUID.Def()
+  storeUid: Types.Key.Def(3)
 }))
 
 // Определение события конфликта версий
@@ -18,5 +18,5 @@ export const versionConflictEvent = EventFactory(Types.Object.Def({
   originalKey: Types.String.Def(),
   conflictingVersion: Types.String.Def(),
   namespace: Types.String.Def(),
-  storeUuid: Types.UUID.Def()
+  storeUid: Types.Key.Def(3)
 }))

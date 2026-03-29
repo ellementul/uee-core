@@ -13,7 +13,7 @@ function ToolFactory({ currentMember }) {
             const timestamp = Date.now().toString()
             const errorPayload = {
                 timestamp,
-                sourceUuid: this.currentMember.uid(),
+                sourceUid: this.currentMember.uid(),
                 error: {
                     message: error.message || "Unknown error",
                     stack: error.stack || "",
@@ -38,12 +38,12 @@ function ToolFactory({ currentMember }) {
                 )
             }
         },
-        subscribe(msgType, memberUuid, getSelfEvent, limit) {
+        subscribe(msgType, memberUid, getSelfEvent, limit) {
             const timestamp = Date.now().toString()
             const msg = loggingSubscriptionEvent.createMsg({
                 timestamp,
-                sourceUuid: this.currentMember.uid(),
-                subscribedMemberUuid: memberUuid,
+                sourceUid: this.currentMember.uid(),
+                subscribedMemberUid: memberUid,
                 eventHash: sha1(msgType.toJSON().type),
                 limit,
                 getSelfEvent
@@ -56,7 +56,7 @@ function ToolFactory({ currentMember }) {
             const timestamp = Date.now().toString()
             const msg = loggingSendingEvent.createMsg({
                 timestamp,
-                sourceUuid: this.currentMember.uid(),
+                sourceUid: this.currentMember.uid(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
                 isSendEvent: this.currentMember.isReadyToSend()
@@ -72,7 +72,7 @@ function ToolFactory({ currentMember }) {
             const timestamp = Date.now().toString()
             const msg = loggingReceivingEvent.createMsg({
                 timestamp,
-                sourceUuid: this.currentMember.uid(),
+                sourceUid: this.currentMember.uid(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(fullMsg))
             })

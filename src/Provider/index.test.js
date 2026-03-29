@@ -70,7 +70,7 @@ test('loaded', async t => {
 
     const testEvents = []
     const eventCallbacks = []
-    const randKey = Types.Key.Def().rand
+    const randKey = Types.Key.Def(3).rand
     for (let index = 0; index < loadWeight; index++) {
         const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
         testEvents.push(EventFactory(eventType))

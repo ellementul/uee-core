@@ -142,7 +142,7 @@ test('log subscription events', t => {
   
   const logPayload = subscriptionCallback.getCall(0).firstArg
   t.truthy(logPayload.timestamp)
-  t.is(logPayload.sourceUuid, member.uid())
+  t.is(logPayload.sourceUid, member.uid())
   t.is(logPayload.eventHash, sha1(loggingSubscriptionEvent.toJSON().type))
   t.is(logPayload.action, 'Subscription')
 
@@ -157,7 +157,7 @@ test('log subscription events', t => {
   
   const logSending = sendingCallback.getCall(0).firstArg
   t.truthy(logSending.timestamp)
-  t.is(logSending.sourceUuid, member.uid())
+  t.is(logSending.sourceUid, member.uid())
   t.is(logSending.eventHash, sha1(event.toJSON().type))
   t.is(logSending.msgHash, sha1(JSON.stringify(event.createMsg())))
   t.is(logSending.action, 'Sending')
@@ -168,7 +168,7 @@ test('log subscription events', t => {
   
   const logReciving = receiveCallback.getCall(0).firstArg
   t.truthy(logReciving.timestamp)
-  t.is(logReciving.sourceUuid, member.uid())
+  t.is(logReciving.sourceUid, member.uid())
   t.is(logReciving.eventHash, sha1(event.toJSON().type))
   t.is(logReciving.msgHash, sha1(JSON.stringify(event.createMsg())))
   t.is(logReciving.action, 'Receiving')

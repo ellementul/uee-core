@@ -65,7 +65,7 @@ export class DataStore extends StatesMember {
       version,
       data: uint8Array,
       namespace: this.namespace,
-      storeUuid: this.uid()
+      storeUid: this.uid()
     });
     
     // Обновление состояния
@@ -141,7 +141,7 @@ export class DataStore extends StatesMember {
         originalKey,
         conflictingVersion: localVersion,
         namespace: this.namespace,
-        storeUuid: this.uid()
+        storeUid: this.uid()
       });
     }
     
@@ -150,7 +150,7 @@ export class DataStore extends StatesMember {
   
   handleObjectCreated(event) {
     // 1. Игнорируем события от самого себя
-    if (event.storeUuid === this.uid()) {
+    if (event.storeUid === this.uid()) {
       console.log('Ignored self-created object event');
       return;
     }
@@ -219,7 +219,7 @@ export class DataStore extends StatesMember {
   
   handleVersionConflict(event) {
     // 1. Игнорируем события от самого себя
-    if (event.storeUuid === this.uid()) {
+    if (event.storeUid === this.uid()) {
       console.log('Ignored self-generated conflict event');
       return;
     }

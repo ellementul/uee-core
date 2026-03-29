@@ -23,12 +23,12 @@ test('Not get self event', async t => {
 
 	t.throws(getError, { instanceOf: TypeError })
 
-    const event = EventFactory(Types.Object.Def({ system: "test", sourceUuid: Types.UUID.Def() }))
+    const event = EventFactory(Types.Object.Def({ system: "test", sourceUid: Types.Key.Def(3) }))
     const callback = sinon.fake()
     room.subscribe(event, callback)
     member.subscribe(event, callback, false)
 
-    member.send(event, { sourceUuid: member.uid() })
+    member.send(event, { sourceUid: member.uid() })
 
     await later(0)
 

@@ -14,12 +14,12 @@ test('Build tree', async t => {
   member.addTool(Tool)
   
   const rootId = member.uid()
-  const childId1 = "e0892762-c91a-46e2-9e5e-38560947ac41"
-  const childId2 = "e0892762-c91a-46e2-9e5e-38560947ac42"
-  const childId3 = "e0892762-c91a-46e2-9e5e-38560947ac43"
+  const childId1 = "38560947ac41"
+  const childId2 = "38560947ac42"
+  const childId3 = "38560947ac43"
 
   member.send(pingEvent, {
-    sourceUuid: rootId,
+    sourceUid: rootId,
     parentUid: undefined,
     role: "Root",
     children: []
@@ -31,7 +31,7 @@ test('Build tree', async t => {
   member.send(pingEvent, {
     role: "child1",
     parentUid: rootId,
-    sourceUuid: childId1,
+    sourceUid: childId1,
     children: []
   })
 
@@ -41,7 +41,7 @@ test('Build tree', async t => {
   member.send(pingEvent, {
     role: "child1",
     parentUid: undefined,
-    sourceUuid: childId1,
+    sourceUid: childId1,
     children: [childId2, childId3]
   })
 

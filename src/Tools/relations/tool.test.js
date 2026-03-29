@@ -25,7 +25,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   t.is(receivedPings[0].role, 'Tester')
   t.is(receivedPings[0].pingNumber, 1)
   t.is(receivedPings[0].receivedPings, 0)
-  t.is(receivedPings[0].sourceUuid, member.uid())
+  t.is(receivedPings[0].sourceUid, member.uid())
   t.is(receivedPings[0].status, "Created")
   t.is(receivedPings[0].memberListSize, 0)
   t.falsy(receivedPings[0].memberListHash)
@@ -110,7 +110,7 @@ test('two_clients_send_pings_to_host', async t => {
   
   const gotClient1 = []
   client1.subscribe(pingEvent, (payload) => {
-    if(payload.sourceUuid != client1.uid()) {
+    if(payload.sourceUid != client1.uid()) {
       gotClient1.push(payload)
     }
   }, null, "TestEnvClient1")
@@ -119,7 +119,7 @@ test('two_clients_send_pings_to_host', async t => {
 
   const gotClient2 = []
   client2.subscribe(pingEvent, (payload) => {
-    if(payload.sourceUuid != client2.uid())
+    if(payload.sourceUid != client2.uid())
       gotClient2.push(payload)
   }, null, "TestEnvClient2")
 
@@ -130,14 +130,14 @@ test('two_clients_send_pings_to_host', async t => {
   t.true(gotClient1.length >= 2, `От client1 ожидалось минимум 2 пинга, получено ${gotClient1.length}`)
   t.is(gotClient1[0].parentUid, host.uid())
   t.is(gotClient1[0].children.length, 0)
-  t.is(gotClient1[0].sourceUuid, client2.uid())
+  t.is(gotClient1[0].sourceUid, client2.uid())
   t.is(gotClient1[1].memberListSize, 2)
 
 
   t.true(gotClient2.length >= 2, `От client2 ожидалось минимум 2 пинга, получено ${gotClient2.length}`)
   t.is(gotClient2[0].parentUid, host.uid())
   t.is(gotClient2[0].children.length, 0)
-  t.is(gotClient2[0].sourceUuid, client1.uid())
+  t.is(gotClient2[0].sourceUid, client1.uid())
   t.is(gotClient2[1].memberListSize, 2)
 
   t.is(gotClient2[1].memberListHash, gotClient1[1].memberListHash)
