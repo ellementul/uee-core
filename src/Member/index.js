@@ -5,7 +5,7 @@ export class MemberFactory {
 
     constructor() {
         this.tools = {}
-        this._uuid = Types.Key.Def(3).rand()
+        this._uuid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
 
         this.subscribedOutEvents = new Map
     }
