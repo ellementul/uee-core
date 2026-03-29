@@ -5,7 +5,7 @@ import { pingEvent } from "./events.js"
 function ToolFactory({ currentMember, room }) {
     let pingNumber = 0
     let receivedPings = 0
-    let role = "DefaultRole"
+    let role = "UknownRole"
     let status = "Created"
     let runTimestamp = Date.now()
     let pingDelay = RelationTool.pingDelay || 250
