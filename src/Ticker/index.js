@@ -2,7 +2,7 @@ import { NodeTicker } from "./node.js"
 import { BrowserTicker } from "./browser.js"
 
 let Ticker
-if (globalThis.Worker)
+if (typeof globalThis.document !== 'undefined')
     Ticker = BrowserTicker
 else
     Ticker = NodeTicker

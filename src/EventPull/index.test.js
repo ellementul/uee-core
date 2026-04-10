@@ -20,7 +20,7 @@ test('call event', async t => {
     const pull = new EventPull(callback)
     pull.push({ arg: "test" })
 
-    await later(0)
+    await later(13)
 
     t.true(callback.called)
     t.is(callback.args[0][0].arg,"test")
