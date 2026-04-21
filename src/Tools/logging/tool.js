@@ -6,16 +6,20 @@ function ToolFactory({ currentMember }) {
 
     return {
         currentMember,
-        subscribeEvents(subscribe) {
-            const timestamp = Date.now().toString()
-            const msg = loggingAddParentEvent.createMsg({
-                timestamp,
-                sourceUid: this.currentMember.uid(),
-                parentUid: payload.parentUid
-            })
+        subscribeEvents() {
+            const roomUid = currentMember.outsideRoomMemberUid()
 
-            if(this.currentMember.isReadyToSend())
-                this.currentMember.sendEvent(msg)
+            if(roomUid) {
+                const timestamp = Date.now().toString()
+                const msg = loggingAddParentEvent.createMsg({
+                    timestamp,
+                    sourceUid: this.currentMember.uid(),
+                    parentUid: roomUid
+                })
+
+                if(this.currentMember.isReadyToSend())
+                    this.currentMember.sendEvent(msg)
+            }       
         },
         setAlwaysConsole (value) { 
             alwaysConsole = value 
@@ -97,5 +101,5 @@ function ToolFactory({ currentMember }) {
 export const LogTool = {
     name: "logging",
     ToolFactory,
-    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "isReadyToSend", "sendEvent"]}] }
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "outsideRoomMemberUid", "isReadyToSend", "sendEvent"]}] }
 }
