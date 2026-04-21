@@ -45,10 +45,18 @@ export const loggingReceivingEvent = EventFactory(Types.Object.Def({
     msgHash: Types.Key.Def(3),
 }))
 
+export const loggingAddParentEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "AddParent",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    parentUid: Types.Key.Def(3)
+}))
 
 export const outputEventsType = Types.Any.Def([
     loggingSubscriptionEvent.type,
     loggingErrorEvent.type,
     loggingSendingEvent.type,
-    loggingReceivingEvent.type
+    loggingReceivingEvent.type,
+    loggingAddParentEvent.type
 ])

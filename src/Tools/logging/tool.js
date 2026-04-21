@@ -1,4 +1,4 @@
-import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, outputEventsType } from "./events.js"
+import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, loggingAddParentEvent, outputEventsType } from "./events.js"
 import sha1 from 'sha1'
 
 function ToolFactory({ currentMember }) {
@@ -6,6 +6,17 @@ function ToolFactory({ currentMember }) {
 
     return {
         currentMember,
+        subscribeEvents(subscribe) {
+            const timestamp = Date.now().toString()
+            const msg = loggingAddParentEvent.createMsg({
+                timestamp,
+                sourceUid: this.currentMember.uid(),
+                parentUid: payload.parentUid
+            })
+
+            if(this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        },
         setAlwaysConsole (value) { 
             alwaysConsole = value 
         },
