@@ -58,9 +58,10 @@ test.afterEach(t => {
 
  test('log to console when member is not ready', t => {
    const mockMember = {
-     name() { "MockMmber" },
-     uid() { return 'test-member-uid'},
-     isReadyToSend() { return false }
+      name() { "MockMmber" },
+      uid() { return 'test-member-uid'},
+      outsideRoomMemberUid(){},
+      isReadyToSend() { return false }
    }
 
    const tool = LogTool.ToolFactory({ currentMember: mockMember })
@@ -80,10 +81,11 @@ test.afterEach(t => {
      const sendStub = sinon.stub()
 
      const mockMember = {
-       uid() { return 'test-member-uid'},
-       name() { "MockMmber" },
-       isReadyToSend() { return true },
-       sendEvent: sendStub
+        uid() { return 'test-member-uid'},
+        outsideRoomMemberUid(){},
+        name() { "MockMmber" },
+        isReadyToSend() { return true },
+        sendEvent: sendStub
      }
 
      const tool = LogTool.ToolFactory({ currentMember: mockMember })
@@ -102,6 +104,7 @@ test.afterEach(t => {
  test('handle error with missing properties', t => {
      const mockMember = {
        uid() { return 'test-member-uid'},
+       outsideRoomMemberUid(){},
        name() { "MockMmber" },
        isReadyToSend() { return false }
      }

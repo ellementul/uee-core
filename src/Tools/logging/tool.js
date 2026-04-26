@@ -31,6 +31,7 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 sourceName: this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
                 error: {
                     message: error.message || "Unknown error",
                     stack: error.stack || "",
@@ -61,6 +62,7 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 subscribedMemberUid: memberUid,
+                parentUid: this.currentMember.outsideRoomMemberUid(),
                 eventHash: sha1(msgType.toJSON().type),
                 limit,
                 getSelfEvent
@@ -75,6 +77,7 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 sourceName: this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
                 isSendEvent: this.currentMember.isReadyToSend()
@@ -92,6 +95,7 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 sourceName:this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(fullMsg))
             })
