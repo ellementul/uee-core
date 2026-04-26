@@ -7,13 +7,14 @@ function ToolFactory({ currentMember }) {
     return {
         currentMember,
         subscribeEvents() {
-            const roomUid = currentMember.outsideRoomMemberUid()
+            const roomUid =this.currentMember.outsideRoomMemberUid()
 
             if(roomUid) {
                 const timestamp = Date.now().toString()
                 const msg = loggingAddParentEvent.createMsg({
                     timestamp,
                     sourceUid: this.currentMember.uid(),
+                    sourceName: this.currentMember.name(),
                     parentUid: roomUid
                 })
 
@@ -29,6 +30,7 @@ function ToolFactory({ currentMember }) {
             const errorPayload = {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
+                sourceName: this.currentMember.name(),
                 error: {
                     message: error.message || "Unknown error",
                     stack: error.stack || "",
@@ -72,6 +74,7 @@ function ToolFactory({ currentMember }) {
             const msg = loggingSendingEvent.createMsg({
                 timestamp,
                 sourceUid: this.currentMember.uid(),
+                sourceName: this.currentMember.name(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
                 isSendEvent: this.currentMember.isReadyToSend()
@@ -88,6 +91,7 @@ function ToolFactory({ currentMember }) {
             const msg = loggingReceivingEvent.createMsg({
                 timestamp,
                 sourceUid: this.currentMember.uid(),
+                sourceName:this.currentMember.name(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(fullMsg))
             })
@@ -101,5 +105,5 @@ function ToolFactory({ currentMember }) {
 export const LogTool = {
     name: "logging",
     ToolFactory,
-    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "outsideRoomMemberUid", "isReadyToSend", "sendEvent"]}] }
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "outsideRoomMemberUid", "isReadyToSend", "sendEvent"]}] }
 }

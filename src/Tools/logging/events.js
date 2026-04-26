@@ -7,6 +7,7 @@ export const loggingSubscriptionEvent = EventFactory(Types.Object.Def({
     action: "Subscription",
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
     subscribedMemberUid: Types.Key.Def(3),
     eventHash: Types.Key.Def(3),
     limit: Types.Number.Def(1024, -1, 0),
@@ -18,10 +19,11 @@ export const loggingErrorEvent = EventFactory(Types.Object.Def({
     action: "Error",
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
     error: {
         message: Types.String.Def(),
         stack: Types.String.Def(),
-        name: Types.String.Def()
+        sourceName: Types.String.Def()
     }
 }, true))
 
@@ -31,6 +33,7 @@ export const loggingSendingEvent = EventFactory(Types.Object.Def({
     action: "Sending",
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
     eventHash: Types.Key.Def(3),
     msgHash: Types.Key.Def(3),
     isSendEvent: Types.Bool.Def()
@@ -41,6 +44,7 @@ export const loggingReceivingEvent = EventFactory(Types.Object.Def({
     action: "Receiving",
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
     eventHash: Types.Key.Def(3),
     msgHash: Types.Key.Def(3),
 }))
@@ -50,6 +54,7 @@ export const loggingAddParentEvent = EventFactory(Types.Object.Def({
     action: "AddParent",
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
     parentUid: Types.Key.Def(3)
 }))
 
