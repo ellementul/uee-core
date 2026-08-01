@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
-    "@ellementul/message-types": "^3.8.0",
+    "@ellementul/message-types": "github:ellementul/messages-types#081d1d49b525ef85947ea94c34beebf58cf056fd",
     "mergician": "^2.0.2",
     "sha1": "^1.1.1"
   },
