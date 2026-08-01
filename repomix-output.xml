@@ -1,0 +1,5204 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.continue/
+  docs/
+    new-doc.yaml
+src/
+  Event/
+    docs.yml
+    index.js
+    index.test.js
+    mergician.js
+  EventPull/
+    index.js
+    index.test.js
+  LoggerMember/
+    index.js
+    index.test.js
+  Member/
+    browser.tests/
+      member/
+        index.html
+        package.json
+        test.browser.js
+    docs.yml
+    index.js
+    index.test.js
+  Provider/
+    docs.yml
+    events.js
+    index.js
+    index.test.js
+  StateMember/
+    events.js
+    index.js
+    index.test.js
+  StoreMember/
+    events.js
+    index.js
+    index.md
+    prompt.md
+    tmp.js
+  Ticker/
+    browser.js
+    index.js
+    index.test.js
+    node.js
+    package.json
+    test.browser.js
+    test.html
+  Tools/
+    logging/
+      events.js
+      tool.js
+      tool.test.js
+    relations/
+      events.js
+      tool.js
+      tool.test.js
+    relationsTree/
+      events.js
+      tool.js
+      tool.test.js
+    room/
+      tool.js
+      tool.test.js
+  utils/
+    deepFreeze.js
+    deepFreeze.test.js
+    hashOfKeysFromMap.js
+    pack.js
+.gitignore
+AGENTS.md
+index.js
+index.test.js
+mermaid.md
+package.json
+README.md
+README.ru.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/Event/docs.yml">
+- Event
+- Хранит внутри себя функции которые вызывет когда вызван сам
+- Имеет тип
+- Может проверить евляется ли данное сообщение его типом
+- Вычисляет сигнатуру сообщения
+</file>
+
+<file path=".continue/docs/new-doc.yaml">
+name: New doc
+version: 0.0.1
+schema: v1
+docs:
+  - name: New docs
+    startUrl: https://docs.continue.dev
+</file>
+
+<file path="src/Event/mergician.js">
+/*!
+ * mergician
+ * v2.0.2
+ * https://jhildenbiddle.github.io/mergician/
+ * (c) 2022-2024 John Hildenbiddle
+ * MIT license
+ */
+
+// src/util.js
+function countOccurrences(...arrays) {
+  const countObj = {};
+  arrays.forEach((array) => {
+    array.forEach((v) => {
+      countObj[v] = v in countObj ? ++countObj[v] : 1;
+    });
+  });
+  return countObj;
+}
+function getInAll(...arrays) {
+  return arrays.reduce(
+    (acc, curr) => acc.filter(Set.prototype.has, new Set(curr))
+  );
+}
+function getInMultiple(...arrays) {
+  const countObj = countOccurrences(...arrays);
+  return Object.keys(countObj).filter((v) => countObj[v] > 1);
+}
+function getNotInAll(...arrays) {
+  const countObj = countOccurrences(...arrays);
+  return Object.keys(countObj).filter((v) => countObj[v] < arrays.length);
+}
+function getNotInMultiple(...arrays) {
+  const countObj = countOccurrences(...arrays);
+  return Object.keys(countObj).filter((v) => countObj[v] === 1);
+}
+function getObjectKeys(obj, hoistEnumerable = false) {
+  const keys = Object.getOwnPropertyNames(obj);
+  if (hoistEnumerable) {
+    for (const key in obj) {
+      !keys.includes(key) && keys.push(key);
+    }
+  }
+  return keys;
+}
+function isObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isPropDescriptor(obj) {
+  if (!isObject(obj)) {
+    return false;
+  }
+  const hasFlagKey = ["writable", "enumerable", "configurable"].some(
+    (key) => key in obj
+  );
+  const hasMethod = ["get", "set"].some((key) => typeof obj[key] === "function");
+  const hasMethodKeys = ["get", "set"].every((key) => key in obj);
+  let isDescriptor = "value" in obj && hasFlagKey || hasMethod && (hasMethodKeys || hasFlagKey);
+  if (isDescriptor) {
+    const validKeys = [
+      "configurable",
+      "get",
+      "set",
+      "enumerable",
+      "value",
+      "writable"
+    ];
+    isDescriptor = Object.keys(obj).some((key) => !(key in validKeys));
+  }
+  return isDescriptor;
+}
+
+// src/index.js
+/**
+ * @typedef {Object} MergicianOptions
+ * @property {string[]} [onlyKeys] - Exclusive array of keys to be merged
+ * (others are skipped)
+ * @property {string[]} [skipKeys] - Array of keys to skip (others are
+ * merged)
+ * @property {boolean} [onlyCommonKeys=false] - Merge only keys found
+ * in multiple objects (ignore single occurrence keys)
+ * @property {boolean} [onlyUniversalKeys=false] - Merge only keys
+ * found in all objects
+ * @property {boolean} [skipCommonKeys=false] - Skip keys found in
+ * multiple objects (merge only single occurrence keys)
+ * @property {boolean} [skipUniversalKeys=false] - Skip keys found in
+ * all objects (merge only common keys)
+ * @property {boolean} [invokeGetters=false] - Invoke "getter" methods
+ * and merge returned values
+ * @property {boolean} [skipSetters=false] - Skip "setter" methods
+ * during merge
+ * @property {boolean} [appendArrays=false] - Merge array values at
+ * the end of existing arrays
+ * @property {boolean} [prependArrays=false] - Merge array values at
+ * the beginning of existing arrays
+ * @property {boolean} [dedupArrays=false] - Remove duplicate array
+ * values in new merged object
+ * @property {boolean|function} [sortArrays=false] - Sort array values
+ * in new merged object
+ * @property {boolean} [hoistEnumerable=false] - Merge enumerable
+ * prototype properties as direct properties of merged object
+ * @property {boolean} [hoistProto=false] - Merge custom prototype
+ * properties as direct properties of merged object
+ * @property {boolean} [skipProto=false] - Skip merging of custom
+ * prototype properties
+ * @property {filterCallback} [filter] - Callback used to conditionally merge
+ * or skip a property. Return a "truthy" value to merge or a "falsy" value to
+ * skip. Return no value to proceed according to other option values.
+ * @property {beforeEachCallback} [beforeEach] - Callback used for
+ * inspecting/modifying properties before merge. Return value is used as value
+ * to merge.
+ * @property {afterEachCallback} [afterEach] - Callback used for
+ * inspecting/modifying properties after merge. Return value is used as merged
+ * value.
+ * @property {onCircularCallback} [onCircular] - Callback used for handling
+ * circular object references during merge
+ * @preserve
+ */
+/**
+ * @callback filterCallback
+ * @param {callbackData} callbackData
+ * @preserve
+ */
+/**
+ * @callback beforeEachCallback
+ * @param {callbackData} callbackData
+ * @preserve
+ */
+/**
+ * @callback afterEachCallback
+ * @param {afterEachCallbackData} callbackData
+ * @preserve
+ */
+/**
+ * @callback onCircularCallback
+ * @param {callbackData} callbackData
+ * @preserve
+ */
+/**
+ * @typedef {Object} callbackData
+ * @property {number} depth - Nesting level of the key being processed
+ * @property {string} key - Object key being processed
+ * @property {object} srcObj - Object containing the source value
+ * @property {any} srcVal - Source object’s property value
+ * @property {object} targetObj - New merged object
+ * @property {any} targetVal - New merged object’s current property value
+ * @preserve
+ */
+/**
+ * @typedef {Object} afterEachCallbackData
+ * @property {number} depth - Nesting level of the key being processed
+ * @property {string} key - Object key being processed
+ * @property {any} mergeVal - New merged value
+ * @property {object} srcObj - Object containing the source value
+ * @property {object} targetObj - New merged object
+ * @preserve
+ */
+var defaults = {
+  // Keys
+  onlyKeys: [],
+  skipKeys: [],
+  onlyCommonKeys: false,
+  onlyUniversalKeys: false,
+  skipCommonKeys: false,
+  skipUniversalKeys: false,
+  // Values
+  invokeGetters: false,
+  skipSetters: false,
+  // Arrays
+  appendArrays: false,
+  prependArrays: false,
+  dedupArrays: false,
+  sortArrays: false,
+  // Prototype
+  hoistEnumerable: false,
+  hoistProto: false,
+  skipProto: false,
+  // Callbacks
+  filter: Function.prototype,
+  beforeEach: Function.prototype,
+  afterEach: Function.prototype,
+  onCircular: Function.prototype
+};
+/**
+ * @description Deep (recursive) object merging with support for descriptor
+ * values, accessor functions, custom prototypes, and advanced options for
+ * customizing the merge process.
+ *
+ * @example
+ * // Custom merge options
+ * const mergedObj = mergician({
+ *   // Options
+ * })(obj1, obj2, obj3);
+ *
+ * // Custom merge function
+ * const customMerge = mergician({
+ *   // Options
+ * });
+ * const customMergeObj = customMerge(obj1, obj2, obj3);
+ *
+ * @overload
+ * @param {MergicianOptions} options
+ * @returns {function} New merge function with options set as defaults
+ * @preserve
+ */
+/**
+ * @description Deep (recursive) object merging with support for descriptor
+ * values, accessor functions, custom prototypes, and advanced options for
+ * customizing the merge process.
+ *
+ * @example
+ * // Clone with default options
+ * const clonedObj = mergician({}, obj1);
+ *
+ * // Merge with default options
+ * const mergedObj = mergician(obj1, obj2, obj3);
+ *
+ * @overload
+ * @param {...object} objects
+ * @returns {object} New merged object
+ * @preserve
+ */
+/**
+ * @description Deep (recursive) object merging with support for descriptor
+ * values, accessor functions, custom prototypes, and advanced options for
+ * customizing the merge process.
+ *
+ * @example
+ * // Clone with default options
+ * const clonedObj = mergician({}, obj1);
+ *
+ * // Merge with default options
+ * const mergedObj = mergician(obj1, obj2, obj3);
+ *
+ * @example
+ * // Custom merge options
+ * const mergedObj = mergician({
+ *   // Options
+ * })(obj1, obj2, obj3);
+ *
+ * // Custom merge function
+ * const customMerge = mergician({
+ *   // Options
+ * });
+ * const customMergeObj = customMerge(obj1, obj2, obj3);
+ *
+ * @param {MergicianOptions} optionsOrObject
+ * @param {...object} [objects]
+ * @returns {function|object} New merge function with options set as defaults
+ * (single argument) or new merged object (multiple arguments)
+ * @preserve
+ */
+function mergician(optionsOrObject, ...objects) {
+  const options = arguments.length === 1 ? arguments[0] : {};
+  const settings = { ...defaults, ...options };
+  const dedupArrayMap = /* @__PURE__ */ new Map();
+  const sortArrayMap = /* @__PURE__ */ new Map();
+  const sortArrayFn = typeof settings.sortArrays === "function" ? settings.sortArrays : void 0;
+  const circularRefs = /* @__PURE__ */ new WeakMap();
+  let mergeDepth = 0;
+  function _getObjectKeys(obj) {
+    return getObjectKeys(obj, settings.hoistEnumerable);
+  }
+  function _mergician(...objects2) {
+    let mergeKeyList;
+    if (objects2.length > 1) {
+      if (settings.onlyCommonKeys) {
+        mergeKeyList = getInMultiple(
+          ...objects2.map((obj) => _getObjectKeys(obj))
+        );
+      } else if (settings.onlyUniversalKeys) {
+        mergeKeyList = getInAll(...objects2.map((obj) => _getObjectKeys(obj)));
+      } else if (settings.skipCommonKeys) {
+        mergeKeyList = getNotInMultiple(
+          ...objects2.map((obj) => _getObjectKeys(obj))
+        );
+      } else if (settings.skipUniversalKeys) {
+        mergeKeyList = getNotInAll(...objects2.map((obj) => _getObjectKeys(obj)));
+      }
+    }
+    if (!mergeKeyList && settings.onlyKeys.length) {
+      mergeKeyList = settings.onlyKeys;
+    }
+    if (mergeKeyList && mergeKeyList !== settings.onlyKeys && settings.onlyKeys.length) {
+      mergeKeyList = mergeKeyList.filter(
+        (key) => settings.onlyKeys.includes(key)
+      );
+    }
+    const newObjProps = objects2.reduce((targetObj, srcObj) => {
+      circularRefs.set(srcObj, targetObj);
+      let keys = mergeKeyList || _getObjectKeys(srcObj);
+      if (settings.skipKeys.length) {
+        keys = keys.filter((key) => settings.skipKeys.indexOf(key) === -1);
+      }
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const targetVal = targetObj[key];
+        const mergeDescriptor = {
+          configurable: true,
+          enumerable: true
+        };
+        if (key in srcObj === false) {
+          continue;
+        }
+        if(ArrayBuffer.isView(srcObj[key])) {
+          targetObj[key] = srcObj[key]
+          continue;
+        }
+        let isReturnVal = false;
+        let mergeVal = srcObj[key];
+        const srcDescriptor = Object.getOwnPropertyDescriptor(srcObj, key);
+        const isSetterOnly = srcDescriptor && typeof srcDescriptor.set === "function" && typeof srcDescriptor.get !== "function";
+        if (isSetterOnly) {
+          if (!settings.skipSetters) {
+            Object.defineProperty(targetObj, key, srcDescriptor);
+          }
+          continue;
+        }
+        if (settings.filter !== defaults.filter) {
+          const returnVal = settings.filter({
+            depth: mergeDepth,
+            key,
+            srcObj,
+            srcVal: mergeVal,
+            targetObj,
+            targetVal
+          });
+          if (returnVal !== void 0 && !returnVal) {
+            continue;
+          }
+        }
+        if (settings.beforeEach !== defaults.beforeEach) {
+          const returnVal = settings.beforeEach({
+            depth: mergeDepth,
+            key,
+            srcObj,
+            srcVal: mergeVal,
+            targetObj,
+            targetVal
+          });
+          if (returnVal !== void 0) {
+            isReturnVal = true;
+            mergeVal = returnVal;
+          }
+        }
+        if (typeof mergeVal === "object" && mergeVal !== null) {
+          if (circularRefs.has(srcObj[key])) {
+            const returnVal = settings.onCircular({
+              depth: mergeDepth,
+              key,
+              srcObj,
+              srcVal: srcObj[key],
+              targetObj,
+              targetVal
+            });
+            if (returnVal === void 0) {
+              mergeVal = circularRefs.get(srcObj[key]);
+              targetObj[key] = mergeVal;
+              continue;
+            }
+            isReturnVal = true;
+            mergeVal = returnVal;
+          }
+        }
+        if (Array.isArray(mergeVal)) {
+          mergeVal = [...mergeVal];
+          if (Array.isArray(targetVal)) {
+            if (settings.appendArrays) {
+              mergeVal = [...targetVal, ...mergeVal];
+            } else if (settings.prependArrays) {
+              mergeVal = [...mergeVal, ...targetVal];
+            }
+          }
+          if (settings.dedupArrays) {
+            if (settings.afterEach !== defaults.afterEach) {
+              mergeVal = [...new Set(mergeVal)];
+            } else {
+              const keyArray = dedupArrayMap.get(targetObj);
+              if (keyArray && !keyArray.includes(key)) {
+                keyArray.push(key);
+              } else {
+                dedupArrayMap.set(targetObj, [key]);
+              }
+            }
+          }
+          if (settings.sortArrays) {
+            if (settings.afterEach !== defaults.afterEach) {
+              mergeVal = mergeVal.sort(sortArrayFn);
+            } else {
+              const keyArray = sortArrayMap.get(targetObj);
+              if (keyArray && !keyArray.includes(key)) {
+                keyArray.push(key);
+              } else {
+                sortArrayMap.set(targetObj, [key]);
+              }
+            }
+          }
+        } else if (mergeVal instanceof Date) {
+          mergeVal = new Date(mergeVal);
+        } else if (isObject(mergeVal) && (!isReturnVal || !isPropDescriptor(mergeVal))) {
+          mergeDepth++;
+          if (isObject(targetVal)) {
+            mergeVal = _mergician(targetVal, mergeVal);
+          } else {
+            mergeVal = _mergician(mergeVal);
+          }
+          mergeDepth--;
+        }
+        if (settings.afterEach !== defaults.afterEach) {
+          const returnVal = settings.afterEach({
+            depth: mergeDepth,
+            key,
+            mergeVal,
+            srcObj,
+            targetObj
+          });
+          if (returnVal !== void 0) {
+            isReturnVal = true;
+            mergeVal = returnVal;
+          }
+        }
+        if (isReturnVal) {
+          const returnDescriptor = isPropDescriptor(mergeVal) ? mergeVal : {
+            configurable: true,
+            enumerable: true,
+            value: mergeVal,
+            writable: true
+          };
+          Object.defineProperty(targetObj, key, returnDescriptor);
+          continue;
+        }
+        if (srcDescriptor) {
+          const { configurable, enumerable, get, set, writable } = srcDescriptor;
+          Object.assign(mergeDescriptor, {
+            configurable,
+            enumerable
+          });
+          if (typeof get === "function") {
+            if (settings.invokeGetters) {
+              mergeDescriptor.value = mergeVal;
+            } else {
+              mergeDescriptor.get = get;
+            }
+          }
+          if (!settings.skipSetters && typeof set === "function" && !Object.hasOwnProperty.call(mergeDescriptor, "value")) {
+            mergeDescriptor.set = set;
+          }
+          if (!mergeDescriptor.get && !mergeDescriptor.set) {
+            mergeDescriptor.writable = Boolean(writable);
+          }
+        }
+        if (!mergeDescriptor.get && !mergeDescriptor.set && !("value" in mergeDescriptor)) {
+          mergeDescriptor.value = mergeVal;
+          mergeDescriptor.writable = srcDescriptor && "writable" in srcDescriptor ? srcDescriptor.writable : true;
+        }
+        Object.defineProperty(targetObj, key, mergeDescriptor);
+      }
+      return targetObj;
+    }, {});
+    for (const [obj, keyArray] of dedupArrayMap.entries()) {
+      for (const key of keyArray) {
+        const propDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+        const { configurable, enumerable, writable } = propDescriptor;
+        Object.defineProperty(obj, key, {
+          configurable,
+          enumerable,
+          value: [...new Set(obj[key])],
+          writable: writable !== void 0 ? writable : true
+        });
+      }
+    }
+    for (const [obj, keyArray] of sortArrayMap.entries()) {
+      for (const key of keyArray) {
+        obj[key].sort(sortArrayFn);
+      }
+    }
+    let newObj = newObjProps;
+    if (!settings.skipProto) {
+      const customProtos = objects2.reduce((protosArr, obj) => {
+        const proto = Object.getPrototypeOf(obj);
+        if (proto && proto !== Object.prototype) {
+          protosArr.push(proto);
+        }
+        return protosArr;
+      }, []);
+      if (customProtos.length) {
+        const newObjProto = _mergician(...customProtos);
+        if (settings.hoistProto) {
+          newObj = _mergician(newObjProto, newObjProps);
+        } else {
+          newObj = Object.create(
+            newObjProto,
+            Object.getOwnPropertyDescriptors(newObjProps)
+          );
+        }
+      }
+    }
+    return newObj;
+  }
+  if (arguments.length === 1) {
+    return function(...objects2) {
+      if (arguments.length === 1) {
+        return mergician({ ...settings, ...objects2[0] });
+      } else {
+        return _mergician(...objects2);
+      }
+    };
+  } else {
+    return _mergician(...arguments);
+  }
+}
+export {
+  mergician
+};
+</file>
+
+<file path="src/LoggerMember/index.js">
+import { MemberFactory } from "../Member/index.js"
+import { LogTool } from "../Tools/logging/tool.js"
+import { RelationTool } from "../Tools/relations/tool.js"
+import { LoggingTreeTool } from "../Tools/relationsTree/tool.js"
+
+
+import fs from 'fs'
+
+export class LoggerFactory extends MemberFactory {
+    constructor(name = "LoggerMember") {
+        super(name)
+
+        this.makeRoom()
+        this.addTool(LogTool)
+        this.addTool(RelationTool)
+        this.tools.Relations.setRole("Logger")
+        this.addTool(LoggingTreeTool)
+    }
+
+    genTopologyToMd() {
+        const { roles, edges, names } = this.tools.LoggingTree.topology()
+
+        const mdCode = generateMermaid(names, edges)
+
+        writeFileSync("./mermaid.md", mdCode)
+    }
+}
+
+function generateMermaid(defs, connections) {
+    let code = '```mermaid\n flowchart TD\n'
+
+    defs.forEach(([id, name]) => code += `    ${id}[${name}]\n`)
+
+    code += `\n`
+
+    connections.forEach(([from, to]) => code += `    ${from} --> ${to}\n`)
+
+    code += '```\n'
+    return code
+}
+
+function writeFileSync(path, content) {
+  fs.writeFileSync(path, content, 'utf8');
+}
+</file>
+
+<file path="src/LoggerMember/index.test.js">
+import test from 'ava'
+import { LoggerFactory } from './index.js'
+
+function later(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('Build tree', async t => {
+  const root = new LoggerFactory()
+  root.strictValidationEvent = true
+
+  root.addMember(new LoggerFactory())
+  root.addMember(new LoggerFactory())
+  root.addMember(new LoggerFactory())
+
+  await later(1)
+
+  t.falsy(root.genTopologyToMd())
+
+})
+</file>
+
+<file path="src/Member/browser.tests/member/index.html">
+<html>
+    <head>
+    </head>
+    <body>
+        <script type="module">
+            import { runTests } from "./test.browser.js"
+            runTests()
+        </script>
+    </body>
+</html>
+</file>
+
+<file path="src/Member/browser.tests/member/package.json">
+{
+    "type": "module",
+    "source": "./index.html",  
+    "@parcel/resolver-default": {
+        "packageExports": true
+    },
+    "alias": {
+        "sinon": "../../../../node_modules/sinon"
+    }
+}
+</file>
+
+<file path="src/Member/browser.tests/member/test.browser.js">
+import sinon from "sinon"
+
+import { MemberFactory } from '../../index.js'
+import { EventFactory, Types } from '../../../Event/index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+export async function runTests() {
+
+    const member = new MemberFactory
+    member.makeRoom()
+
+    console.log("Is room: ", member.isRoom)
+    
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    
+    member.subscribe(event, callback)
+    member.send(event)
+    
+    await later(100)
+
+    console.log("Is got event: ", callback.calledOnceWith({ system: "test" }))
+}
+</file>
+
+<file path="src/Provider/events.js">
+import { EventFactory, Types } from "../Event/index.js"
+
+export const connectionEvent = EventFactory(Types.Object.Def({ 
+    system: "Transport",
+    action: "Connect", 
+    isHost: Types.Bool.Def() 
+}))
+export const disconnectionEvent = EventFactory(Types.Object.Def({ 
+    system: "Transport", 
+    action: "Disconnect", 
+    isHost: Types.Bool.Def() 
+}))
+</file>
+
+<file path="src/StoreMember/prompt.md">
+1. Основные принципы архитектуры
+
+Децентрализованная сеть:
+
+    Каждый узел (хранилище) полностью автономен
+    Все узлы равноправны в сети
+    Нет выделенного сервера или координатора
+    Сетевая топология организована как полносвязный граф
+
+Событийная модель:
+
+    Все изменения данных передаются через события
+    Обработка событий происходит асинхронно
+    События имеют строгую типизацию для валидации
+    Каждое событие содержит метаданные для правильной маршрутизации
+
+2. Версионирование данных
+
+Детерминированное хеширование:
+
+    Версии объектов вычисляются детерминированно
+    Первая версия: hash(key + dataHash + timestamp)
+    Последующие версии: hash(oldVersion + newDataHash)
+    Для разрешения коллизий используется уникальный алгоритм
+
+История версий:
+
+    Хранится история изменений для каждого объекта
+    Версии формируют цепочку зависимостей
+    Позволяет отслеживать происхождение изменений
+    Обеспечивает возможность отката к предыдущим состояниям
+
+3. Разрешение конфликтов
+
+Сценарий возникновения конфликтов:
+
+    Два узла независимо изменяют один и тот же объект
+    Оба узла рассчитывают разные версии для одного объекта
+    При синхронизации обнаруживается несовпадение версий
+
+Алгоритм разрешения:
+
+    При обнаружении конфликта первый узел:
+        Переименовывает свою версию объекта
+        Вычисляет новый ключ как комбинацию половин хэшей
+        Отправляет событие конфликта в сеть
+    Другие узлы при получении события:
+        Аналогично переименовывают свои версии
+        Не отправляют дополнительные события (предотвращение циклов)
+    Результат:
+        Оригинальный объект заменяется двумя новыми
+        Каждый узел сохраняет свою версию данных
+        Конфликт разрешается децентрализованно
+
+Генерация новых ключей:
+
+    Новые ключи имеют фиксированную длину
+    Формируются как: половина_хэша(originalKey) + половина_хэша(localVersion)
+    Гарантирует уникальность без нарастания длины при повторных коллизиях
+    Сохраняет детерминированность - все узлы вычислят одинаковые ключи
+
+4. Фильтрация событий
+
+По типу хранилища (namespace):
+
+    Каждое хранилище имеет определенный тип (namespace)
+    События от хранилищ другого типа игнорируются
+    Обеспечивает изоляцию разных типов данных
+    Позволяет одновременно работать с несколькими типами хранилищ
+
+По источнику события:
+
+    Хранилище игнорирует свои собственные события
+    Используется UUID хранилища для идентификации
+    Предотвращает зацикливание обработки событий
+    Упрощает логику синхронизации
+
+5. Обработка удаленных объектов
+
+Мягкое удаление (toTrush):
+
+    Объекты не удаляются физически сразу
+    Помечаются как удаленные в специальной коллекции
+    Локально игнорируются при операциях с данными
+    Другие узлы получают уведомление об удалении
+
+Восстановление объектов:
+
+    Если приходит обновление для удаленного объекта
+    Флаг удаления автоматически снимается
+    Объект восстанавливается с новой версией
+    Обеспечивает согласованность при расхождении мнений об удалении
+
+6. Преобразование данных
+
+Автоматическая сериализация:
+
+    Поддержка любых типов JavaScript
+    Автоматическое преобразование в Uint8Array
+    Специальная обработка для разных типов данных:
+        Строки кодируются в UTF-8
+        Числа сохраняются как Float64
+        Объекты сериализуются в JSON
+        Бинарные данные обрабатываются напрямую
+
+Ограничение размера:
+
+    Максимальный размер объекта - 64KB
+    Проверка размера выполняется на всех этапах
+    Четкие ошибки при превышении лимита
+    Готовность к расширению для больших объектов
+
+7. Состояния хранилища
+
+Три состояния синхронизации:
+
+    empty - хранилище не содержит данных
+    not_synced - есть данные, но нет полной синхронизации
+    synced - все данные синхронизированы с сетью
+
+Автоматический переход между состояниями:
+
+    При создании первого объекта: empty → not_synced
+    При достижении полной синхронизации: not_synced → synced
+    При рассогласовании данных: synced → not_synced
+    Состояния влияют на поведение при синхронизации
+
+8. Производительность и масштабируемость
+
+Оптимизация памяти:
+
+    Хранение хэшей данных отдельно от самих данных
+    Быстрое сравнение версий без полного пересчета
+    Минимизация копирования данных при операциях
+
+Обработка коллизий:
+
+    Линейная сложность разрешения конфликтов
+    Фиксированная длина ключей предотвращает деградацию
+    Асинхронная обработка событий для предотвращения блокировок
+
+Готовность к масштабированию:
+
+    Поддержка тысяч объектов в хранилище
+    Эффективная работа с несколькими узлами в сети
+    Возможность расширения для партиционирования данных
+    Подготовка к добавлению индексов для быстрого поиска
+
+Эта архитектура обеспечивает надежную, детерминированную и эффективную синхронизацию данных в распределенной среде, сохраняя при этом простоту использования и гибкость для дальнейшего развития.
+</file>
+
+<file path="src/StoreMember/tmp.js">
+
+</file>
+
+<file path="src/Ticker/test.html">
+<html>
+    <head>
+    </head>
+    <body>
+        <script type="module">
+            import { runTests } from "./test.browser.js"
+            runTests()
+        </script>
+    </body>
+</html>
+</file>
+
+<file path="src/utils/hashOfKeysFromMap.js">
+export function hashFromMapByKeys(map, hashFunction) {
+    return [...map.keys()]
+    .sort()
+    .reduce((acc, key) => hashFunction(acc+key), '')
+}
+</file>
+
+<file path="src/utils/pack.js">
+import { encode, decode } from '@msgpack/msgpack'
+
+/**
+ * Конвертирует произвольные данные в Uint8Array с использованием MessagePack.
+ * Поддерживает вложенные бинарные данные, типизированные массивы, объекты и примитивы.
+ * @param {*} data - данные для сериализации
+ * @returns {Uint8Array} сериализованные байты
+ */
+export function convertDataToUint8Array(data) {
+  try {
+    return encode(data)
+  } catch (error) {
+    throw new Error(`Failed to serialize with MessagePack: ${error.message}`)
+  }
+}
+
+export function convertUint8ArrayToData(bytes) {
+  return decode(bytes)
+}
+</file>
+
+<file path="AGENTS.md">
+# AGENTS.md
+
+## Commands
+
+```bash
+npm test        # Run all tests (ava)
+npm run test:w # Watch mode
+```
+
+Browser tests require `parcel` (pre-installed):
+```bash
+npm run test:browser:member
+npm run test:browser:ticker
+npm run test:browser:peerjs
+```
+
+## Project Structure
+
+- **Entry**: `index.js` → exports `Types`, `EventFactory`, `MemberFactory`
+- **Core**: `src/Member/index.js`, `src/Event/index.js`, `src/Provider/index.js`
+- **Tests**: Match `**/*.test.js` (ava runs serially)
+
+## Key Facts
+
+- ES modules (`"type": "module"`)
+- No lint/typecheck configured
+- Test framework: `ava` with `sinon` for mocks
+- Uses `@ellantul/message-types` for event typing
+
+## Event-Driven Architecture
+
+### Core Components
+
+| Component | File | Role |
+|-----------|------|------|
+| Event | `src/Event/index.js` | Type-safe message with validation |
+| Provider | `src/Provider/index.js` | Event router/dispatcher |
+| Member | `src/Member/index.js` | Entity that sends/receives events |
+| Room | `src/Tools/room/tool.js` | Member container with event bubbling |
+
+### Event Flow
+
+1. **Define type**: `Types.Object.Def({ system: "Test", action: Types.Any.Def("On", "Off") })`
+2. **Create event**: `EventFactory(type)` returns event instance
+3. **Send**: `member.send(event, payload)` → `Provider.sendEvent()` → validates & dispatches
+4. **Subscribe**: `member.subscribe(event, callback)` registers with `Provider`
+
+### Event Filtering
+
+- `inEvents` - Allowed incoming event types (subscribed from outside room)
+- `outEvents` - Allowed outgoing event types (bubbled to parent room)
+- Set via `makeRoom({ inEvents, outEvents })`
+
+### Event Bubbling
+
+Events bubble up room hierarchy: child room → parent room. Parent can subscribe to child's events. Filtering controls what bubbles up via `outEvents`.
+
+### Key Methods
+
+- `member.send(type, payload)` - Send event to room
+- `member.subscribe(type, callback)` - Receive events
+- `member.makeRoom(opts)` - Create room with filtering
+- `member.addMember(m)` / `member.deleteMember(uid)` - Manage members
+</file>
+
+<file path="src/EventPull/index.test.js">
+import test from 'ava'
+import sinon from "sinon"
+
+import { EventPull } from './index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+
+test('constructor', t => {
+  const pull = new EventPull(sinon.fake())
+  t.truthy(pull)
+})
+
+test('call event', async t => {
+    const callback = sinon.fake()
+    const pull = new EventPull(callback)
+    pull.push({ arg: "test" })
+
+    await later(13)
+
+    t.true(callback.called)
+    t.is(callback.args[0][0].arg,"test")
+  })
+</file>
+
+<file path="src/Provider/docs.yml">
+Обязаности provider:
+- Взаимодествует с внешним транспортом если он есть
+- Привязывет переданую функцию к одному из событий по сигнатуре
+- К одному из событий может быть привязано сколько угодно функций
+- Когда приходит сообщение ищет к какомим событиям оно подходит и вызывает эти события
+</file>
+
+<file path="src/StoreMember/events.js">
+import { EventFactory, Types } from "../Event/index.js"
+
+// Определение события создания объекта
+export const objectCreatedEvent = EventFactory(Types.Object.Def({
+  system: "Store",
+  action: "ObjectCreated",
+  key: Types.String.Def(),
+  version: Types.String.Def(),
+  data: Types.Any.Def(),
+  namespace: Types.String.Def(),
+  storeUid: Types.Key.Def(3)
+}))
+
+// Определение события конфликта версий
+export const versionConflictEvent = EventFactory(Types.Object.Def({
+  system: "Store",
+  action: "VersionConflict",
+  originalKey: Types.String.Def(),
+  conflictingVersion: Types.String.Def(),
+  namespace: Types.String.Def(),
+  storeUid: Types.Key.Def(3)
+}))
+</file>
+
+<file path="src/Ticker/index.js">
+import { NodeTicker } from "./node.js"
+import { BrowserTicker } from "./browser.js"
+
+let Ticker
+if (typeof globalThis.document !== 'undefined')
+    Ticker = BrowserTicker
+else
+    Ticker = NodeTicker
+
+export { Ticker }
+</file>
+
+<file path="src/Ticker/package.json">
+{
+    "type": "module",
+    "@parcel/resolver-default": {
+        "packageExports": true
+    },
+    "alias": {
+        "sinon": "../../node_modules/sinon"
+    }
+}
+</file>
+
+<file path="src/Ticker/test.browser.js">
+import sinon from "sinon"
+
+import { Ticker } from './index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+export async function runTests() {
+    const ticker = new Ticker
+    const delay = 100
+
+    console.log("Constructor: ", !!ticker)
+
+    const callback = sinon.fake()
+    ticker.ontick = callback
+    ticker.start()
+
+    await later(delay)
+
+    ticker.stop()
+    const callCount = callback.callCount 
+
+    console.log("Is called: ", callCount > 0)
+
+    await later(0)
+
+    console.log("Are not new calls: ", callCount === callback.callCount)
+    console.log("All ticks: " + callCount + " for " + delay + "ms")
+}
+</file>
+
+<file path="src/Tools/room/tool.test.js">
+import test from 'ava'
+import sinon from 'sinon'
+import { EventFactory, Types } from '../../Event/index.js'
+import { MemberFactory } from '../../Member/index.js'
+
+function later(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('Not get self event', async t => {
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const secondRoom = new MemberFactory
+    secondRoom.makeRoom()
+    room.addMember(secondRoom)
+
+    const member = new MemberFactory
+    secondRoom.addMember(member)
+
+    const errorEvent = EventFactory(Types.Object.Def({ system: "test" }))
+    const getError = () => member.subscribe(errorEvent, () => {}, false)
+
+	t.throws(getError, { instanceOf: TypeError })
+
+    const event = EventFactory(Types.Object.Def({ system: "test", sourceUid: Types.Key.Def(3) }))
+    const callback = sinon.fake()
+    room.subscribe(event, callback)
+    member.subscribe(event, callback, false)
+
+    member.send(event, { sourceUid: member.uid() })
+
+    await later(0)
+
+    t.true(callback.calledOnce)
+})
+</file>
+
+<file path="src/utils/deepFreeze.js">
+export function deepFreezeMsg(obj) {
+  // WeakSet для отслеживания циклических ссылок
+
+  if (!obj || typeof obj !== 'object')
+    throw new TypeError("payload required type of object")
+
+  return _deepFreeze(obj, [])
+  
+  function _deepFreeze(currentObj, path) {
+    // Запрещенные типы - вызывают ошибку
+    if (typeof currentObj === 'function') {
+      throw new TypeError(`Functions are not allowed in payload`);
+    }
+    
+    if (typeof currentObj === 'symbol') {
+      throw new TypeError(`Symbols are not allowed in payload`);
+    }
+    
+    if (currentObj instanceof Promise) {
+      throw new TypeError(`Promises are not allowed in payload`);
+    }
+
+    if (
+      currentObj instanceof ArrayBuffer || 
+      (Blob && currentObj instanceof Blob) || 
+      ArrayBuffer.isView(currentObj)
+    ) {
+        if(currentObj instanceof Uint8Array)
+            return currentObj
+        
+        console.warn(`Binary type will be ignored. Use Uint8Array for binary data.`)
+        return null
+    }
+    
+    // Специальная обработка для Error
+    if (currentObj instanceof Error) {
+      const plainObj = {
+        name: currentObj.constructor.name,
+        message: currentObj.message || ""
+      };
+      return Object.freeze(plainObj);
+    }
+    
+    // Обработка Date
+    if (currentObj instanceof Date) {
+      console.warn(`Date object at path ${path.join('.')} will be converted to unix timestamp object. Consider storing dates as ISO strings instead.`);
+      const result = {
+        _date: true,
+        timestamp: currentObj.getTime()
+      };
+      return Object.freeze(result);
+    }
+
+    // Проверка циклических ссылок
+    if (currentObj !== null && (typeof currentObj === 'object' || Array.isArray(currentObj))) {
+
+      if (path.includes(currentObj)) 
+        throw new TypeError(`Cyclic reference detected!`);
+      
+      path.push(currentObj)
+    }
+    
+    // Обработка примитивов (не требуют заморозки)
+    if (currentObj === null || typeof currentObj !== 'object') {
+      return currentObj;
+    }
+    
+    // Обработка Map
+    if (currentObj instanceof Map) {
+      console.warn(`Map at path ${path.join('.')} will be converted to plain object`);
+      const plainObj = {};
+      for (const [key, value] of currentObj) {
+        if (typeof key !== 'string') {
+          throw new TypeError(`Map key at path ${path.join('.')} must be string, got ${typeof key}`);
+        }
+        plainObj[key] = _deepFreeze(value, path)
+      }
+      return Object.freeze(plainObj);
+    }
+    
+    // Обработка Set
+    if (currentObj instanceof Set) {
+      console.warn(`Set at path ${path.join('.').toString()} will be converted to array`);
+      const array = [];
+      for (const value of currentObj) {
+        array.push(_deepFreeze(value, path));
+      }
+      return Object.freeze(array);
+    }
+    
+    // Игнорируем WeakMap/WeakSet с предупреждением
+    if (currentObj instanceof WeakMap || currentObj instanceof WeakSet) {
+      console.warn(`WeakMap/WeakSet at path ${path.join('.')} will be ignored as they cannot be serialized`);
+      return {};
+    }
+    
+    // Игнорируем RegExp с предупреждением
+    if (currentObj instanceof RegExp) {
+      console.warn(`RegExp at path ${path.join('.')} will be ignored. Convert to string manually if needed.`);
+      return null;
+    }
+    
+    // Обработка массивов
+    if (Array.isArray(currentObj)) {
+      for (let i = 0; i < currentObj.length; i++) {
+        currentObj[i] = _deepFreeze(currentObj[i], path)
+      }
+      return Object.freeze(currentObj);
+    }
+
+    for (const key of Object.keys(currentObj)) {      
+      currentObj[key] = _deepFreeze(currentObj[key], path);
+    }
+    
+    return Object.freeze(currentObj);
+  }
+}
+</file>
+
+<file path=".gitignore">
+node_modules/*
+.parcel-cache/*
+dist/*
+</file>
+
+<file path="src/Ticker/browser.js">
+export class BrowserTicker {
+    constructor(maxJitter = 13) {
+        const code = "setInterval(() => postMessage('tick'))"
+        const blob = new Blob([code], {type: 'application/javascript'})
+        this._worker = new Worker(URL.createObjectURL(blob))
+        this._maxJitter = maxJitter
+    }
+    set ontick (cb) {
+        if(typeof cb === "function")
+            this._cb = cb
+        else
+            throw new TypeError("callback is not function!")
+    }
+    start() {
+        this._worker.onmessage = () => setTimeout(this._cb, Math.random() * this._maxJitter)
+    }
+    stop() {
+        this._worker.onmessage = () => {}
+    }
+}
+</file>
+
+<file path="src/Ticker/index.test.js">
+import test from 'ava'
+import sinon from "sinon"
+
+import { Ticker } from './index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+test('constructor', t => {
+  const ticker = new Ticker
+  t.truthy(ticker)
+})
+
+test('start and stop', async t => {
+    const ticker = new Ticker
+
+    const callback = sinon.fake()
+    ticker.ontick = callback
+    ticker.start()
+
+    await later(13)
+
+    ticker.stop()
+    const callCount = callback.callCount 
+
+    t.true(callCount > 0)
+
+    await later(0)
+
+    t.true(callCount <= callback.callCount)
+})
+
+test('count ticks', async t => {
+    const ticker = new Ticker
+    const delay = 100
+
+    const callback = sinon.fake()
+    ticker.ontick = callback
+    ticker.start()
+
+    await later(delay)
+
+    ticker.stop()
+    const callCount = callback.callCount 
+
+    t.pass()
+    t.log(delay+"ms = "+callCount+"ticks")
+})
+</file>
+
+<file path="src/Tools/relationsTree/events.js">
+import { EventFactory, Types } from "../../Event/index.js"
+import { system } from "../relations/events.js"
+
+export const pingEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Ping",
+    role: Types.Key.Def(3),
+    name: Types.Key.Def(),
+    sourceUid: Types.Key.Def(3),
+    parentUid: Types.Any.Def(Types.Const.Def(undefined), Types.Key.Def(3)),
+    children: Types.Array.Def(Types.Key.Def(3), 256, true)
+}, true))
+</file>
+
+<file path="src/Tools/relationsTree/tool.js">
+import { pingEvent } from "./events.js"
+
+function ToolFactory() {
+    
+    const nodes = new Map
+    const names = new Map
+
+    const upsertNode = (nodeId) => {
+        if(!nodes.has(nodeId) && nodeId)
+            nodes.set(nodeId, { children: new Set, extraData: {} })
+    }
+
+    const upsertRelation = (parent, child) => {
+        upsertNode(child)
+        
+        const childSet = nodes.get(parent).children
+
+        if(!childSet.has(child))
+            childSet.add(child)
+    }
+
+    const upsertName = (name, nodeId) => {
+
+        let uid = names.get(name)
+        for (let charsFromId = 0; uid !== nodeId; charsFromId++) {
+            if(!names.has(name))
+                names.set(name, nodeId)
+            else
+                name += nodeId[charsFromId]
+
+            uid = names.get(name)
+        }
+        
+        return name
+    }
+
+    const addNodeAttr = (nodeId, attrName, data) =>  {
+        upsertNode(nodeId)
+
+        nodes.get(nodeId).extraData[attrName] = data
+    }
+
+    const receivePing = ({
+        role,
+        name,
+        sourceUid, 
+        parentUid, 
+        children 
+    }) => {
+        addNodeAttr(sourceUid, "role", role)
+        addNodeAttr(sourceUid, "name", upsertName(name, sourceUid))
+        
+
+        if(parentUid) {
+            upsertNode(parentUid)
+            upsertRelation(parentUid, sourceUid)
+        }
+
+        children.forEach(child => upsertRelation(sourceUid, child))
+    }
+
+    return {
+        subscribeEvents(subscribe) {
+            subscribe(pingEvent, receivePing)
+        },
+        getNode(nodeId) {
+            upsertNode(nodeId)
+
+            return { ...nodes.get(nodeId).extraData }
+        },
+        getChildren(nodeId) {
+            return Array.from(nodes.get(nodeId).children)
+        },
+        getNodeAttr(nodeId, attrName) {
+            upsertNode(nodeId)
+
+            return nodes.get(nodeId).extraData[attrName]
+        },
+        addNodeAttr,
+        topology() {
+            const edges = []
+            const roles = []
+            const names = []
+
+            for (const [nodeId] of nodes) {
+
+                roles.push([nodeId, this.getNodeAttr(nodeId, "role")])
+                names.push([nodeId, this.getNodeAttr(nodeId, "name")])
+
+                for (const childId of nodes.get(nodeId).children) {
+                    edges.push([nodeId, childId])
+                }
+            }
+
+            return { edges, roles, names }
+        }
+    }
+}
+
+export const LoggingTreeTool = {
+    name: "LoggingTree",
+    ToolFactory,
+    depends: { 
+        required: []
+    }
+}
+</file>
+
+<file path="src/Tools/relationsTree/tool.test.js">
+import test from 'ava'
+import { MemberFactory } from '../../Member/index.js'
+import { LoggingTreeTool as Tool } from './tool.js'
+import { pingEvent } from './events.js'
+import { LoggerFactory } from '../../LoggerMember/index.js'
+
+function later(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('Build tree', async t => {
+  const member = new MemberFactory()
+  member.strictValidationEvent = true
+  member.makeRoom()
+  member.addTool(Tool)
+  
+  const rootId = member.uid()
+  const childId1 = "38560947ac41"
+  const childId2 = "38560947ac42"
+  const childId3 = "38560947ac43"
+
+  member.send(pingEvent, {
+    sourceUid: rootId,
+    parentUid: undefined,
+    role: "Logger",
+    name: "Root",
+    children: []
+  })
+
+  t.truthy(member.tools.LoggingTree)
+  t.truthy(member.tools.LoggingTree.getNode(rootId))
+  t.is(member.tools.LoggingTree.getNodeAttr(rootId, "name"), "Root")
+
+  member.send(pingEvent, {
+    role: "child1",
+    name: "Child",
+    parentUid: rootId,
+    sourceUid: childId1,
+    children: []
+  })
+
+  t.truthy(member.tools.LoggingTree.getNode(childId1))
+  t.deepEqual(member.tools.LoggingTree.getChildren(rootId), [childId1])
+  t.is(member.tools.LoggingTree.getNodeAttr(childId1, "name"), "Child")
+
+  member.send(pingEvent, {
+    role: "child1",
+    parentUid: undefined,
+    sourceUid: childId1,
+    children: [childId2, childId3]
+  })
+
+  t.deepEqual(member.tools.LoggingTree.getChildren(rootId), [childId1])
+  t.deepEqual(member.tools.LoggingTree.getChildren(childId1), [childId2, childId3])
+
+  const topology = member.tools.LoggingTree.topology()
+  t.is(topology.edges.length, 3)
+  t.is(topology.roles.length, 4)
+})
+
+test('Attrs', async t => {
+  const member = new MemberFactory()
+  member.strictValidationEvent = true
+  member.makeRoom()
+  member.addTool(Tool)
+  
+  const rootId = "e0892762-c91a-46e2-9e5e-38560947ac40"
+
+  t.falsy(member.tools.LoggingTree.getNodeAttr(rootId, "test"))
+
+  member.tools.LoggingTree.addNodeAttr(rootId, "test", true)
+
+  t.true(member.tools.LoggingTree.getNodeAttr(rootId, "test"))
+
+  t.deepEqual(member.tools.LoggingTree.getNode(rootId), { test: true })
+
+})
+
+
+test('Duplicate names', async t => {
+  const member = new LoggerFactory()
+  member.strictValidationEvent = true
+  
+  const member2 = new LoggerFactory()
+  member.addMember(member2)
+
+  await later(1)
+
+  t.is(member.tools.LoggingTree.getNodeAttr(member.uid(), "name"), "LoggerMember")
+  t.is(member.tools.LoggingTree.getNodeAttr(member2.uid(), "name"), "LoggerMember" + member2.uid()[0])
+})
+</file>
+
+<file path="src/utils/deepFreeze.test.js">
+import test from 'ava'
+import sinon from 'sinon'
+import { deepFreezeMsg } from './deepFreeze.js'
+
+test.beforeEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+    
+  t.context.consoleStub = sinon.stub(console, 'warn')
+})
+
+test.afterEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+})
+
+test('throws error for non-object payload', t => {
+  t.throws(() => {
+    deepFreezeMsg(null)
+  }, { 
+    message: "payload required type of object",
+    instanceOf: TypeError
+  })
+})
+
+test('accepts empty object and array', t => {
+  const emptyObj = {}
+  const frozenObj = deepFreezeMsg(emptyObj)
+  t.true(Object.isFrozen(frozenObj))
+  
+  const emptyArray = []
+  const frozenArray = deepFreezeMsg(emptyArray)
+  t.true(Object.isFrozen(frozenArray))
+})
+
+test('primitives are returned unchanged', t => {
+  const obj = {
+    string: 'value',
+    number: 42,
+    boolean: true,
+    null: null,
+    undefined: undefined
+  }
+  
+  const frozen = deepFreezeMsg(obj)
+  
+  t.is(frozen.string, 'value')
+  t.is(frozen.number, 42)
+  t.is(frozen.boolean, true)
+  t.is(frozen.null, null)
+  t.is(frozen.undefined, undefined)
+  t.true(Object.isFrozen(frozen))
+})
+
+test('simple objects are frozen', t => {
+  const obj = { key: 'value' }
+  const frozen = deepFreezeMsg(obj)
+  
+  t.true(Object.isFrozen(frozen))
+  t.deepEqual(frozen, obj)
+  
+  // Попытка изменения должна вызвать ошибку
+  t.throws(() => {
+    frozen.key = 'new value'
+  }, { instanceOf: TypeError })
+})
+
+test('nested objects are deeply frozen', t => {
+  const obj = { 
+    key: 'value', 
+    nested: { 
+      inner: 'inner value' 
+    } 
+  }
+  const frozen = deepFreezeMsg(obj)
+  
+  t.true(Object.isFrozen(frozen))
+  t.true(Object.isFrozen(frozen.nested))
+  
+  t.throws(() => {
+    frozen.nested.inner = 'new value'
+  }, { instanceOf: TypeError })
+})
+
+test('arrays are frozen and elements are processed', t => {
+  const arr = [1, 2, { nested: 'value' }]
+  const frozen = deepFreezeMsg(arr)
+  
+  t.true(Object.isFrozen(frozen))
+  t.true(Object.isFrozen(frozen[2]))
+  
+  t.throws(() => {
+    frozen.push(4)
+  }, { instanceOf: TypeError })
+  
+  t.throws(() => {
+    frozen[2].nested = 'new value'
+  }, { instanceOf: TypeError })
+})
+
+test('Uint8Array is not copied or frozen', t => {
+  const uint8 = new Uint8Array([1, 2, 3])
+  const payload = { buffer: uint8 }
+  const frozen = deepFreezeMsg(payload)
+  
+  t.is(frozen.buffer, uint8) // Ссылка не изменилась
+  
+  // Можно изменить содержимое
+  uint8[0] = 99
+  t.is(frozen.buffer[0], 99)
+})
+
+test('other binary types are ignored with warning', t => {
+  const warnStub = t.context.consoleStub
+  
+  
+    const payload = {
+      buffer: new ArrayBuffer(8),
+      dataView: new DataView(new ArrayBuffer(8)),
+      int8: new Int8Array([1, 2, 3])
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.is(frozen.buffer, null)
+    t.is(frozen.dataView, null)
+    t.is(frozen.int8, null)
+    
+    t.true(warnStub.calledWithMatch(/Binary type.*will be ignored/))
+    t.is(warnStub.callCount, 3)
+  
+})
+
+test('Date objects are converted to timestamp objects with warning', t => {
+  const warnStub = t.context.consoleStub
+  
+    const date = new Date('2023-01-01T00:00:00Z')
+
+    
+    const payload = {
+        date
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.true(Object.isFrozen(frozen.date))
+    t.is(frozen.date._date, true)
+    t.is(frozen.date.timestamp, date.getTime())
+    t.true(warnStub.calledWithMatch(/Date object.*will be converted to unix timestamp/))
+})
+
+test('Error objects are converted to plain objects', t => {
+    const payload = {
+        error: new Error('Test error')
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.true(Object.isFrozen(frozen.error))
+    t.is(frozen.error.name, 'Error')
+    t.is(frozen.error.message, 'Test error')
+    
+    // Проверяем подклассы
+    const payloadWithTypeError = {
+        typeError: new TypeError('Type error')
+    }
+    
+    const frozenTypeError = deepFreezeMsg(payloadWithTypeError)
+    t.is(frozenTypeError.typeError.name, 'TypeError')
+})
+
+test('Map is converted to plain object with warning', t => {
+  const warnStub = t.context.consoleStub.callsFake(() => {})
+  
+  
+    const payload = {
+      map: new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2']
+      ])
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.true(Object.isFrozen(frozen.map))
+
+    
+
+    t.deepEqual(frozen.map, { key1: 'value1', key2: 'value2' })
+    t.true(warnStub.calledWithMatch(/Map.*will be converted to plain object/))
+  
+})
+
+test('Map with non-string keys throws error', t => {
+  const payload = {
+    map: new Map([
+      [123, 'value'] // Числовой ключ
+    ])
+  }
+  
+  t.throws(() => {
+    deepFreezeMsg(payload)
+  }, { message: /Map key.*must be string.*number/ })
+})
+
+test('Set is converted to array with warning', t => {
+  const warnStub = t.context.consoleStub
+  
+  
+    const payload = {
+      set: new Set(['value1', 'value2', 'value3'])
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.true(Object.isFrozen(frozen.set))
+    t.deepEqual(frozen.set, ['value1', 'value2', 'value3'])
+    t.true(warnStub.calledWithMatch(/Set.*will be converted to array/))
+  
+})
+
+test('WeakMap and WeakSet are ignored with warning', t => {
+  const warnStub = t.context.consoleStub
+  
+  
+    const payload = {
+      weakMap: new WeakMap(),
+      weakSet: new WeakSet()
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.deepEqual(frozen.weakMap, {})
+    t.deepEqual(frozen.weakSet, {})
+    t.true(warnStub.calledWithMatch(/WeakMap.*will be ignored/))
+    t.true(warnStub.calledWithMatch(/WeakSet.*will be ignored/))
+  
+})
+
+test('RegExp is ignored with warning', t => {
+  const warnStub = t.context.consoleStub
+  
+  
+    const payload = {
+      regex: /test/i
+    }
+    
+    const frozen = deepFreezeMsg(payload)
+    
+    t.is(frozen.regex, null)
+    t.true(warnStub.calledWithMatch(/RegExp.*will be ignored/))
+  
+})
+
+test('cyclic references throw error with path', t => {
+  const obj = { self: null }
+  obj.self = obj
+  
+  const payload = { cyclic: obj }
+  
+  t.throws(() => {
+    deepFreezeMsg(payload)
+  }, { 
+    message: /Cyclic reference detected/,
+    instanceOf: TypeError
+  })
+})
+
+test('forbidden types throw errors', t => {
+  const payloadWithFunction = {
+    func: () => {}
+  }
+  
+  t.throws(() => {
+    deepFreezeMsg(payloadWithFunction)
+  }, { 
+    message: /Functions are not allowed in payload/,
+    instanceOf: TypeError
+  })
+  
+  const payloadWithSymbol = {
+    sym: Symbol('key')
+  }
+  
+  t.throws(() => {
+    deepFreezeMsg(payloadWithSymbol)
+  }, { 
+    message: /Symbols are not allowed in payload/,
+    instanceOf: TypeError
+  })
+  
+  const payloadWithPromise = {
+    promise: Promise.resolve()
+  }
+  
+  t.throws(() => {
+    deepFreezeMsg(payloadWithPromise)
+  }, { 
+    message: /Promises are not allowed in payload/,
+    instanceOf: TypeError
+  })
+})
+
+test('deepFreezeMsg handles complex nested structures', t => {
+  const complexObj = {
+    string: 'value',
+    number: 42,
+    boolean: true,
+    null: null,
+    array: [1, 2, 3, { nested: 'object' }],
+    object: {
+      key1: 'value1',
+      key2: {
+        inner: 'inner value'
+      }
+    },
+    error: new Error('Test error'),
+    set: new Set(['a', 'b', 'c']),
+    map: new Map([['x', 'y'], ['z', 'w']])
+  }
+  
+  const frozen = deepFreezeMsg(complexObj, ['root'])
+  
+  t.true(Object.isFrozen(frozen))
+  t.true(Object.isFrozen(frozen.array))
+  t.true(Object.isFrozen(frozen.array[3]))
+  t.true(Object.isFrozen(frozen.object))
+  t.true(Object.isFrozen(frozen.object.key2))
+  
+  // Проверяем, что Error был преобразован
+  t.true(Object.isFrozen(frozen.error))
+  t.is(frozen.error.name, 'Error')
+  t.is(frozen.error.message, 'Test error')
+  
+  // Проверяем Set и Map преобразования
+  t.true(Array.isArray(frozen.set))
+  t.deepEqual(frozen.set, ['a', 'b', 'c'])
+  
+  t.false(frozen.map instanceof Map)
+  t.deepEqual(frozen.map, { x: 'y', z: 'w' })
+})
+</file>
+
+<file path="src/EventPull/index.js">
+import { Ticker } from "../Ticker/index.js"
+
+export class EventPull extends Array {
+    constructor(onCallEvent) {
+        if(typeof onCallEvent !== "function")
+            throw new TypeError
+
+        super()
+
+        this._ticker = new Ticker
+        this._ticker.ontick = () => this.tick()
+
+        this._callEvent = onCallEvent
+    }
+
+    push(value) {
+        super.push(value)
+        this._ticker.start()
+    }
+
+    tick() {
+        for(let eventCount = this.length; eventCount > 0; eventCount--)
+            this._callEvent(this.shift())
+
+        
+        if(this.length === 0)
+            this._ticker.stop()
+    }
+}
+</file>
+
+<file path="src/StateMember/events.js">
+import { EventFactory, Types } from "../Event/index.js"
+
+export const memberChangedEvent = EventFactory(Types.Object.Def({
+    system: "StatesMembers",
+    uid: Types.Key.Def(3),
+    value: Types.Key.Def(3),
+    oldValue: Types.Key.Def(3)
+}))
+</file>
+
+<file path="src/StoreMember/index.md">
+# Storage Member
+
+## Ключевые понятия
+
+### Элемент данных
+Элемент данных это самостоятельная цельная единица данных которая может быть файлом или просто каким то объектом для хранения.
+Элемент данных имеет уникальный id и хэш данных, а так же версию в заголовках(метаданных)
+Первая версия элемента получается путем вызова фукнции хэширования от id и хэша данных.
+КаждаЯ последующая получается путем вызова фукнции хэширования от предидущей версии и нового хэша данных.
+
+```js
+const firstVersion = hash(id + dataHash)
+const nextVersion = hash(firstVersion + newDataHash)
+```
+
+Такой версионирование позволяет отслеживать является ли вверстя эдемента данных что пришел от другого хранилища следующей версией, текущей, или предидущей,и на основе этого обновлять данные.
+
+Так метаданные элемента содержат суммарный рамер данных, и ссылки на связаные с ним элементы от которых он зависит, или которые зависят от него.
+
+### Коллизия элементов
+Если два элемента имееют одинаковый идентификатор, но по версии не являются совместимыми, то генерируется событие колизиии.
+СТандартным повдением является удаление обоих элементов и создание двух новых, индификаторами(id) которых станет их старый идетификатор плюс потсфикс в виде первого байта несвопадающего в строках версий.
+
+Таким образом они будут иметь сатрый идетфикатор как часть нового, плюс байт который точно разный у них в версиях.
+
+### Дерево хэширования
+Это дерево в котором элементы(их метаданные) данных являются листьями, а хэш всех элементов это корень дерева и хэш самого хранилища
+Каждый узел дерева это содержит хэш некоторго поддерева со всеми элементами-листьями
+
+Два таких дерева можно сравнивать начиная от корня и спускаясь к листьям, чтобы быстро найти все элементы которые различаются между этими деревьями.
+Новые элементы распределяются между узлами рандомно
+
+### Хранилище
+Содержит данные, имеет разный статус согласования с другими хранилищами в сети
+Так же имеет дерево элементов, чтобы быстро и эффективно находить разницу в данных с другими хранилищами
+После каждого обновления данных дерево хэширования обновляется.
+Дерево находится в оперативной памяти
+Сами данные хранятся отдельно по своему идентификатору так же в опертаивной памяти или даже в файловой системе.
+
+### Пустое хранилище
+Это хранилище не имеет еще никаких данных, все пустые хранилища имеют один и тот же хэш
+
+### Сообщение
+Это пакет данных посылаемых хранилищем и позволяющий обмениваться событиями в сети
+Эти данные являются обязательными для любого обмена 
+- uid - идентификатор хранилища
+- status - статус хранилища
+- hash - хэш данных этого хранилища
+
+### Хранилище-Источник
+Если считать разные хранилища множествами в математическом смысле, а элементы данных элементами этих множеств, то истоник гарантировано содержит пересечение более половины хранилищ(то есть данные которые есть более чем в половине хранилище) кроме тех кто подключился уже после того как хранилище получило статус Источника. Таким образом данные полученые уже после получения статуса Источника не учитываются.
+
+### Сеть хранилищ
+Состоит из хранилищ связанных между собой
+Любое сообщение от одного из хранилищ получают все
+Каждое хранилище имеет у себя список всех хранилищ в сети и их статусов синхронизации
+Этот список обновляется получением сообщений от друг друга 
+
+Если хранилище не отправляло никаких событий от себя в течении секунды, то оно детает специальный пинг чтобы подтвердить статус сети.
+
+Если в сети есть источники, то статус сети считается синхронизированным.
+Источники в сети формируют некторое согласованное большинство хранилищ, источников может быть менее чем половины всех хранилищ, но при этом из согласованных между собой хранилищ они большинство.
+При этом источники могут иметь немного разные данные которые получены за последние 5 секунд, потому не все новые данные были ими получены от друг друга. Главное что более половины из них, имели одинаковый набор данных за последние 5 секунд.
+
+Только Источники могут добавлять новые данные в сеть
+Если в сети нет ни одного хранидища со статусом источника, то сеть находится в рассинхронизированом состоянии, и все хранилища должны перейти в статус встречной синхронизации.
+
+### Встречаная синхронизация
+Хранилища соревнуются в поиске данных которые отличают их от других.
+Они не пересылают сами данные, а только заголовки друг другу, а в ответ помечают есть ли у них такие данные или нет
+Если у хранилища есть данные которых нет у кого то еще, то такие данные убираются в очередь для будущего добавления.
+Хранилище которое первым подтвердит что все данные которые у него есть, есть и остальных, становится Источником.
+При этом конечно другие хранилища тоже могут стать источником
+
+Eсли данных нет в Источнике, но при этом оно есть в каком то хранилище, то хранилище которое их имеет обязано раздать эти данные всем, после того как оно станет Источником.
+
+#### Важное замечание что пустое хралище не может стать источником если в сети есть хоть одно не пустое хранилище
+И таким образом при встречной синхронизации, пустой хранилище не переходит в статус источника, и не отвечает на события встречной синхронизации, если етсь непустые хранилища в сети. Если же все хранилища пустые, то они все автоматом становятся источниками
+Непустые хранилища не ждут и не учитывают ответы пустых хранилищ в своей синхронизации
+
+### Синхронизация с источниками
+Хранилиза не персылают сами данные, а только их заголовки
+Хранилище видя что в сети есть источники, начичнает проверять какие данные у него из источников уже есть, а каких нет.
+Все данные которые есть у хранилища, но нет в Источниках, убиратся в очередь на добавления когда статус Источника будет получен.
+Так же все новые данные не от Источников, например от пользователя, так же ставятся в очередь на добавление.
+
+### Поддержание синхронизации между источниками
+Источник хранит ограниченую историю хэшей для всех других хранилищ в сети
+Хэши сортируются в истории в порядки их получения.
+Так как история ограничена то более новые хэши вытесняют старые хэши из истории для хранилища
+
+Если хранилище не источник, то будет хранится только один хэш
+Если другое хранилище является источником, то хэши котроые пришли от него записываются в историю для этого источника в текущем хранилище.
+
+Сравнение хэшей двух хранилищ это сравнение двух историй хранилищ, текщего и какого другого. если в них есть хотя бы один общий хэш, значит как миниум один раз эти хранилищи имели одинаковый набор данных. Это считается что они синхронизировались.
+Более свежие совпадения должны находтся первыми в историях. При одном достаточно одного совпадения между двумя историями
+
+Если совпадение в истории двух хранилищ найдены, то делатеся отметка чтобы найдена синхронизация между этми двумяф хранилищами.
+При этом история текущего хранилища никак не меняется, а история для другого хранилища которая хранится в текущем хранилище очищается до совпадающего хэша(включая этот хэш), все что более новое чем совпадающий хэш сохраняется. Таким образом новая синхронизация не будет пока в истории не появится новое совпадение.
+
+Этот механизм позволяет не сравнивать два хэша в моменте, потому они могут быть не равны если новые данные были получины одим источником, но не получены еще другим, но сранивать истории двух хранилищ, которые покажут что в какой то момент времени оба хранилища имели
+
+Каждые 5 секунд, проверятся список источников, отметки синхронизации в нем.
+При стабильной синхронизации большинство источников должны быть отмечены синхронизированными в списке.
+Большинство здесь считается половиной всего количества с округлением вверх.
+Отметки в списке очищаются.
+Так же очищается история текущего хранилища которая хранится в текущем хранилище
+Если оказывается что большинство истоников не были синхронизированы, то текущее хранилище теряет статус источника и обьявляет об этом событии.
+
+Остальные источники получая это событие, исключат его из своих списоков источников.
+Такая деградация моджет проиходить пока источников не останется двое в сети
+Если истчоников в сети двое, то любая рассинхронизация между ними приводит к переходу всех в режим встречной синхронизации.
+</file>
+
+<file path="src/Ticker/node.js">
+export class NodeTicker {
+    constructor(maxJitter = 13) {
+        this._cb = () => {}
+        this._timer = null
+        this._maxJitter = maxJitter
+    }
+    set ontick (cb) {
+        if(typeof cb === "function")
+            this._cb = () => setTimeout(cb, Math.random() * this._maxJitter)
+        else
+            throw new TypeError("callback is not function!")
+    }
+    start() {
+        if(this._timer) return
+        this._timer = setInterval(this._cb, 0)
+    }
+    stop() {
+        clearInterval(this._timer)
+        this._timer = null
+    }
+}
+</file>
+
+<file path="src/Tools/relations/events.js">
+import { EventFactory, Types } from "../../Event/index.js"
+
+export const system = "MemberNetwork"
+
+export const pingEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Ping",
+    pingNumber: Types.Index.Def(2**31 - 1),
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    role: Types.Key.Def(3),
+    name: Types.Key.Def(),
+    status: Types.Key.Def(3),
+    runtime: Types.Key.Def(3),
+    parentUid: Types.Any.Def(Types.Const.Def(undefined), Types.Key.Def(3)),
+    children: Types.Array.Def(Types.Key.Def(3), 256, true),
+    memberListSize: Types.Index.Def(1024*1024),
+    memberListHash: Types.Key.Def(3),
+    receivedPings: Types.Index.Def(2**31 - 1)
+}, true))
+</file>
+
+<file path="README.ru.md">
+# UnyEvents Core
+
+Мощный фреймворк для событийно-ориентированной коммуникации, предназначенный для построения распределенных систем и приложений реального времени. UEE Core предоставляет гибкую архитектуру для управления коммуникацией на основе событий между различными компонентами вашего приложения.
+
+## Возможности
+
+- **Событийно-ориентированная архитектура**: Построена на надежной системе событий для гибкой коммуникации
+- **Организация на основе комнат**: Организуйте компоненты в комнаты для лучшей структуры
+- **Множество вариантов транспорта**: Поддержка различных механизмов транспорта, включая:
+  - In-memory транспорт для локальной коммуникации
+  - PeerJS транспорт для peer-to-peer коммуникации
+  - Надежный wrapper транспорт для повышенной надежности
+- **Типобезопасные события**: Встроенная система типов для определения событий
+- **Кроссплатформенность**: Работает как в Node.js, так и в браузерной среде
+- **Расширяемость**: Легко добавлять новые механизмы транспорта и типы событий
+
+## Установка
+
+```bash
+npm install @ellementul/uee-core
+```
+
+## Основные концепции
+
+### Member (Участник)
+Компонент, который может отправлять и получать сообщения. Участники могут быть организованы в комнаты и общаться через события.
+
+#### Callbacks
+
+- `onMakeRoom` - Вызывается, когда участник становится комнатой
+- `onJoinRoom` - Вызывается, когда участник присоединяется к комнате
+- `onReady` - Вызывается, когда участник готов отправлять и получать сообщения
+- `onDestroy` - Вызывается, когда участник уничтожается (например, при удалении из комнаты)
+
+#### Methods
+
+- `makeRoom()`: Создает новую комнату или присоединяется к существующей
+- `addMember(member)`: Добавляет участника в комнату
+- `send(event, payload)`: Отправляет событие с данными участнику
+- `subscribe(event, handler)`: Подписывается на событие и предоставляет обработчик для события 
+
+### Event (Событие)
+Типизированное сообщение, определяющее структуру коммуникации между участниками. События типобезопасны и могут быть валидированы.
+
+### Room (Комната)
+Специальный участник, который включает Provider для обработки сообщений и событий. Комнаты могут содержать несколько участников и управлять их коммуникацией.
+
+### Transport (Транспорт)
+Канал коммуникации, который соединяет две комнаты, обеспечивая обмен сообщениями между ними. Поддерживает различные механизмы транспорта.
+
+## Примеры использования
+
+### Создание участника
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+const member = new MemberFactory()
+```
+
+### Создание комнаты
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+const room = new MemberFactory()
+
+// Опциональные колбэки
+room.onMakeRoom = () => { 
+    console.log("Комната успешно создана!") 
+}
+
+room.onInit = () => { 
+    console.log("Комната инициализирована!") 
+}
+
+room.makeRoom()
+```
+
+### Добавление участника в комнату
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+// Создаем и инициализируем комнату
+const room = new MemberFactory()
+room.onMakeRoom = () => { console.log("Комната создана!") }
+room.makeRoom()
+
+// Создаем участника
+const member = new MemberFactory()
+member.onJoinRoom = () => { console.log("Участник присоединился к комнате") }
+member.onReady = () => { console.log("Участник готов") }
+
+// Добавляем участника в комнату
+room.addMember(member)
+```
+
+### Удаление участника из комнаты
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+// Создаем и инициализируем комнату
+const room = new MemberFactory()
+room.makeRoom()
+
+// Создаем участника
+const member = new MemberFactory()
+member.onDestroy = () => { console.log("Участник уничтожается") }
+room.addMember(member)
+
+// Удаляем участника из комнаты
+room.deleteMember(member.uid)
+```
+
+### Создание и отправка событий
+
+```js
+import { Types, EventFactory } from "@ellementul/uee-core"
+
+// Определяем тип события
+const type = Types.Object.Def({ 
+    system: "Test", 
+    action: Types.Any.Def("Switch On", "Switch Off") 
+})
+
+// Создаем событие
+const event = EventFactory(type)
+
+// Отправляем событие с данными
+const payload = { action: "Switch On" }
+member.send(event, payload)
+```
+
+### Подписка на события
+
+```js
+import { Types, EventFactory } from "@ellementul/uee-core"
+
+// Определяем и создаем событие
+const type = Types.Object.Def({ 
+    system: "Test", 
+    action: Types.Any.Def("Switch On", "Switch Off") 
+})
+const event = EventFactory(type)
+
+// Подписываемся на событие
+const handleEvent = (payload) => { 
+    console.log("Получено событие:", payload) 
+}
+member.subscribe(event, handleEvent)
+```
+
+### Соединение комнат через транспорт
+
+```js
+// Первая комната (Хост)
+import { MemberFactory, InMemory } from "@ellementul/uee-core"
+
+const room1 = new MemberFactory()
+const transport1 = new InMemory({ 
+    id: "TestTransport", 
+    isHost: true 
+})
+
+room1.makeRoom(transport1)
+room1.connect()
+
+// Вторая комната (Клиент)
+const room2 = new MemberFactory()
+const transport2 = new InMemory({ 
+    id: "TestTransport", 
+    isHost: false 
+})
+
+room2.makeRoom(transport2)
+room2.connect()
+```
+
+## Разработка
+
+### Запуск тестов
+
+```bash
+# Запуск всех тестов
+npm test
+
+# Запуск тестов в режиме наблюдения
+npm run test:w
+
+# Запуск браузерных тестов
+npm run test:browser:ticker
+npm run test:browser:member
+npm run test:browser:peerjs
+```
+
+## Лицензия
+
+ISC
+
+## Вклад в проект
+
+Мы приветствуем ваш вклад в проект! Не стесняйтесь отправлять Pull Request.
+</file>
+
+<file path="src/Member/docs.yml">
+
+</file>
+
+<file path="src/StoreMember/index.js">
+import { StatesMember } from '../StateMember/index.js'
+import { objectCreatedEvent, versionConflictEvent } from './events.js'
+import { convertDataToUint8Array } from '../utils/deepFreeze.js';
+
+// Основной класс хранилища
+export class DataStore extends StatesMember {
+  constructor(options = {}) {
+    super(['empty', 'not_synced', 'synced']);
+    
+    const { 
+      namespace = 'default-storage',
+      hashFunction
+    } = options;
+    
+    this.setState('empty');
+    
+    this._namespace = namespace;
+    this._hashFunction = hashFunction || v3
+    
+    this._values = new Map();    // key -> Uint8Array
+    this._hashes = new Map();    // key -> hash данных
+    this._versions = new Map();  // key -> версия
+    this._timestamps = new Map(); // key -> timestamp
+    this._deleted = new Map();   // key -> timestamp удаления
+    
+    this.subscribe(objectCreatedEvent, this.handleObjectCreated.bind(this));
+    this.subscribe(versionConflictEvent, this.handleVersionConflict.bind(this));
+  }
+  
+  get namespace() {
+    return this._namespace
+  }
+  
+  _calculateInitialVersion(key, dataHash) {
+    return this._hashFunction(`${key}${dataHash}}`);
+  }
+  
+  _calculateNextVersion(oldVersion, newDataHash) {
+    return this._hashFunction(`${oldVersion}${newDataHash}`);
+  }
+  
+  create(data) {
+    const uint8Array = convertDataToUint8Array(data);
+    
+    if (uint8Array.byteLength > 64 * 1024) {
+      const formattedSize = (uint8Array.byteLength / 1024).toFixed(2);
+      throw new Error(`Data size (${formattedSize}KB) exceeds maximum limit of 64KB`);
+    }
+    
+
+    const key = this._generateUUID();
+    const timestamp = Date.now();
+    const dataHash = this._hashFunction(uint8Array);
+    const version = this._calculateInitialVersion(key, dataHash);
+
+    // Синхронное обновление коллекций
+    this._values.set(key, uint8Array);
+    this._hashes.set(key, dataHash);
+    this._versions.set(key, version);
+    this._timestamps.set(key, timestamp);
+    
+    // Отправляем событие для синхронизации
+    this.send(objectCreatedEvent, {
+      key,
+      version,
+      data: uint8Array,
+      namespace: this.namespace,
+      storeUid: this.uid()
+    });
+    
+    // Обновление состояния
+    if (this.state === 'empty') {
+      this.setState('not_synced');
+    }
+    
+    return {
+      key,
+      version,
+      timestamp,
+      action: 'created'
+    };
+  }
+  
+  toTrush(key) {
+    if (!this.has(key)) {
+      console.log(`Attempted to delete non-existent key: ${key}`);
+      return false;
+    }
+    
+    const timestamp = Date.now();
+    
+    // Помечаем как удаленный локально
+    this._deleted.set(key, timestamp);
+    
+    // Генерируем событие удаления для других узлов
+    const deletionEvent = {
+      key: key,
+      timestamp: timestamp,
+      sourceNamespace: this.namespace,
+      lastVersion: this._versions.get(key)
+    };
+    
+    console.log(`Deletion event sent for key: ${key}`);
+    
+    return true;
+  }
+  
+  isTrushed(key) {
+    return this._deleted.has(key);
+  }
+  
+  has(key) {
+    return this._values.has(key) && !this.isTrushed(key);
+  }
+  
+  resolveVersionConflict(originalKey, localVersion, shouldSendEvent = false) {
+    const keyHash = this._hashFunction(originalKey);
+    const versionHash = this._hashFunction(localVersion);
+    
+    // Берем по половине от каждого хэша
+    const keyPart = keyHash.slice(0, keyHash.length / 2);
+    const versionPart = versionHash.slice(0, versionHash.length / 2);
+    
+    const localNewKey = keyPart + versionPart;
+    
+    // Сохраняем данные под новым ключом
+    this._values.set(localNewKey, this._values.get(originalKey));
+    this._hashes.set(localNewKey, this._hashes.get(originalKey));
+    this._versions.set(localNewKey, this._versions.get(originalKey));
+    this._timestamps.set(localNewKey, this._timestamps.get(originalKey));
+    
+    // Удаляем старую запись
+    this._values.delete(originalKey);
+    this._hashes.delete(originalKey);
+    this._versions.delete(originalKey);
+    this._timestamps.delete(originalKey);
+    
+    // Отправляем событие ТОЛЬКО при первоначальном конфликте
+    if (shouldSendEvent) {
+      this.send(versionConflictEvent, {
+        originalKey,
+        conflictingVersion: localVersion,
+        namespace: this.namespace,
+        storeUid: this.uid()
+      });
+    }
+    
+    return localNewKey;
+  }
+  
+  handleObjectCreated(event) {
+    // 1. Игнорируем события от самого себя
+    if (event.storeUid === this.uid()) {
+      console.log('Ignored self-created object event');
+      return;
+    }
+    
+    // 2. Фильтрация по namespace
+    if (event.namespace !== this.namespace) {
+      console.log(`Ignored event from different namespace: ${event.namespace} vs ${this.namespace}`);
+      return;
+    }
+    
+    // 3. Проверяем, не был ли объект уже удален
+    if (this.isTrushed(event.key)) {
+      console.log(`Ignored creation event for trushed key: ${event.key}`);
+      return;
+    }
+    
+    const key = event.key;
+    const incomingData = event.data;
+    const incomingVersion = event.version;
+    
+    try {
+      // 4. Проверяем размер данных
+      if (incomingData.byteLength > 64 * 1024) {
+        console.error(`Incoming object exceeds size limit: ${incomingData.byteLength} bytes`);
+        return;
+      }
+      
+      // 5. Вычисляем хэш полученных данных
+      const dataHash = this._hashFunction(incomingData)
+      
+      // 6. Проверяем, существует ли уже объект с таким ключом
+      const alreadyExists = this._values.has(key)
+      
+      if (alreadyExists) {
+        const localVersion = this._versions.get(key);
+        
+        if (localVersion === incomingVersion) {
+          console.log(`Object ${key} already synchronized with same version`);
+          return;
+        }
+        
+        // Версии расходятся — разрешаем конфликт
+        this.resolveVersionConflict(key, localVersion, true);
+        action = 'conflict_resolved';
+      } else {
+        // 7. Сохраняем объект в хранилище
+        const timestamp = Date.now();
+        
+        this._values.set(key, incomingData);
+        this._hashes.set(key, dataHash);
+        this._versions.set(key, incomingVersion);
+        this._timestamps.set(key, timestamp);
+      }
+      
+      console.log(`Successfully processed remote object creation: ${key}, version: ${incomingVersion}`);
+      
+      // 8. Обновление состояния
+      if (this.state === 'empty') {
+        this.setState('not_synced');
+      }
+      
+    } catch (error) {
+      console.error('Error processing remote object creation:', error);
+    }
+  }
+  
+  handleVersionConflict(event) {
+    // 1. Игнорируем события от самого себя
+    if (event.storeUid === this.uid()) {
+      console.log('Ignored self-generated conflict event');
+      return;
+    }
+    
+    // 2. Фильтрация по namespace
+    if (event.namespace !== this.namespace) {
+      console.log(`Ignored conflict from different namespace: ${event.namespace}`);
+      return;
+    }
+    
+    const { originalKey, conflictingVersion } = event;
+    
+    // 3. Проверяем наличие объекта
+    if (!this._values.has(originalKey)) {
+      console.log(`No local object for conflict: ${originalKey}`);
+      return;
+    }
+    
+    // 4. Проверяем удаление
+    if (this.isTrushed(originalKey)) {
+      console.log(`Ignored conflict for trushed key: ${originalKey}`);
+      return;
+    }
+    
+    try {
+      // 5. Сравниваем версии
+      const localVersion = this._versions.get(originalKey);
+      if (localVersion === conflictingVersion) {
+        console.log(`Conflict already resolved for: ${originalKey}`);
+        return;
+      }
+      
+      // 6. Разрешаем конфликт без отправки нового события
+      this.resolveVersionConflict(originalKey, localVersion, false);
+      
+      console.log(`Resolved remote conflict for key: ${originalKey}`);
+      
+    } catch (error) {
+      console.error('Conflict resolution error:', error);
+    }
+  }
+}
+</file>
+
+<file path="src/Tools/relations/tool.test.js">
+import test from 'ava'
+import { MemberFactory } from '../../Member/index.js'
+import { HashMap, RelationTool as Tool } from './tool.js'
+import { pingEvent } from './events.js'
+
+function later(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('sendPing: отправляет ping при вызове', async t => {
+  const member = new MemberFactory()
+  member.strictValidationEvent = true
+  member.makeRoom()
+  member.addTool(Tool)
+  
+  const receivedPings = []
+  member.subscribe(pingEvent, (payload) => {
+    receivedPings.push(payload)
+  }, true, "TestEnv")
+  
+  member.tools.Relations.setRole('Tester')
+  member.tools.Relations.sendPing()
+  member.tools.Relations.sendPing()
+  
+  t.is(receivedPings[0].role, 'Tester')
+  t.is(receivedPings[0].pingNumber, 1)
+  t.is(receivedPings[0].receivedPings, 0)
+  t.is(receivedPings[0].sourceUid, member.uid())
+  t.is(receivedPings[0].status, "Created")
+  t.is(receivedPings[0].memberListSize, 0)
+  t.falsy(receivedPings[0].memberListHash)
+
+  t.is(receivedPings[1].pingNumber, 2)
+  t.is(receivedPings[1].receivedPings, 1)
+  t.is(receivedPings[1].memberListSize, 1)
+  t.truthy(receivedPings[1].memberListHash)
+})
+
+test('sendPing: периодическая отправка', async t => {
+  const member = new MemberFactory()
+  member.strictValidationEvent = true
+  member.makeRoom()
+  member.addTool(Tool)
+  member.tools.Relations.setRole("member")
+  
+  const receivedPings = []
+  member.subscribe(pingEvent, (payload) => {
+    receivedPings.push(payload)
+  })
+  
+  await later(1)
+  
+  t.true(receivedPings.length >= 1, `Ожидался минимум 1 пинг, получено ${receivedPings.length}`)
+  t.is(receivedPings[0].pingNumber, 1)
+})
+
+test('tool_requires_room_dependency', t => {
+  const host = new MemberFactory()
+  host.makeRoom()
+  
+  const subordinate = new MemberFactory()
+  host.addMember(subordinate)
+  
+  // У подчинённого нет своей комнаты — инструмент не должен добавиться
+  t.throws(() => {
+    subordinate.addTool(Tool)
+  }, {
+    message: /Not found depend: room/
+  })
+  
+  // У хоста инструмент добавляется успешно
+  t.notThrows(() => {
+    host.addTool(Tool)
+  })
+  
+  // Проверяем что пинг отправляется
+  const receivedPings = []
+  host.subscribe(pingEvent, (payload) => {
+    receivedPings.push(payload)
+  })
+  
+  host.tools.Relations.setRole("host")
+  host.tools.Relations.sendPing()
+  
+  t.is(receivedPings.length, 1)
+  t.is(receivedPings[0].pingNumber, 1)
+  t.is(receivedPings[0].children.length, 1)
+  t.falsy(receivedPings[0].parentUid)
+})
+
+test('two_clients_send_pings_to_host', async t => {
+  const host = new MemberFactory()
+  const client1 = new MemberFactory()
+  const client2 = new MemberFactory()
+  
+  host.makeRoom()
+  client1.makeRoom()
+  client2.makeRoom()
+  
+  // Инструмент только у клиентов
+  Tool.pingDelay = 50
+  client1.addTool(Tool)
+  client2.addTool(Tool)
+  client1.tools.Relations.setRole("client1")
+  client2.tools.Relations.setRole("client2")
+  
+  // Клиенты подключаются к host
+  host.addMember(client1)
+  host.addMember(client2)
+  
+  const gotClient1 = []
+  client1.subscribe(pingEvent, (payload) => {
+    if(payload.sourceUid != client1.uid()) {
+      gotClient1.push(payload)
+    }
+  }, null, "TestEnvClient1")
+
+  // client1.subscribe(pingEvent, console.log, false, client1.uid())
+
+  const gotClient2 = []
+  client2.subscribe(pingEvent, (payload) => {
+    if(payload.sourceUid != client2.uid())
+      gotClient2.push(payload)
+  }, null, "TestEnvClient2")
+
+  client2.tools.Relations.sendPing()
+  
+  await later(100)
+  
+  t.true(gotClient1.length >= 2, `От client1 ожидалось минимум 2 пинга, получено ${gotClient1.length}`)
+  t.is(gotClient1[0].parentUid, host.uid())
+  t.is(gotClient1[0].children.length, 0)
+  t.is(gotClient1[0].sourceUid, client2.uid())
+  t.is(gotClient1[1].memberListSize, 2)
+
+
+  t.true(gotClient2.length >= 2, `От client2 ожидалось минимум 2 пинга, получено ${gotClient2.length}`)
+  t.is(gotClient2[0].parentUid, host.uid())
+  t.is(gotClient2[0].children.length, 0)
+  t.is(gotClient2[0].sourceUid, client1.uid())
+  t.is(gotClient2[1].memberListSize, 2)
+
+  t.is(gotClient2[1].memberListHash, gotClient1[1].memberListHash)
+})
+
+test('Hash consistency and eviction', (t) => {
+    const map1 = new HashMap('ts', 3)
+    const map2 = new HashMap('ts', 3)
+
+    map1.set('a', { ts: 10 });
+    map1.set('b', { ts: 20 });
+    map1.set('c', { ts: 30 });
+
+    map2.set('b', { ts: 20 });
+    map2.set('c', { ts: 30 });
+    map2.set('a', { ts: 10 });
+    map2.set('d', { ts: 5 });
+
+    t.is(map1.size, map2.size);
+    t.is(map1.hash(), map2.hash());
+});
+</file>
+
+<file path="src/Tools/room/tool.js">
+import { EventFactory, Types } from "../../Event/index.js"
+import { Provider } from "../../Provider/index.js"
+
+export function RoomFactory({ ProviderFactory, outEvents }) {
+    return function ToolFactory({ provider, currentMember, logging }) {
+
+        const room = {}
+
+        if(!provider)
+            provider = ProviderFactory ? ProviderFactory() : new Provider()
+
+        room.members = new Map
+
+        if(outEvents?.length > 0)
+            room.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
+
+        room.memberUid = () => currentMember.uid()
+
+        room.children = () =>[...room.members.keys()]
+
+        room.destroy = () => {
+            for (const [uid, _] of room.members) {
+                room.deleteMember(uid)
+            }
+
+            room.outEvent = null
+        }
+
+        room.addMember = (newMember) => {
+            room.members.set(newMember.uid(), newMember)
+            newMember.setOutsideRoom(room)
+        }
+
+        room.deleteMember = (uid) => {
+            const member = room.members.get(uid)
+
+            if(member) {
+                room.members.delete(uid)
+                member.destroy()
+            }
+        }
+
+        room.sendEvent = (msg) => {
+            if(currentMember.isOutsideRoom() && ( !room.outEvent || room.outEvent.isValid(msg) ))
+                currentMember.sendOutside(msg)
+
+            try {
+                provider.sendEvent(msg)
+            }
+            catch(err) {
+                currentMember.throwError(err)
+            }
+        }
+
+        room.subscribe = (msgType, callback, memberUid, getSelfEvent, limit) => {
+
+            if(!getSelfEvent) {
+                const oldCallback = callback
+
+                const structureEvent = JSON.parse(msgType.toJSON().type)
+
+                if(!structureEvent.struct.sourceUid)
+                    throw TypeError("Type message require sourceUid to not get self event!")
+
+                callback = (msg) => {
+                    if(memberUid !== msg.sourceUid)
+                        oldCallback(msg)
+                }
+            }
+
+            if(currentMember.isOutsideRoom())
+                currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
+
+            if(logging) {
+                const oldCallback = callback
+
+                callback = (msg) => {
+                    oldCallback(msg)
+                    logging.receive(msgType, msg)
+                }
+            }
+
+            provider.onEvent(msgType, callback, memberUid, limit)
+
+            if(logging)
+                logging.subscribe(msgType, memberUid, getSelfEvent, limit)
+        }
+
+        room.unsubscribe = (msgType, memberUid) => {
+
+            if(currentMember.isOutsideRoom())
+                currentMember.unsubscribeOut(msgType, memberUid)
+
+            provider.offEvent(msgType, memberUid)
+        }
+
+        return room
+    }
+}
+</file>
+
+<file path="src/StateMember/index.js">
+import { MemberFactory } from '../Member/index.js'
+import { memberChangedEvent } from './events.js'
+
+export const DEFAULT_STATE = "default"
+export const ANY_STATE = "any"
+
+export class StatesMember extends MemberFactory {
+    constructor(possibleValues) {
+        super()
+
+        if (!possibleValues || possibleValues.length === 0) {
+            throw new Error('possibleValues cannot be empty')
+        }
+
+        this._possibleValues = new Set(possibleValues.concat([DEFAULT_STATE]))
+        this._transitionCallbacks = new Map()
+
+        this._state = DEFAULT_STATE
+    }
+
+    get state() {
+        return this._state
+    }
+
+    get possibleValues() {
+        return Array.from(this._possibleValues)
+    }
+
+    setState(value) {
+        const oldValue = this._state
+
+        if(value == oldValue)
+            return
+
+        if (this.checkValue(value)) {
+            this._state = value
+            this.send(memberChangedEvent, { uid: this.uid(), value, oldValue })
+            
+            // Call transition callback if exists
+            const callbacks = this._transitionCallbacks.get(oldValue)
+            if (callbacks) {
+                const callback = callbacks.get(value)
+                if (callback)
+                    callback(value, oldValue)
+
+                const anyCallback = callbacks.get(ANY_STATE)
+                if (anyCallback)
+                    anyCallback(value, oldValue)
+            }
+
+            const anyCallbacks = this._transitionCallbacks.get(ANY_STATE)
+            if(anyCallbacks) {
+                const callback = anyCallbacks.get(value)
+                if (callback)
+                    callback(value, oldValue)
+
+                const anyCallback = anyCallbacks.get(ANY_STATE)
+                if (anyCallback)
+                    anyCallback(value, oldValue)
+            }
+        }
+    }
+
+    checkValue(value) {
+        const isValid = this._possibleValues.has(value) || value == ANY_STATE
+
+        if (!isValid) {
+            const errorMessage = `Value "${value}" is not in the list of possible values: ${this.possibleValues.join(', ')}`
+            
+            throw new Error(errorMessage)
+        }
+
+        return isValid
+    }
+
+    checkState(value) {
+        if(this.strictValidationEvent)
+            this.checkValue(value)
+        
+        return this._state === value
+    }
+
+    onTransition(fromState, toState, callback) {
+        if(!this.checkValue(fromState) || !this.checkValue(toState))
+            return
+
+        if (!this._transitionCallbacks.has(fromState)) {
+            this._transitionCallbacks.set(fromState, new Map())
+        }
+        
+        const callbacks = this._transitionCallbacks.get(fromState)
+        callbacks.set(toState, callback)
+    }
+
+    removeTransitionCallback(fromState, toState) {
+        if (!this._transitionCallbacks.has(fromState)) {
+            return
+        }
+
+        const callbacks = this._transitionCallbacks.get(fromState)
+        callbacks.delete(toState)
+
+        // Clean up empty maps
+        if (callbacks.size === 0) {
+            this._transitionCallbacks.delete(fromState)
+        }
+    }
+
+    subscribeForState() {
+        const [sate, event, callback, ...otherArgs] = arguments
+        if(!this.checkValue(sate)) {
+            return
+        }
+
+        super.subscribe(event, msg => {
+            if(this.checkState(sate)) {
+                callback(msg)
+            }
+        }, ...otherArgs)
+    }
+}
+</file>
+
+<file path="src/StateMember/index.test.js">
+import test from 'ava'
+import sinon from 'sinon'
+import { ANY_STATE, DEFAULT_STATE, StatesMember } from './index.js'
+import { memberChangedEvent } from './events.js'
+import { EventFactory, Types } from '../Event/index.js'
+
+function later(delay) {
+  return new Promise(function(resolve) {
+      setTimeout(resolve, delay)
+  })
+}
+
+
+
+test('constructor with empty possible values', t => {
+    t.throws(() => {
+        new StatesMember([])
+    }, { message: 'possibleValues cannot be empty' })
+
+    t.throws(() => {
+        new StatesMember()
+    }, { message: 'possibleValues cannot be empty' })
+})
+
+test('constructor with possible values', t => {
+    const possibleValues = ['value1', 'value2', 'value3']
+    const member = new StatesMember(possibleValues)
+    t.truthy(member)
+    t.is(member.state, 'default')
+    t.true(member.checkState('default'))
+    t.false(member.checkState('value1'))
+    t.deepEqual(member.possibleValues, [...possibleValues, 'default'])
+})
+
+test('setState with valid value', async t => {
+    const possibleValues = ['value1', 'value2']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const callback = sinon.fake()
+    member.subscribe(memberChangedEvent, callback)
+
+    const value  = 'value1'
+
+    member.setState(value)
+    t.is(member.state, value)
+    t.true(member.checkState(value))
+    t.false(member.checkState(DEFAULT_STATE))
+
+    await later(0)
+    const message = callback.getCalls()[0].firstArg
+    t.deepEqual(message, memberChangedEvent.createMsg({ uid: member.uid(), oldValue: DEFAULT_STATE, value }))
+})
+
+test('setState with invalid value when not ready to send', t => {
+    const possibleValues = ['value1', 'value2']
+    const member = new StatesMember(possibleValues)
+    
+    t.throws(() => {
+        member.setState('invalid')
+    }, { message: /Value "invalid" is not in the list of possible values/ })
+})
+
+// test('setState with invalid value when ready to send', async t => {
+//     const possibleValues = ['value1', 'value2']
+//     const member = new StatesMember(possibleValues)
+//     member.makeRoom()
+//     const changeCallback = sinon.fake()
+    
+//     member.subscribe(memberChangedEvent, changeCallback)
+    
+//     member.setState('invalid')
+
+//     await later(0)
+    
+//     t.false(changeCallback.calledOnce)
+//     t.is(member.state, DEFAULT_STATE)
+// })
+
+test('state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const callback = sinon.fake()
+    
+    member.onTransition('idle', 'active', callback)
+    member.setState('idle')
+    member.setState('active')
+    
+    t.true(callback.calledOnce)
+    t.true(callback.calledWith('active', 'idle'))
+})
+
+test('any state transition callbacks', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const anyToActive = sinon.fake()
+    const idleToAny = sinon.fake()
+    const anyToAny = sinon.fake()
+    
+    member.setState('idle')
+
+    member.onTransition(ANY_STATE, 'active', anyToActive)
+    member.onTransition('idle', ANY_STATE, idleToAny)
+    member.onTransition(ANY_STATE, ANY_STATE, anyToAny)
+    
+    member.setState('active')
+
+    t.true(anyToActive.calledOnce)
+    t.true(idleToAny.calledOnce)
+    t.true(anyToAny.calledOnce)
+    
+    member.setState('finished')
+    
+
+    t.true(anyToActive.calledOnce) // Not called again
+    t.false(idleToAny.calledTwice) // Not called for this transition
+    t.true(anyToAny.calledTwice) // Called for all transitions
+})
+
+test('invalid state transition callback', t => {
+    const possibleValues = ['idle', 'active']
+    const member = new StatesMember(possibleValues)
+    
+    t.throws(() => {
+        member.onTransition('invalid', 'active', () => {})
+    }, { message: /Value "invalid" is not/ })
+    
+    t.throws(() => {
+        member.onTransition('idle', 'invalid', () => {})
+    }, { message: /Value "invalid" is not/ })
+})
+
+test('remove state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const callback = sinon.fake()
+    
+    member.onTransition('idle', 'active', callback)
+
+    member.setState('idle')
+    member.setState('active')
+    member.setState('idle')
+    t.true(callback.calledOnce)
+
+    member.removeTransitionCallback('idle', 'active')
+    
+    member.setState('idle')
+    member.setState('active')
+    t.true(callback.calledOnce)
+})
+
+test('remove any state transition callback', t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+    const anyToActive = sinon.fake()
+    const idleToAny = sinon.fake()
+    
+    member.onTransition('any', 'active', anyToActive)
+    member.onTransition('idle', 'any', idleToAny)
+    
+    member.removeTransitionCallback('any', 'active')
+    member.removeTransitionCallback('idle', 'any')
+    
+    member.setState('idle')
+    member.setState('active')
+    t.false(anyToActive.called)
+    t.false(idleToAny.called)
+})
+
+test('onTransition with invalid states when not ready to send', t => {
+    const possibleValues = ['value1', 'value2']
+    const member = new StatesMember(possibleValues)
+    
+    t.throws(() => {
+        member.onTransition('invalid', 'value1', () => {})
+    }, { message: /Value "invalid" is not in the list of possible values/ })
+    
+    t.throws(() => {
+        member.onTransition('value1', 'invalid', () => {})
+    }, { message: /Value "invalid" is not in the list of possible values/ })
+})
+
+test('Subscribe', async t => {
+    const possibleValues = ['idle', 'active', 'finished']
+    const member = new StatesMember(possibleValues)
+    member.makeRoom()
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    
+    member.setState('idle')
+    member.subscribeForState('active', event, callback)
+    member.send(event)
+
+    await later(0)
+    t.true(callback.notCalled)
+
+    member.setState('active')
+    member.send(event)
+
+    await later(0)
+    t.true(callback.calledOnceWith({ system: "test" }))
+})
+</file>
+
+<file path="src/Tools/logging/events.js">
+import { EventFactory, Types } from "../../Event/index.js"
+
+export const system = "Logging"
+
+const parentUid = Types.Any.Def(Types.Const.Def(undefined), Types.Key.Def(3))
+
+export const loggingSubscriptionEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Subscription",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
+    parentUid,
+    subscribedMemberUid: Types.Key.Def(3),
+    eventHash: Types.Key.Def(3),
+    limit: Types.Number.Def(1024, -1, 0),
+    getSelfEvent: Types.Bool.Def()
+}))
+
+export const loggingErrorEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Error",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
+    parentUid,
+    error: {
+        message: Types.String.Def(),
+        stack: Types.String.Def(),
+        sourceName: Types.String.Def()
+    }
+}, true))
+
+
+export const loggingSendingEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Sending",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
+    parentUid,
+    eventHash: Types.Key.Def(3),
+    msgHash: Types.Key.Def(3),
+    isSendEvent: Types.Bool.Def()
+}))
+
+export const loggingReceivingEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "Receiving",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
+    parentUid,
+    eventHash: Types.Key.Def(3),
+    msgHash: Types.Key.Def(3),
+}))
+
+export const loggingAddParentEvent = EventFactory(Types.Object.Def({
+    system,
+    action: "AddParent",
+    timestamp: Types.Key.Def(3),
+    sourceUid: Types.Key.Def(3),
+    sourceName: Types.Key.Def(),
+    parentUid: Types.Key.Def(3)
+}))
+
+export const outputEventsType = Types.Any.Def([
+    loggingSubscriptionEvent.type,
+    loggingErrorEvent.type,
+    loggingSendingEvent.type,
+    loggingReceivingEvent.type,
+    loggingAddParentEvent.type
+])
+</file>
+
+<file path="index.test.js">
+import test from 'ava'
+
+import { 
+  Types, 
+  EventFactory,
+  MemberFactory
+} from './index.js'
+
+test('testing export main classes', t => {
+  t.truthy(Types)
+  t.truthy(EventFactory)
+  t.truthy(MemberFactory)
+})
+</file>
+
+<file path="README.md">
+# UnyEvents Core
+
+A powerful event-driven communication framework for building distributed systems and real-time applications. UEE Core provides a flexible architecture for managing event-based communication between different components in your application.
+
+### Other langs
+#### [Russian](README.ru.md)
+
+## Features
+
+- **Event-Driven Architecture**: Built on a robust event system for flexible communication
+- **Room-Based Organization**: Organize components into rooms for better structure
+- **Multiple Transport Options**: Support for various transport mechanisms including:
+  - In-memory transport for local communication
+  - PeerJS transport for peer-to-peer communication
+  - Reliable wrapper transport for enhanced reliability
+- **Type-Safe Events**: Built-in type system for event definitions
+- **Cross-Platform**: Works in both Node.js and browser environments
+- **Extensible**: Easy to add new transport mechanisms and event types
+
+## Installation
+
+```bash
+npm install @ellementul/uee-core
+```
+
+## Core Concepts
+
+### Member
+
+Member is a class that can be used to create a room or join a room. It can be used to send and receive messages.
+
+#### Callbacks
+
+- `onMakeRoom` - Called when a member becomes a room
+- `onJoinRoom` - Called when a member joins a room
+- `onReady` - Called when a member is ready to send and receive messages
+- `onDestroy` - Called when a member is destroyed (e.g., when removed from a room)
+
+#### Methods
+
+- `makeRoom()`: Creates a new room or joins an existing room
+- `addMember(member)`: Adds a member to a room
+- `send(event, payload)`: Sends an event with a payload to a member
+- `subscribe(event, handler)`: Subscribes to an event and provides a handler for the event
+
+### Event
+A typed message that defines the structure of communication between members. Events are type-safe and can be validated.
+
+### Room
+A special member that includes a Provider for processing messages and events. Rooms can contain multiple members and manage their communication.
+
+## StatesMember
+
+The `StatesMember` class is a specialized member implementation designed for managing state transitions and value validation in event-driven systems. It extends the base `MemberFactory` to provide:
+
+- State management with possible value constraints
+- Transition callbacks for state changes
+- Value validation against allowed states
+- Event-based state updates and notifications
+- Subscribing to events to only defined state
+
+#### Methods
+- `setState`- Sets the member's state to a specified value. Triggers transition callbacks and emits a memberChangedEvent if the state changes.
+- `checkValue` - Validates whether a given value is allowed (either a predefined possible value or ANY_STATE). If invalid, throws an error or sends an error event depending on context.
+- `checkState` - Checks if the current state matches the provided value. Used for validation in callback handlers.
+- `onTransition` - Registers a callback function to be invoked when transitioning from fromState to toState. Supports wildcard transitions using ANY_STATE.
+- `removeTransitionCallback` - Removes a previously registered transition callback for the specified state pair.
+- `subscribeForState` - Subscribes to events specifically related to state changes. Invokes the callback only when the member's state matches the provided 
+state value.
+
+## Usage Examples
+
+### Creating a Member
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+const member = new MemberFactory()
+```
+
+### Creating a Room
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+const room = new MemberFactory()
+
+// Optional callbacks
+room.onMakeRoom = () => { 
+    console.log("Room created successfully!") 
+}
+
+room.onInit = () => { 
+    console.log("Room initialized!") 
+}
+
+room.makeRoom()
+```
+
+### Adding a Member to a Room
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+// Create and initialize the room
+const room = new MemberFactory()
+room.onMakeRoom = () => { console.log("Room created!") }
+room.makeRoom()
+
+// Create a member
+const member = new MemberFactory()
+member.onJoinRoom = () => { console.log("Member joined room") }
+member.onReady = () => { console.log("Member is ready") }
+
+// Add member to room
+room.addMember(member)
+```
+
+### Deleting a Member from a Room
+
+```js
+import { MemberFactory } from "@ellementul/uee-core"
+
+// Create and initialize the room
+const room = new MemberFactory()
+room.makeRoom()
+
+// Create a member
+const member = new MemberFactory()
+member.onDestroy = () => { console.log("Member is being destroyed") }
+room.addMember(member)
+
+// Delete member from room
+room.deleteMember(member.uid)
+```
+
+### Creating and Sending Events
+
+```js
+import { Types, EventFactory } from "@ellementul/uee-core"
+
+// Define event type
+const type = Types.Object.Def({ 
+    system: "Test", 
+    action: Types.Any.Def("Switch On", "Switch Off") 
+})
+
+// Create event
+const event = EventFactory(type)
+
+// Send event with payload
+const payload = { action: "Switch On" }
+member.send(event, payload)
+```
+
+### Subscribing to Events
+
+```js
+import { Types, EventFactory } from "@ellementul/uee-core"
+
+// Define and create event
+const type = Types.Object.Def({ 
+    system: "Test", 
+    action: Types.Any.Def("Switch On", "Switch Off") 
+})
+const event = EventFactory(type)
+
+// Subscribe to event
+const handleEvent = (payload) => { 
+    console.log("Received event:", payload) 
+}
+member.subscribe(event, handleEvent)
+```
+
+### Create Member with States
+
+```js
+import { StatesMember, DEFAULT_STATE, ANY_STATE } from './StateMember/index.js'
+
+const STATE_ONE = 'state1'
+const STATE_TWO = 'state2'
+
+// Create a member with possible values
+const myMember = new StatesMember([STATE_ONE, STATE_TWO])
+
+console.log(myMember.checkState(DEFAULT_STATE)) // true
+
+// Set state to valid value
+myMember.setState(STATE_ONE)
+
+// Check if current state is 'state1'
+console.log(myMember.checkState(STATE_ONE)) // true
+
+// Add transition callback from state 'state1' to 'state2'
+myMember.onTransition(ANY_STATE, STATE_TWO, () => {
+    console.log('Transitioning from any state to state2')
+})
+
+// Getting events when the state is state2
+member.subscribeForState(STATE_TWO, event, callback)
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:w
+
+# Run browser tests
+npm run test:browser:ticker
+npm run test:browser:member
+npm run test:browser:peerjs
+```
+
+## License
+
+ISC
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+</file>
+
+<file path="src/Tools/relations/tool.js">
+import { hashFromMapByKeys } from "../../utils/hashOfKeysFromMap.js"
+import sha1 from 'sha1'
+import { pingEvent } from "./events.js"
+
+function ToolFactory({ currentMember, room }) {
+    let pingNumber = 0
+    let receivedPings = 0
+    let role = "UknownRole"
+    let status = "Created"
+    let runTimestamp = Date.now()
+    let pingDelay = RelationTool.pingDelay || 250
+
+    let makeJitter = delay => delay + delay * Math.random() / 10
+
+    const memberList = new HashMap("receivedLastPingTime")
+
+    const sendPing = () => {
+        if(!currentMember.isReadyToSend())
+            return
+
+        pingNumber += 1
+        const timestamp = Date.now().toString()
+        const runtime = (Date.now() - runTimestamp).toString()
+
+        const roomUid = currentMember.outsideRoomMemberUid()
+        const children = room.children()
+
+        currentMember.send(pingEvent, {
+            pingNumber,
+            timestamp,
+            sourceUid: currentMember.uid(),
+            name: currentMember.name(),
+            role,
+            status,
+            runtime,
+            parentUid: roomUid,
+            children,
+            memberListSize: memberList.size,
+            memberListHash: memberList.hash(),
+            receivedPings
+        })
+    }
+
+    const recursiveTimer = () => {
+        try {
+            sendPing()
+        } catch (error) {
+            currentMember.throwError(error)
+        } finally {
+            setTimeout(recursiveTimer, makeJitter(pingDelay))
+        }
+    }
+
+    setTimeout(recursiveTimer, 0)
+
+    const receivePing = ({ 
+        role: memberRole, 
+        memberStatus, 
+        sourceUid, 
+        timestamp, 
+        receivedPings: 
+        memberReceivedPings,  
+        memberListSize, 
+        memberListHash, 
+        parentUid, 
+        children 
+    }) => {
+        receivedPings += 1
+
+        const memberRecord = memberList.get(sourceUid) 
+
+        let pingCount = 1
+        let receivedFirstPingTime = Date.now().toString()
+        let receivedLastPingTime = Date.now().toString()
+        let memberSentFirstPingTime = timestamp
+        let memberSentLastPingTime = timestamp
+
+        if(memberRecord) {
+            pingCount += memberRecord.pingsInfo.pingCount
+            receivedFirstPingTime = memberRecord.pingsInfo.receivedFirstPingTime
+            memberSentFirstPingTime = memberRecord.pingsInfo.sentFirstPingTime
+        }
+
+
+        const memberInfo = {
+            memberRole,
+            memberStatus,
+            receivedLastPingTime,
+            memberListSize,
+            memberListHash,
+            pingsInfo: {
+                pingCount,
+                memberReceivedPings,
+                receivedFirstPingTime,
+                memberSentFirstPingTime,
+                memberSentLastPingTime
+            },
+            relations: {
+                parentUid, 
+                children
+            }
+        }
+
+        memberList.set(sourceUid, memberInfo)
+    }
+
+    return {
+        subscribeEvents(subscribe) {
+            subscribe(pingEvent, receivePing)
+        },
+        setRole(newRole) {
+            role = newRole || role
+        },
+        role() {
+            return role
+        },
+        setStatus(newStatus) {
+            status = newStatus || status
+        },
+        status() {
+            return status
+        },
+        sendPing
+    }
+}
+
+export const RelationTool = {
+    name: "Relations",
+    ToolFactory,
+    pingDelay: 250,
+    depends: { 
+        required: [
+            { requiredName: "currentMember" , requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError"]},
+            { requiredName: "room", requiredMethods: ["children"]}
+        ]
+    }
+}
+
+export class HashMap  {
+    constructor(sortProperty, maxSize = 64, hashFunction = sha1) {
+        if(!sortProperty)
+            throw new TypeError
+
+        this.sortProperty = sortProperty
+        this.maxSize = maxSize
+
+        this.map = new Map
+        this._hash = ""
+        this.hashFunction = hashFunction
+    }
+
+    get size() {
+        return this.map.size
+    }
+
+    hash() {
+        return this._hash
+    }
+
+    keys() {
+        return [...this.map.keys()]
+    }
+
+    get(key) {
+        return this.map.get(key)
+    }
+
+    set(key, value) {
+        if(!value[this.sortProperty])
+            throw new TypeError
+
+        this.map.set(key, value)
+
+        if(this.map.size > this.maxSize) {
+            let minimumKey
+
+            for (const [key, value] of this.map) {
+                if(!minimumKey)
+                    minimumKey = key
+
+                if(this.map.get(minimumKey)[this.sortProperty] > value[this.sortProperty])
+                    minimumKey = key
+            }
+
+            this.map.delete(minimumKey)
+        }
+        
+        
+        this._hash = hashFromMapByKeys(this.map, this.hashFunction)
+    }
+}
+</file>
+
+<file path="index.js">
+export { Types, EventFactory } from './src/Event/index.js'
+export { MemberFactory } from './src/Member/index.js'
+
+export { connectionEvent, disconnectionEvent } from './src/Provider/events.js'
+</file>
+
+<file path="src/Tools/logging/tool.js">
+import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, loggingAddParentEvent, outputEventsType } from "./events.js"
+import sha1 from 'sha1'
+
+function ToolFactory({ currentMember }) {
+    let alwaysConsole = false
+
+    return {
+        currentMember,
+        subscribeEvents() {
+            const roomUid =this.currentMember.outsideRoomMemberUid()
+
+            if(roomUid) {
+                const timestamp = Date.now().toString()
+                const msg = loggingAddParentEvent.createMsg({
+                    timestamp,
+                    sourceUid: this.currentMember.uid(),
+                    sourceName: this.currentMember.name(),
+                    parentUid: roomUid
+                })
+
+                if(this.currentMember.isReadyToSend())
+                    this.currentMember.sendEvent(msg)
+            }       
+        },
+        setAlwaysConsole (value) { 
+            alwaysConsole = value 
+        },
+        sendError(error) {
+            const timestamp = Date.now().toString()
+            const errorPayload = {
+                timestamp,
+                sourceUid: this.currentMember.uid(),
+                sourceName: this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
+                error: {
+                    message: error.message || "Unknown error",
+                    stack: error.stack || "",
+                    name: error.name || "Error"
+                }
+            }
+            const msg = loggingErrorEvent.createMsg(errorPayload)
+            
+            try {
+                if (this.currentMember.isReadyToSend())
+                    this.currentMember.sendEvent(msg)
+                
+                if (!this.currentMember.isReadyToSend() || alwaysConsole)
+                    console.error(
+                        `[${(new Date()).toISOString()}] [${currentMember.uid()}]`,
+                        error
+                    )
+            } catch(err) {
+                console.log(
+                    `[${(new Date()).toISOString()}] [${currentMember.uid()}]`,
+                    err
+                )
+            }
+        },
+        subscribe(msgType, memberUid, getSelfEvent, limit) {
+            const timestamp = Date.now().toString()
+            const msg = loggingSubscriptionEvent.createMsg({
+                timestamp,
+                sourceUid: this.currentMember.uid(),
+                subscribedMemberUid: memberUid,
+                parentUid: this.currentMember.outsideRoomMemberUid(),
+                eventHash: sha1(msgType.toJSON().type),
+                limit,
+                getSelfEvent
+            })
+
+            if (this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        },
+        send(typeMsg, payload) {
+            const timestamp = Date.now().toString()
+            const msg = loggingSendingEvent.createMsg({
+                timestamp,
+                sourceUid: this.currentMember.uid(),
+                sourceName: this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
+                eventHash: sha1(typeMsg.toJSON().type),
+                msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
+                isSendEvent: this.currentMember.isReadyToSend()
+            })
+            
+            if(this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        },
+        receive(typeMsg, fullMsg) {
+            if(!outputEventsType.test(fullMsg))
+                return
+
+            const timestamp = Date.now().toString()
+            const msg = loggingReceivingEvent.createMsg({
+                timestamp,
+                sourceUid: this.currentMember.uid(),
+                sourceName:this.currentMember.name(),
+                parentUid: this.currentMember.outsideRoomMemberUid(),
+                eventHash: sha1(typeMsg.toJSON().type),
+                msgHash: sha1(JSON.stringify(fullMsg))
+            })
+
+            if(this.currentMember.isReadyToSend())
+                this.currentMember.sendEvent(msg)
+        }
+    }
+}
+
+export const LogTool = {
+    name: "logging",
+    ToolFactory,
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "outsideRoomMemberUid", "isReadyToSend", "sendEvent"]}] }
+}
+</file>
+
+<file path="src/Tools/logging/tool.test.js">
+import test from 'ava'
+import sinon from 'sinon'
+import sha1 from 'sha1'
+import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, loggingAddParentEvent } from './events.js'
+import { LogTool } from './tool.js'
+import { EventFactory, Types } from '../../Event/index.js'
+import { MemberFactory } from '../../Member/index.js'
+
+test.beforeEach(t => {
+  ['error', 'log', 'warn'].forEach(method => {
+    if (console[method].restore) console[method].restore()
+  })
+    
+  t.context.consoleStub = sinon.stub(console, 'error')
+})
+
+test.afterEach(t => {
+    t.context.consoleStub.restore()
+})
+
+ test('tool_initialization', t => {
+     const mockMember = {
+         uid() { return 'test-member-uid'},
+         isReadyToSend() { return true }
+     }
+  
+     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+  
+     t.is(typeof tool.sendError, 'function')
+     t.is(typeof tool.setAlwaysConsole, 'function')
+ })
+
+ test('add tool in member', t => {
+     const member = new MemberFactory
+     member.strictValidationEvent = true
+
+     member.addTool(LogTool)
+     member.makeRoom()
+
+     const event = EventFactory(Types.Object.Def({ system: "test" }))
+     const errorName = "Test Error"
+     const callback = sinon.spy(() => { throw new Error(errorName) })
+     const errorCallback = sinon.fake()
+    
+     member.subscribe(event, callback)
+     member.subscribe(loggingErrorEvent, errorCallback)
+    
+     member.send(event)
+
+     t.true(callback.calledOnceWith({ system: "test" }))
+     t.true(errorCallback.calledOnce)
+
+     const msg = errorCallback.getCall(0).firstArg
+
+     t.is(msg.error.message, errorName)
+     t.is(msg.sourceName, member.name())
+ })
+
+ test('log to console when member is not ready', t => {
+   const mockMember = {
+      name() { "MockMmber" },
+      uid() { return 'test-member-uid'},
+      outsideRoomMemberUid(){},
+      isReadyToSend() { return false }
+   }
+
+   const tool = LogTool.ToolFactory({ currentMember: mockMember })
+
+   const testError = new Error('Test error not ready')
+
+   tool.sendError(testError)
+
+   t.true(t.context.consoleStub.calledOnce)
+
+   const consoleArgs = t.context.consoleStub.firstCall.args
+   t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
+   t.is(consoleArgs[1], testError)
+ })
+
+ test('always log to console when flag is set', t => {
+     const sendStub = sinon.stub()
+
+     const mockMember = {
+        uid() { return 'test-member-uid'},
+        outsideRoomMemberUid(){},
+        name() { "MockMmber" },
+        isReadyToSend() { return true },
+        sendEvent: sendStub
+     }
+
+     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+
+     tool.setAlwaysConsole(true)
+
+     const testError = new Error('Test error with alwaysConsole')
+
+     tool.sendError(testError)
+
+     t.true(sendStub.calledOnce)
+
+     t.true(t.context.consoleStub.calledOnce)
+ })
+
+ test('handle error with missing properties', t => {
+     const mockMember = {
+       uid() { return 'test-member-uid'},
+       outsideRoomMemberUid(){},
+       name() { "MockMmber" },
+       isReadyToSend() { return false }
+     }
+
+     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+
+     const rawError = {}
+
+     tool.sendError(rawError)
+
+     t.true(t.context.consoleStub.calledOnce)
+
+     const consoleCall = t.context.consoleStub.firstCall
+     t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
+
+     const testErrorWithoutStack = new Error('No stack')
+     delete testErrorWithoutStack.stack
+
+     tool.sendError(testErrorWithoutStack)
+   t.true(t.context.consoleStub.calledTwice)
+ })
+
+
+ test('log subscription events', t => {
+   const member = new MemberFactory()
+   member.strictValidationEvent = true
+   member.addTool(LogTool)
+   member.makeRoom()
+
+
+   const subscriptionCallback = sinon.fake()
+   const sendingCallback = sinon.fake()
+   const receiveCallback = sinon.fake()
+   const memberCallback = sinon.fake()
+
+   member.subscribe(loggingSubscriptionEvent, subscriptionCallback)
+
+   t.true(subscriptionCallback.calledOnce)
+
+   const logPayload = subscriptionCallback.getCall(0).firstArg
+   t.truthy(logPayload.timestamp)
+   t.is(logPayload.sourceUid, member.uid())
+   t.is(logPayload.eventHash, sha1(loggingSubscriptionEvent.toJSON().type))
+   t.is(logPayload.action, 'Subscription')
+
+
+   const event = EventFactory(Types.Object.Def({ system: "test" }))
+   member.subscribe(loggingSendingEvent, sendingCallback)
+   member.subscribe(loggingReceivingEvent, receiveCallback)
+   member.subscribe(event, memberCallback)
+   member.send(event)
+
+   t.true(sendingCallback.calledOnce)
+
+   const logSending = sendingCallback.getCall(0).firstArg
+   t.truthy(logSending.timestamp)
+   t.is(logSending.sourceUid, member.uid())
+   t.is(logSending.eventHash, sha1(event.toJSON().type))
+   t.is(logSending.msgHash, sha1(JSON.stringify(event.createMsg())))
+   t.is(logSending.action, 'Sending')
+
+
+   t.true(receiveCallback.calledOnce)
+   t.true(memberCallback.calledOnce)
+
+   const logReciving = receiveCallback.getCall(0).firstArg
+   t.truthy(logReciving.timestamp)
+   t.is(logReciving.sourceUid, member.uid())
+   t.is(logReciving.eventHash, sha1(event.toJSON().type))
+   t.is(logReciving.msgHash, sha1(JSON.stringify(event.createMsg())))
+   t.is(logReciving.action, 'Receiving')
+
+
+ })
+
+test('log add member', t => {
+  const host = new MemberFactory()
+  host.strictValidationEvent = true
+  host.makeRoom()
+
+  const callback = sinon.fake()
+  host.subscribe(loggingAddParentEvent, callback)
+
+  const member = new MemberFactory()
+  member.addTool(LogTool)
+  host.addMember(member)
+
+  t.true(callback.calledOnce)
+  const logReciving = callback.getCall(0).firstArg
+  t.truthy(logReciving.timestamp)
+  t.is(logReciving.sourceUid, member.uid())
+  t.is(logReciving.action, 'AddParent')
+  t.is(logReciving.parentUid, host.uid())
+})
+
+test('log reverse add member', t => {
+  const host = new MemberFactory()
+  host.strictValidationEvent = true
+  host.makeRoom()
+
+  const callback = sinon.fake()
+  host.subscribe(loggingAddParentEvent, callback)
+
+  const member = new MemberFactory()
+  host.addMember(member)
+  member.addTool(LogTool)
+
+  t.true(callback.calledOnce)
+  const logReciving = callback.getCall(0).firstArg
+  t.truthy(logReciving.timestamp)
+  t.is(logReciving.sourceUid, member.uid())
+  t.is(logReciving.action, 'AddParent')
+  t.is(logReciving.parentUid, host.uid())
+})
+</file>
+
+<file path="src/Provider/index.test.js">
+import test from 'ava'
+import sinon from "sinon"
+
+import { AsyncProvider, Provider } from './index.js'
+import { EventFactory, Types } from '../Event/index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+
+test('constructor', t => {
+  const provider = new Provider
+  t.truthy(provider)
+})
+
+
+test('send event', async t => {
+    const provider = new Provider
+
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    provider.onEvent(testEvent, eventCallback, "test")
+
+    provider.sendEvent(testEvent.createMsg())
+
+    await later(0)
+
+    t.true(eventCallback.called)
+})
+
+test('off event sync', async t => {
+    const provider = new Provider
+
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    provider.onEvent(testEvent, eventCallback, "test")
+
+    provider.sendEvent(testEvent.createMsg())
+    provider.offEvent(testEvent, "test")
+    provider.sendEvent(testEvent.createMsg())
+
+    await later(0)
+
+    t.true(eventCallback.called)
+})
+
+test('off event async', async t => {
+    const provider = new AsyncProvider
+
+    const testEvent = EventFactory(Types.Object.Def({ testProp: "TestValue" }))
+    const eventCallback = sinon.fake()
+    provider.onEvent(testEvent, eventCallback, "test")
+
+    provider.sendEvent(testEvent.createMsg())
+    provider.offEvent(testEvent, "test")
+    provider.sendEvent(testEvent.createMsg())
+
+    await later(0)
+
+    t.false(eventCallback.called)
+})
+
+const loadWeight = 128
+
+test('loaded', async t => {
+    const provider = new Provider
+
+    const testEvents = []
+    const eventCallbacks = []
+    const randKey = Types.Key.Def(3).rand
+    for (let index = 0; index < loadWeight; index++) {
+        const eventType = Types.Object.Def({["test"+index]: "Test" + randKey() })
+        testEvents.push(EventFactory(eventType))
+        eventCallbacks.push(sinon.fake())
+    }
+
+    const start = Date.now()
+    
+    testEvents.forEach((testEvent , i) => provider.onEvent(testEvent, eventCallbacks[i], "test"))
+
+    for (let index = 0; index < loadWeight; index++) {
+        provider.sendEvent(testEvents[index].createMsg())
+        await later(0)
+    }
+
+    const end = Date.now()
+    const delta = end - start
+
+    console.log("loadWeight: ", loadWeight, delta + "ms", "processed events: " + eventCallbacks.reduce((sum, callback) => sum + callback.callCount, 0))
+
+    t.true(eventCallbacks.every(callback => callback.called))
+})
+</file>
+
+<file path="mermaid.md">
+```mermaid
+ flowchart TD
+    hWNHlDV5UvxDXVypdl5s2iruxFVwUUDasbhseGQl[LoggerMember]
+    PWTXHVVyPqVJFKE6UzBAoXXZ1H3naDz6d5Z4cac6[LoggerMemberP]
+    5sjSiSeRGKvfNFtFaQ5OFMwP4YsMWtmmmER75hIf[LoggerMember5]
+    vz3ucLLQsrEhy4Ei1EE0kiqMxB37uWHXKXIJKYxY[LoggerMemberv]
+
+    hWNHlDV5UvxDXVypdl5s2iruxFVwUUDasbhseGQl --> PWTXHVVyPqVJFKE6UzBAoXXZ1H3naDz6d5Z4cac6
+    hWNHlDV5UvxDXVypdl5s2iruxFVwUUDasbhseGQl --> 5sjSiSeRGKvfNFtFaQ5OFMwP4YsMWtmmmER75hIf
+    hWNHlDV5UvxDXVypdl5s2iruxFVwUUDasbhseGQl --> vz3ucLLQsrEhy4Ei1EE0kiqMxB37uWHXKXIJKYxY
+```
+</file>
+
+<file path="src/Event/index.js">
+import Types from '@ellementul/message-types'
+import sha1 from 'sha1'
+
+import { mergician } from './mergician.js'
+
+function EventFactory(type) {
+  if(!Types.isType(type))
+    throw new TypeError("The type isn't type!")
+
+  const callbacks = new Map
+  const limits = new Map
+
+  return {
+    get type() {
+      return type
+    },
+
+    get callbacksCount() {
+      return callbacks.size
+    },
+
+    createMsg: function (payload, validation = false) {
+      const msg = type.rand()
+      payload = payload || {}
+
+      const fullMsg = merge(msg, payload)
+
+      if(validation) {
+        const validError = this.getValidError(fullMsg)
+        if(validError)
+          throw new TypeError(`
+            Invalid payload!
+            Data: ${JSON.stringify({
+              clearMsg: msg,
+              customPayload: payload,
+              validError
+            }, null, 2)}
+          `)
+      }
+
+      return fullMsg
+    },
+
+    toJSON: () => {
+      return { type: type.toJSON() }
+    },
+
+    sign: () => {
+      return sha1(type.toJSON())
+    },
+
+    isValid: (payload) => {
+      if(typeof payload !== "object")
+        return false
+
+      return !type.test(payload)
+    },
+
+    getValidError: (payload) => {
+      if(typeof payload !== "object")
+        return 'Payload has to be object!!'
+
+      return type.test(payload)
+    },
+
+    on: (id, callback, limit = -1) => {
+      if(typeof callback !== "function")
+        throw new TypeError("The recieve callback isn't function!")
+
+      callbacks.set(id, callback)
+
+      if(limit >= 0)
+        limits.set(id, limit)
+    },
+
+    off: (id) => {
+      callbacks.delete(id)
+      limits.delete(id)
+    },
+
+    call: (payload) => {
+      for (let [id, callback] of callbacks) {
+        if(limits.has(id)) {
+          if(limits.get(id) <= 0) {
+            callbacks.delete(id)
+            limits.delete(id)
+            continue
+          }
+          else {
+            limits.set(id, limits.get(id) - 1)
+          }
+        }
+
+        callback(payload)
+      }
+    },
+    
+    clone: function() {
+      return EventFactory(this.type)
+    }
+  }
+}
+
+const merge = mergician({
+  beforeEach({ srcVal }) {
+    if(Array.isArray(srcVal))
+      return srcVal
+  }
+}) 
+
+EventFactory.fromJSON = function (json) {
+  if(typeof json == "string")
+			json = JSON.parse(json)
+  
+  const type = Types.outJSON(json.type)
+  return EventFactory(type)
+}
+
+export { EventFactory, Types }
+</file>
+
+<file path="src/Event/index.test.js">
+import test from 'ava'
+import sinon from "sinon"
+import sha1 from 'sha1'
+import { EventFactory, Types } from './index.js'
+
+test('constructor', t => {
+		const event = EventFactory(Types.Index.Def(7))
+		t.truthy(event)
+})
+
+test('signature', t => {
+	const event = EventFactory(Types.Object.Def({ system: "Test" }))
+	t.is(event.sign(), "4a65687e144393f1524bcd67a9ddc745ce50b21a")
+	t.is(event.sign(), sha1(event.toJSON().type))
+})
+
+test('create', t => {
+	const event = EventFactory(Types.Object.Def({ system: "Log" }))
+	t.deepEqual(event.createMsg(), {"system": "Log"})
+})
+
+test('validation', t => {
+	const event = EventFactory(Types.Object.Def({ system: "Log" }))
+
+	t.true(event.isValid({"system": "Log"}))
+	t.true(event.isValid({"system": "Log"}))
+
+	t.false(event.isValid(7))
+	t.falsy(event.getValidError({"system": "Log"}))
+});
+
+test('Invalid payload for event', t => {
+
+	const type = Types.Object.Def({
+		system: "Test",
+		action: "TestInvalidPayload",
+		state: {
+			correctState: true
+		}
+	})
+	
+	const testEvent = EventFactory(type)
+
+
+	const getError = () => testEvent.createMsg({ state: { correctState: false } }, true)
+
+	t.throws(getError, { instanceOf: TypeError })
+})
+
+test('calling', t => {
+	const event = EventFactory(Types.Key.Def(3))
+	const payload = "TestPayload"
+
+	const firstCall = sinon.fake()
+	const secondCall = sinon.fake()
+
+	event.on("firstId", firstCall)
+	event.on("secondId", secondCall)
+	
+	event.call(payload)
+
+	t.truthy(firstCall.calledWith(payload))
+	t.truthy(secondCall.calledWith(payload))
+})
+
+test('calling with the same uid', t => {
+	const event = EventFactory(Types.Key.Def(3))
+	const payload = "TestPayload"
+
+	const firstCall = sinon.fake()
+	const secondCall = sinon.fake()
+
+	event.on("theSameId", firstCall)
+	event.on("theSameId", secondCall)
+	
+	event.call(payload)
+
+	t.truthy(firstCall.notCalled)
+	t.truthy(secondCall.calledOnce)
+})
+
+test('delete callback', t => {
+	const event = EventFactory(Types.Key.Def(3))
+	const payload = "TestPayload"
+
+	const callback = sinon.fake()
+
+	event.on("id", callback)
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+
+	event.off("id")
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+})
+
+test('callback limtly calling', t => {
+	const event = EventFactory(Types.Key.Def(3))
+	const payload = "TestPayload"
+
+	const callback = sinon.fake()
+
+	event.on("id", callback, 2)
+	
+	event.call(payload)
+	t.truthy(callback.calledOnce)
+	
+	event.call(payload)
+	t.truthy(callback.calledTwice)
+
+	event.call(payload)
+	t.truthy(callback.calledTwice)
+})
+
+test('clone event', t => {
+	const event = EventFactory(Types.Index.Def(7))
+	const clonedEvent = event.clone()
+
+	t.not(event, clonedEvent)
+	t.is(event.sign(), clonedEvent.sign())
+})
+
+test('Uint8Array', t => {
+	const event = EventFactory(Types.Object.Def({}, true))
+	const uint8 = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])
+	const payload = {
+		buffer: uint8
+	}
+	
+	const msg = event.createMsg(payload, true)
+
+	t.deepEqual(msg, payload)
+})
+</file>
+
+<file path="src/Provider/index.js">
+import { EventPull } from "../EventPull/index.js"
+
+class Provider {
+  constructor () {
+    this.listenerEvents = new Map
+  }
+
+  sendEvent(payload) {
+      this.listenerEvents.forEach((event) => {
+        if(event.isValid(payload))
+          this.callEvent({ event, payload })
+      })
+  }
+
+  onEvent(event, callback, id, limit = -1) {
+
+    const signature = event.sign()
+    
+    if(!this.listenerEvents.has(signature))
+      this.listenerEvents.set(signature, event.clone())
+
+    this.listenerEvents.get(signature).on(id, callback, limit)
+  }
+
+  offEvent(event, id) {
+
+    const signature = event.sign()
+    
+    if(!this.listenerEvents.has(signature))
+      return
+
+    this.listenerEvents.get(signature).off(id)
+
+    if(this.listenerEvents.get(signature).callbacksCount === 0)
+      this.listenerEvents.delete(signature)
+  }
+
+  callEvent({ event, payload }){
+    event.call(payload)
+  }
+}
+
+
+class AsyncProvider {
+  constructor () {
+    this.listenerEvents = new Map
+
+    this.setPull()
+  }
+
+  setPull() {
+    this.isTransport = false
+
+    this.pull = new EventPull(this.callEvent)
+
+    this.sendEvent = function (payload) {
+
+      this.listenerEvents.forEach((event) => {
+        if(event.isValid(payload))
+          this.pull.push({ event, payload })
+      })
+    }
+  }
+
+  onEvent(event, callback, id, limit = -1) {
+
+    const signature = event.sign()
+    
+    if(!this.listenerEvents.has(signature))
+      this.listenerEvents.set(signature, event.clone())
+
+    this.listenerEvents.get(signature).on(id, callback, limit)
+  }
+
+  offEvent(event, id) {
+
+    const signature = event.sign()
+    
+    if(!this.listenerEvents.has(signature))
+      return
+
+    this.listenerEvents.get(signature).off(id)
+
+    if(this.listenerEvents.get(signature).callbacksCount === 0)
+      this.listenerEvents.delete(signature)
+  }
+
+  callEvent({ event, payload }){
+    event.call(payload)
+  }
+}
+
+export { AsyncProvider, Provider }
+</file>
+
+<file path="src/Member/index.test.js">
+import test from 'ava'
+import sinon from "sinon"
+
+import { MemberFactory } from './index.js'
+import { EventFactory, Types } from '../Event/index.js'
+
+function later(delay) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, delay)
+    })
+}
+
+
+test('constructor', t => {
+    const member = new MemberFactory
+    t.truthy(member)
+})
+
+test('makeRoom', t => {
+    const member = new MemberFactory
+    member.makeRoom()
+
+    t.true(member.isReadyToSend())
+})
+
+test('entre Room', t => {
+    const room = new MemberFactory
+    room.makeRoom()
+    
+    const callback = sinon.fake()
+    const member = new MemberFactory
+    member.onJoinRoom = callback
+
+    room.addMember(member)
+
+    t.true(callback.called)
+})
+
+test('Subscribe', async t => {
+    const member = new MemberFactory
+    member.makeRoom()
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    
+    member.subscribe(event, callback)
+    member.send(event)
+
+    await later(0)
+
+    t.true(callback.calledOnceWith({ system: "test" }))
+})
+
+test('subscribeToOutsideRoom', async t => {
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const member = new MemberFactory
+    room.addMember(member)
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+
+    const callback = sinon.fake()
+    member.subscribe(event, callback)
+    member.send(event)
+
+    await later(0)
+
+    t.true(callback.calledOnceWith({ system: "test" }))
+})
+
+test('three room: bubbling and subscribe level up', async t => {
+  const host = new MemberFactory()
+  const client1 = new MemberFactory()
+  const client2 = new MemberFactory()
+  
+  host.makeRoom()
+  client1.makeRoom()
+  client2.makeRoom()
+  
+  host.addMember(client1)
+  host.addMember(client2)
+  
+    const event = EventFactory(Types.Object.Def({ system: "test", sourceUid: Types.Key.Def(3) }))
+
+    const gotClient1 = []
+    client1.subscribe(event, (payload) => gotClient1.push(payload), false, client1.uid())
+
+    const gotClient2 = []
+    client2.subscribe(event, (payload) => gotClient2.push(payload))
+
+    client2.send(event, { sourceUid: client2.uid() })
+    
+    await later(100)
+    
+    t.is(gotClient1.length, 1)
+    t.is(gotClient2.length, 2)
+})
+
+test('Bubble event', async t => {
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const secondRoom = new MemberFactory
+    secondRoom.makeRoom()
+    room.addMember(secondRoom)
+
+    const member = new MemberFactory
+    secondRoom.addMember(member)
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    room.subscribe(event, callback)
+
+    member.send(event)
+
+    await later(0)
+
+    t.true(callback.called)
+})
+
+test('Bubble filter', async t => {
+    const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
+    const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+
+    const allowCallback = sinon.fake()
+    const deprecatedCallback = sinon.fake()
+
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const secondRoom = new MemberFactory
+    secondRoom.makeRoom({ outEvents: [allowEvent] })
+    room.addMember(secondRoom)
+
+    const member = new MemberFactory
+    secondRoom.addMember(member)
+
+    room.subscribe(allowEvent, allowCallback)
+    room.subscribe(deprecatedEvent, deprecatedCallback)
+
+    member.send(allowEvent)
+    member.send(deprecatedEvent)
+
+    await later(0)
+
+    t.true(allowCallback.called)
+    t.false(deprecatedCallback.called)
+})
+
+test('Subscribe up level', async t => {
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const secondRoom = new MemberFactory
+    secondRoom.makeRoom()
+    room.addMember(secondRoom)
+
+    const member = new MemberFactory
+    secondRoom.addMember(member)
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    member.subscribe(event, callback)
+
+    room.send(event)
+
+    await later(0)
+
+    t.true(callback.called)
+})
+
+test('Subscribe up level filter', async t => {
+    const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
+    const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+
+    const allowCallback = sinon.fake()
+    const deprecatedCallback = sinon.fake()
+
+    const room = new MemberFactory
+    room.makeRoom()
+
+    const secondRoom = new MemberFactory
+    secondRoom.makeRoom({ inEvents: [allowEvent] })
+    room.addMember(secondRoom)
+
+    const member = new MemberFactory
+    secondRoom.addMember(member)
+
+    member.subscribe(allowEvent, allowCallback)
+    member.subscribe(deprecatedEvent, deprecatedCallback)
+
+    room.send(allowEvent)
+    room.send(deprecatedEvent)
+
+    await later(0)
+
+    t.true(allowCallback.called)
+    t.false(deprecatedCallback.called)
+})
+
+test('Unsubscribe', async t => {
+    const member = new MemberFactory
+    member.makeRoom()
+
+    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const callback = sinon.fake()
+    
+    member.subscribe(event, callback)
+    member.send(event)
+    await later(0)
+    t.true(callback.calledOnceWith({ system: "test" }))
+
+    // Reset the callback
+    callback.resetHistory()
+    
+    // Unsubscribe and send event again
+    member.unsubscribe(event)
+    member.send(event)
+    await later(0)
+    
+    t.false(callback.called, 'Callback should not be called after unsubscribe')
+})
+
+test('DeleteMember', t => {
+  // Create main room
+  const mainRoom = new MemberFactory
+  mainRoom.makeRoom()
+
+  // Create child room
+  const childRoom = new MemberFactory
+  childRoom.makeRoom()
+  mainRoom.addMember(childRoom)
+
+  // Create member in child room
+  const member = new MemberFactory
+  childRoom.addMember(member)
+
+  // Create another member in main room
+  const mainMember = new MemberFactory
+  mainRoom.addMember(mainMember)
+
+  // Verify initial setup
+  t.true(mainRoom.tools.room.members.has(childRoom.uid()))
+  t.true(mainRoom.tools.room.members.has(mainMember.uid()))
+  t.true(childRoom.tools.room.members.has(member.uid()))
+
+  // Setup onDestroy callbacks
+  const childRoomDestroyed = sinon.fake()
+  const memberDestroyed = sinon.fake()
+  childRoom.onDestroy = childRoomDestroyed
+  member.onDestroy = memberDestroyed
+
+  // Delete the child room
+  mainRoom.deleteMember(childRoom.uid())
+
+  // Verify child room is removed from main room
+  t.false(mainRoom.tools.room.members.has(childRoom.uid()))
+  t.true(mainRoom.tools.room.members.has(mainMember.uid()))
+  
+  // Verify child room's outsideRoom is cleared
+  t.falsy(childRoom.isOutsideRoom())
+  
+  // Verify member's outsideRoom is cleared
+  t.falsy(member.isOutsideRoom())
+  
+  // Verify child room's members map is empty
+  t.is(childRoom.tools.room.members.size, 0)
+
+  // Verify onDestroy callbacks were called
+  t.true(childRoomDestroyed.calledOnce, 'Child room onDestroy should be called')
+  t.true(memberDestroyed.calledOnce, 'Member onDestroy should be called')
+})
+</file>
+
+<file path="src/Member/index.js">
+import { Types } from "../Event/index.js"
+import { RoomFactory } from "../Tools/room/tool.js"
+
+export class MemberFactory {
+
+    constructor(name = "Member") {
+        this.tools = {}
+        this._uid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
+        this._name = name
+
+        this.subscribedOutEvents = new Map
+    }
+
+    uid() {
+        return this._uid
+    }
+
+    name() {
+        return this._name
+    }
+
+    isReadyToSend() {
+        return !!(this.tools.room || this.outsideRoom)
+    }
+
+    isOutsideRoom() {
+        return !!this.outsideRoom
+    }
+
+    outsideRoomMemberUid() {
+        return this?.outsideRoom?.memberUid()
+    }
+
+    addTool({ name, ToolFactory, depends: { required, optional }}) {
+
+        const selfLinkName = "currentMember"
+
+        try {
+            const depends = { [selfLinkName]: this }
+
+            if(required)
+                for (const { requiredName, requiredMethods = [] } of required) {
+                    if(requiredName === selfLinkName){
+                        for (const requiredMethod of requiredMethods) {
+                            if(requiredMethod == "subscribe")
+                                throw TypeError(`
+                                    Not use subscribe outside subscribeEvents method in tool!
+                                    Or use room.subscribe tool method direct!
+                                `)
+
+                            if(typeof this[requiredMethod] !== "function")
+                                throw TypeError(`Not found method on depend tool: ${requiredName}.${requiredMethod}`)
+                        }
+
+                        continue
+                    }
+
+                    if(!this.tools[requiredName])
+                        throw TypeError(`Not found depend: ${requiredName}`)
+
+                    const requiredTool = this.tools[requiredName]
+                    for (const requiredMethod of requiredMethods) {
+                        if(typeof requiredTool[requiredMethod] !== "function")
+                            throw TypeError(`Not found method on depend tool: ${requiredName}.${requiredMethod}`)
+                    }
+
+                    depends[requiredName] = requiredTool
+                }
+
+            if(optional)
+                for (const  { requiredName, requiredMethods = [] } of optional) {
+                    if(requiredName === selfLinkName)
+                        continue
+
+                    
+                    if(this.tools[requiredName]) {
+                        let isOptionalTool = true
+                        const optionalTool = this.tools[requiredName]
+                        for (const requiredMethod of requiredMethods) {
+                            if(typeof optionalTool[requiredMethod] !== "function")
+                                isOptionalTool = false
+                        }
+
+                        if(isOptionalTool)
+                            depends[requiredName] = optionalTool
+                    }
+                }
+
+            this.tools[name] = ToolFactory(depends)
+
+            const tool = this.tools[name]
+            if(typeof tool.subscribeEvents == "function" && this.isReadyToSend())
+                tool.subscribeEvents(this.subscribeTool.bind(this))
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    makeRoom({ inEvents, outEvents } = {}) {
+        try {
+            if(inEvents?.length > 0)
+                this.inEvents = new Set(inEvents.map(event => event.sign()))
+
+            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: { 
+                required: [{ requiredName: "currentMember", requiredMethods: [
+                    "isOutsideRoom",
+                    "sendOutside",
+                    "throwError",
+                    "subscribeOut",
+                    "unsubscribeOut"
+                ] }],
+                optional: [{ requiredName: "logging", requiredMethods: ["subscribe", "receive"]}]
+            }})
+
+            this.addMember = this.tools.room.addMember
+            this.deleteMember = this.tools.room.deleteMember
+
+            for(const toolName in this.tools){
+                const tool = this.tools[toolName]
+                if(typeof tool.subscribeEvents == "function")
+                    tool.subscribeEvents(this.subscribeTool.bind(this))
+            }
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+ 
+    send(typeMsg, payload) {
+        const msg = typeMsg.createMsg(payload, this.strictValidationEvent)
+
+        if(this.tools.logging)
+            this.tools.logging.send(typeMsg, payload)
+
+        this.sendEvent(msg)
+    }
+
+    sendEvent(msg) {
+        if(this.tools.room)
+            this.tools.room.sendEvent(msg)
+        else if(this.outsideRoom)
+            this.outsideRoom.sendEvent(msg)
+        else
+            throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
+    }
+
+    sendOutside(msg) {
+        this.outsideRoom.sendEvent(msg)
+    }
+
+    subscribe(msgType, callback, getSelfEvent, memberUid, limit) {
+
+        if(getSelfEvent === undefined || getSelfEvent === null)
+            getSelfEvent = true
+
+        try {
+
+            limit = limit || -1
+            memberUid = memberUid || this.uid()
+
+            if(this.tools.room) {
+                this.tools.room.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
+            } else if(this.outsideRoom)
+                this.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
+            else
+                throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    subscribeTool(msgType, callback, toolName) {
+        this.subscribe(msgType, callback, `${this.uid()}:tool:${toolName}`)
+    }
+
+    unsubscribe(msgType, memberUid) {
+        try {
+            memberUid = memberUid || this.uid()
+
+            if(this.tools.room)
+                this.tools.room.unsubscribe(msgType, memberUid)
+            else if(this.outsideRoom)
+                this.unsubscribeOut(msgType, memberUid)
+            else
+                throw new Error("It cannot unsubscribe, it isn't Room and it doesn't connect to Room")
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    setOutsideRoom(room) {
+        try {
+            this.outsideRoom = room
+
+            if(typeof this.onJoinRoom == "function")
+                this.onJoinRoom()
+
+            for(const toolName in this.tools){
+                const tool = this.tools[toolName]
+                if(typeof tool.subscribeEvents == "function")
+                    tool.subscribeEvents(this.subscribeTool.bind(this))
+            }
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    subscribeOut(msgType, callback, memberUid, getSelfEvent, limit) {
+        try {
+            if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                return
+
+            this.outsideRoom.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
+            this.subscribedOutEvents.set(memberUid, msgType)
+
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    unsubscribeOut(msgType, memberUid) {
+        try {
+            if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                return
+
+            const uid = this.uid() + "/" + memberUid
+            this.outsideRoom.unsubscribe(msgType, uid)
+            this.subscribedOutEvents.delete(memberUid)
+
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    destroy() {
+        try {
+            if(typeof this.onDestroy === "function")
+                this.onDestroy()
+
+            for (const toolName in this.tools) {
+                const tool = this.tools[toolName]
+                if(typeof tool.destroy === "function")
+                    tool.destroy()
+            }
+
+            if(this.outsideRoom) {
+                for (const [uid, typeMsg] of this.subscribedOutEvents) {
+                    this.outsideRoom.unsubscribe(typeMsg, uid)
+                }
+                this.outsideRoom = null
+            }
+
+            this.inEvents = null
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
+    throwError(err) {
+        if(this.tools.logging)
+            this.tools.logging.sendError(err)
+        else
+            throw err
+    }
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "@ellementul/uny-events",
+  "version": "0.1.0",
+  "description": "United Environment Events Core",
+  "main": "./index.js",
+  "type": "module",
+  "scripts": {
+    "test": "ava",
+    "test:w": "ava --watch",
+    "test:browser:ticker": "npx parcel ./src/Ticker/test.html",
+    "test:browser:member": "npx parcel ./src/Member/browser.tests/member",
+    "test:browser:member:worker": "npx parcel ./src/Member/browser.tests/worker",
+    "test:browser:peerjs": "npx parcel ./src/Transports/PeerJs/test.*html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ellementul/UEE.git"
+  },
+  "author": "ellementul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ellementul/UEE/issues"
+  },
+  "homepage": "https://github.com/ellementul/UEE#readme",
+  "dependencies": {
+    "@ellementul/message-types": "github:ellementul/messages-types#081d1d49b525ef85947ea94c34beebf58cf056fd",
+    "mergician": "^2.0.2",
+    "sha1": "^1.1.1"
+  },
+  "devDependencies": {
+    "assert": "^2.1.0",
+    "ava": "^5.3.1",
+    "buffer": "^6.0.3",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "sinon": "^16.1.0",
+    "util": "^0.12.5"
+  },
+  "ava": {
+    "files": [
+      "**/*.test.js"
+    ],
+    "serial": true
+  }
+}
+</file>
+
+</files>
