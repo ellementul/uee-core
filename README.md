@@ -49,6 +49,42 @@ A typed message that defines the structure of communication between members. Eve
 ### Room
 A special member that includes a Provider for processing messages and events. Rooms can contain multiple members and manage their communication.
 
+## RelationTool (Ping Exchange)
+
+The `RelationTool` provides automatic ping-exchange between members to monitor network health and track member relationships.
+
+### Features
+
+- **Automatic Ping**: Sends pings every 250ms (configurable via `pingDelay`)
+- **Role Tracking**: Track member roles (`Master`, `Slave`, `Worker`, etc.)
+- **Status Monitoring**: Monitor runtime, children count, and network topology
+- **Member List Hashing**: Cryptographic hash of active members for consistency checks
+
+### Installation
+
+```js
+    import { MemberFactory, RelationTool } from "@ellementul/uee-core"
+
+    const member = new MemberFactory()
+    member.makeRoom()
+
+    // Add the tool
+    member.addTool({ 
+        name: "relations", 
+        ToolFactory: RelationTool.ToolFactory,
+        depends: { 
+            required: [
+                { requiredName: "currentMember", requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError"]},
+                { requiredName: "room", requiredMethods: ["children"]}
+            ] 
+        } 
+    })
+
+    // Configure role and status
+    member.tools.Relations.setRole("Master")
+    member.tools.Relations.setStatus("Running")
+```
+
 ## StatesMember
 
 The `StatesMember` class is a specialized member implementation designed for managing state transitions and value validation in event-driven systems. It extends the base `MemberFactory` to provide:

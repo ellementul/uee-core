@@ -1,5 +1,16 @@
 # AGENTS.md
 
+## Project Structure
+
+- **Entry**: `index.js` → exports `Types`, `EventFactory`, `MemberFactory`, `RelationTool`, `pingEvent`, `LoggingTreeTool`, `LogTool`
+- **Core**: `src/Member/index.js`, `src/Event/index.js`, `src/Provider/index.js`
+- **Tools**: 
+  - `src/Tools/relations/tool.js` → `RelationTool`, `pingEvent` (ping-exchange)
+  - `src/Tools/relationsTree/tool.js` → `LoggingTreeTool` (topology building)
+  - `src/Tools/logging/tool.js` → `LogTool` (logging)
+- **Tests**: Match `**/*.test.js` (ava runs serially)
+
+
 ## Commands
 
 ```bash
