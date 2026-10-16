@@ -30,153 +30,153 @@ test.afterEach(t => {
      t.is(typeof tool.setAlwaysConsole, 'function')
  })
 
-//  test('add tool in member', t => {
-//      const member = new MemberFactory
-//      member.strictValidationEvent = true
+ test('add tool in member', t => {
+     const member = new MemberFactory
+     member.strictValidationEvent = true
 
-//      member.addTool(LogTool)
-//      member.makeRoom()
+     member.addTool(LogTool)
+     member.makeRoom()
 
-//      const event = EventFactory(Types.Object.Def({ system: "test" }))
-//      const errorName = "Test Error"
-//      const callback = sinon.spy(() => { throw new Error(errorName) })
-//      const errorCallback = sinon.fake()
+     const event = EventFactory(Types.Object.Def({ system: "test" }))
+     const errorName = "Test Error"
+     const callback = sinon.spy(() => { throw new Error(errorName) })
+     const errorCallback = sinon.fake()
     
-//      member.subscribe(event, callback)
-//      member.subscribe(loggingErrorEvent, errorCallback)
+     member.subscribe(event, callback)
+     member.subscribe(loggingErrorEvent, errorCallback)
     
-//      member.send(event)
+     member.send(event)
 
-//      t.true(callback.calledOnceWith({ system: "test" }))
-//      t.true(errorCallback.calledOnce)
+     t.true(callback.calledOnceWith({ system: "test" }))
+     t.true(errorCallback.calledOnce)
 
-//      const msg = errorCallback.getCall(0).firstArg
+     const msg = errorCallback.getCall(0).firstArg
 
-//      t.is(msg.error.message, errorName)
-//      t.is(msg.sourceName, member.name())
-//  })
+     t.is(msg.error.message, errorName)
+     t.is(msg.sourceName, member.name())
+ })
 
-//  test('log to console when member is not ready', t => {
-//    const mockMember = {
-//       name() { "MockMmber" },
-//       uid() { return 'test-member-uid'},
-//       roomUids(){},
-//       isReadyToSend() { return false }
-//    }
+ test('log to console when member is not ready', t => {
+   const mockMember = {
+      name() { "MockMmber" },
+      uid() { return 'test-member-uid'},
+      roomUids(){},
+      isReadyToSend() { return false }
+   }
 
-//    const tool = LogTool.ToolFactory({ currentMember: mockMember })
+   const tool = LogTool.ToolFactory({ currentMember: mockMember })
 
-//    const testError = new Error('Test error not ready')
+   const testError = new Error('Test error not ready')
 
-//    tool.sendError(testError)
+   tool.sendError(testError)
 
-//    t.true(t.context.consoleStub.calledOnce)
+   t.true(t.context.consoleStub.calledOnce)
 
-//    const consoleArgs = t.context.consoleStub.firstCall.args
-//    t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
-//    t.is(consoleArgs[1], testError)
-//  })
+   const consoleArgs = t.context.consoleStub.firstCall.args
+   t.regex(consoleArgs[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
+   t.is(consoleArgs[1], testError)
+ })
 
-//  test('always log to console when flag is set', t => {
-//      const sendStub = sinon.stub()
+ test('always log to console when flag is set', t => {
+     const sendStub = sinon.stub()
 
-//      const mockMember = {
-//         uid() { return 'test-member-uid'},
-//         roomUids(){},
-//         name() { "MockMmber" },
-//         isReadyToSend() { return true },
-//         sendEvent: sendStub
-//      }
+     const mockMember = {
+        uid() { return 'test-member-uid'},
+        roomUids(){},
+        name() { "MockMmber" },
+        isReadyToSend() { return true },
+        sendEvent: sendStub
+     }
 
-//      const tool = LogTool.ToolFactory({ currentMember: mockMember })
+     const tool = LogTool.ToolFactory({ currentMember: mockMember })
 
-//      tool.setAlwaysConsole(true)
+     tool.setAlwaysConsole(true)
 
-//      const testError = new Error('Test error with alwaysConsole')
+     const testError = new Error('Test error with alwaysConsole')
 
-//      tool.sendError(testError)
+     tool.sendError(testError)
 
-//      t.true(sendStub.calledOnce)
+     t.true(sendStub.calledOnce)
 
-//      t.true(t.context.consoleStub.calledOnce)
-//  })
+     t.true(t.context.consoleStub.calledOnce)
+ })
 
-//  test('handle error with missing properties', t => {
-//      const mockMember = {
-//        uid() { return 'test-member-uid'},
-//        roomUids(){},
-//        name() { "MockMmber" },
-//        isReadyToSend() { return false }
-//      }
+ test('handle error with missing properties', t => {
+     const mockMember = {
+       uid() { return 'test-member-uid'},
+       roomUids(){},
+       name() { "MockMmber" },
+       isReadyToSend() { return false }
+     }
 
-//      const tool = LogTool.ToolFactory({ currentMember: mockMember })
+     const tool = LogTool.ToolFactory({ currentMember: mockMember })
 
-//      const rawError = {}
+     const rawError = {}
 
-//      tool.sendError(rawError)
+     tool.sendError(rawError)
 
-//      t.true(t.context.consoleStub.calledOnce)
+     t.true(t.context.consoleStub.calledOnce)
 
-//      const consoleCall = t.context.consoleStub.firstCall
-//      t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
+     const consoleCall = t.context.consoleStub.firstCall
+     t.regex(consoleCall.args[0], /\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[test-member-uid\]/)
 
-//      const testErrorWithoutStack = new Error('No stack')
-//      delete testErrorWithoutStack.stack
+     const testErrorWithoutStack = new Error('No stack')
+     delete testErrorWithoutStack.stack
 
-//      tool.sendError(testErrorWithoutStack)
-//    t.true(t.context.consoleStub.calledTwice)
-//  })
-
-
-//  test('log subscription events', t => {
-//    const member = new MemberFactory()
-//    member.strictValidationEvent = true
-//    member.addTool(LogTool)
-//    member.makeRoom()
-
-//    const subscriptionCallback = sinon.fake()
-//    const sendingCallback = sinon.fake()
-//    const receiveCallback = sinon.fake()
-//    const memberCallback = sinon.fake()
-
-//    member.subscribe(loggingSubscriptionEvent, subscriptionCallback)
-//    t.true(subscriptionCallback.calledOnce)
-
-//    const logPayload = subscriptionCallback.getCall(0).firstArg
-//    t.truthy(logPayload.timestamp)
-//    t.is(logPayload.sourceUid, member.uid())
-//    t.is(logPayload.eventHash, sha1(loggingSubscriptionEvent.toJSON().type))
-//    t.is(logPayload.action, 'Subscription')
+     tool.sendError(testErrorWithoutStack)
+   t.true(t.context.consoleStub.calledTwice)
+ })
 
 
-//    const event = EventFactory(Types.Object.Def({ system: "test" }))
-//    member.subscribe(loggingSendingEvent, sendingCallback)
-//    member.subscribe(loggingReceivingEvent, receiveCallback)
-//    member.subscribe(event, memberCallback)
-//    member.send(event)
+ test('log subscription events', t => {
+   const member = new MemberFactory()
+   member.strictValidationEvent = true
+   member.addTool(LogTool)
+   member.makeRoom()
 
-//    t.true(sendingCallback.calledOnce)
+   const subscriptionCallback = sinon.fake()
+   const sendingCallback = sinon.fake()
+   const receiveCallback = sinon.fake()
+   const memberCallback = sinon.fake()
 
-//    const logSending = sendingCallback.getCall(0).firstArg
-//    t.truthy(logSending.timestamp)
-//    t.is(logSending.sourceUid, member.uid())
-//    t.is(logSending.eventHash, sha1(event.toJSON().type))
-//    t.is(logSending.msgHash, sha1(JSON.stringify(event.createMsg())))
-//    t.is(logSending.action, 'Sending')
+   member.subscribe(loggingSubscriptionEvent, subscriptionCallback)
+   t.true(subscriptionCallback.calledOnce)
 
-
-//    t.true(receiveCallback.calledOnce)
-//    t.true(memberCallback.calledOnce)
-
-//    const logReciving = receiveCallback.getCall(0).firstArg
-//    t.truthy(logReciving.timestamp)
-//    t.is(logReciving.sourceUid, member.uid())
-//    t.is(logReciving.eventHash, sha1(event.toJSON().type))
-//    t.is(logReciving.msgHash, sha1(JSON.stringify(event.createMsg())))
-//    t.is(logReciving.action, 'Receiving')
+   const logPayload = subscriptionCallback.getCall(0).firstArg
+   t.truthy(logPayload.timestamp)
+   t.is(logPayload.sourceUid, member.uid())
+   t.is(logPayload.eventHash, sha1(loggingSubscriptionEvent.toJSON().type))
+   t.is(logPayload.action, 'Subscription')
 
 
-//  })
+   const event = EventFactory(Types.Object.Def({ system: "test" }))
+   member.subscribe(loggingSendingEvent, sendingCallback)
+   member.subscribe(loggingReceivingEvent, receiveCallback)
+   member.subscribe(event, memberCallback)
+   member.send(event)
+
+   t.true(sendingCallback.calledOnce)
+
+   const logSending = sendingCallback.getCall(0).firstArg
+   t.truthy(logSending.timestamp)
+   t.is(logSending.sourceUid, member.uid())
+   t.is(logSending.eventHash, sha1(event.toJSON().type))
+   t.is(logSending.msgHash, sha1(JSON.stringify(event.createMsg())))
+   t.is(logSending.action, 'Sending')
+
+
+   t.true(receiveCallback.calledOnce)
+   t.true(memberCallback.calledOnce)
+
+   const logReciving = receiveCallback.getCall(0).firstArg
+   t.truthy(logReciving.timestamp)
+   t.is(logReciving.sourceUid, member.uid())
+   t.is(logReciving.eventHash, sha1(event.toJSON().type))
+   t.is(logReciving.msgHash, sha1(JSON.stringify(event.createMsg())))
+   t.is(logReciving.action, 'Receiving')
+
+
+ })
 
 test('log add member', t => {
   const host = new MemberFactory()
@@ -191,29 +191,29 @@ test('log add member', t => {
   host.addMember(member)
 
   t.true(callback.calledOnce)
-  // const logReciving = callback.getCall(0).firstArg
-  // t.truthy(logReciving.timestamp)
-  // t.is(logReciving.sourceUid, member.uid())
-  // t.is(logReciving.action, 'AddParent')
-  // t.is(logReciving.parentUid, host.uid())
+  const logReciving = callback.getCall(0).firstArg
+  t.truthy(logReciving.timestamp)
+  t.is(logReciving.sourceUid, member.uid())
+  t.is(logReciving.action, 'AddParent')
+  t.is(logReciving.parentUid, host.uid())
 })
 
-// test('log reverse add member', t => {
-//   const host = new MemberFactory()
-//   host.strictValidationEvent = true
-//   host.makeRoom()
+test('log reverse add member', t => {
+  const host = new MemberFactory()
+  host.strictValidationEvent = true
+  host.makeRoom()
 
-//   const callback = sinon.fake()
-//   host.subscribe(loggingAddParentEvent, callback)
+  const callback = sinon.fake()
+  host.subscribe(loggingAddParentEvent, callback)
 
-//   const member = new MemberFactory()
-//   host.addMember(member)
-//   member.addTool(LogTool)
+  const member = new MemberFactory()
+  host.addMember(member)
+  member.addTool(LogTool)
 
-//   t.true(callback.calledOnce)
-//   const logReciving = callback.getCall(0).firstArg
-//   t.truthy(logReciving.timestamp)
-//   t.is(logReciving.sourceUid, member.uid())
-//   t.is(logReciving.action, 'AddParent')
-//   t.is(logReciving.parentUid, host.uid())
-// })
+  t.true(callback.calledOnce)
+  const logReciving = callback.getCall(0).firstArg
+  t.truthy(logReciving.timestamp)
+  t.is(logReciving.sourceUid, member.uid())
+  t.is(logReciving.action, 'AddParent')
+  t.is(logReciving.parentUid, host.uid())
+})
