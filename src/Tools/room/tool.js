@@ -36,7 +36,7 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
 
             if(member) {
                 room.members.delete(uid)
-                member.destroy()
+                member.leaveRoom(room.memberUid())
             }
         }
 

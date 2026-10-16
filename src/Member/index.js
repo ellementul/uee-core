@@ -8,6 +8,7 @@ export class MemberFactory {
         this._uid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
         this._name = name
 
+        this.outsideRooms = new Map()
         this.subscribedOutEvents = new Map
     }
 
@@ -24,11 +25,11 @@ export class MemberFactory {
     }
 
     isOutsideRoom() {
-        return !!this.outsideRoom
+        return this.outsideRooms.size > 0
     }
 
     outsideRoomMemberUid() {
-        return this?.outsideRoom?.memberUid()
+        return [...this.outsideRooms.values()].map(room => room.memberUid())[0]
     }
 
     addTool({ name, ToolFactory, depends: { required, optional }}) {
@@ -139,14 +140,16 @@ export class MemberFactory {
     sendEvent(msg) {
         if(this.tools.room)
             this.tools.room.sendEvent(msg)
-        else if(this.outsideRoom)
-            this.outsideRoom.sendEvent(msg)
+        else if(this.isOutsideRoom())
+            this.sendOutside(msg)
         else
             throw new Error("It cannot send msg, it isn't Room and it doesn't connect to Room")
     }
 
     sendOutside(msg) {
-        this.outsideRoom.sendEvent(msg)
+        for(const [uid, room] of this.outsideRooms) {
+            room.sendEvent(msg)
+        }
     }
 
     subscribe(msgType, callback, getSelfEvent, memberUid, limit) {
@@ -161,7 +164,7 @@ export class MemberFactory {
 
             if(this.tools.room) {
                 this.tools.room.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
-            } else if(this.outsideRoom)
+            } else if(this.isOutsideRoom())
                 this.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
             else
                 throw new Error("It cannot subscribe, it isn't Room and it doesn't connect to Room")
@@ -181,7 +184,7 @@ export class MemberFactory {
 
             if(this.tools.room)
                 this.tools.room.unsubscribe(msgType, memberUid)
-            else if(this.outsideRoom)
+            else if(this.isOutsideRoom())
                 this.unsubscribeOut(msgType, memberUid)
             else
                 throw new Error("It cannot unsubscribe, it isn't Room and it doesn't connect to Room")
@@ -193,11 +196,12 @@ export class MemberFactory {
 
     setOutsideRoom(room) {
         try {
-            this.outsideRoom = room
-
+            const roomUid = room.memberUid()
+            this.outsideRooms.set(roomUid, room)
+            
             if(typeof this.onJoinRoom == "function")
-                this.onJoinRoom()
-
+                this.onJoinRoom(roomUid)
+            
             for(const toolName in this.tools){
                 const tool = this.tools[toolName]
                 if(typeof tool.subscribeEvents == "function")
@@ -210,32 +214,35 @@ export class MemberFactory {
     }
 
     subscribeOut(msgType, callback, memberUid, getSelfEvent, limit) {
-        try {
-            if(this.inEvents && !this.inEvents.has(msgType.sign()))
-                return
+        for(const [uid, room] of this.outsideRooms) {
+            try {
+                if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                    return
 
-            this.outsideRoom.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
-            this.subscribedOutEvents.set(memberUid, msgType)
+                room.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
+            }
+            catch(err) {
+                this.throwError(err)
+            }
+        }
 
-        }
-        catch(err) {
-            this.throwError(err)
-        }
+        this.subscribedOutEvents.set(memberUid, msgType)
     }
 
     unsubscribeOut(msgType, memberUid) {
-        try {
-            if(this.inEvents && !this.inEvents.has(msgType.sign()))
-                return
+        for(const [uid, room] of this.outsideRooms) {
+            try {
+                if(this.inEvents && !this.inEvents.has(msgType.sign()))
+                    return
 
-            const uid = this.uid() + "/" + memberUid
-            this.outsideRoom.unsubscribe(msgType, uid)
-            this.subscribedOutEvents.delete(memberUid)
+                room.unsubscribe(msgType, memberUid)
+            }
+            catch(err) {
+                this.throwError(err)
+            }
+        }
 
-        }
-        catch(err) {
-            this.throwError(err)
-        }
+        this.subscribedOutEvents.delete(memberUid)
     }
 
     destroy() {
@@ -249,11 +256,11 @@ export class MemberFactory {
                     tool.destroy()
             }
 
-            if(this.outsideRoom) {
-                for (const [uid, typeMsg] of this.subscribedOutEvents) {
-                    this.outsideRoom.unsubscribe(typeMsg, uid)
+            if(this.isOutsideRoom()) {
+                for(const [roomUid, room] of this.outsideRooms) {
+                    room.deleteMember(this.uid())
+                    this.outsideRooms.delete(roomUid)
                 }
-                this.outsideRoom = null
             }
 
             this.inEvents = null
@@ -262,6 +269,22 @@ export class MemberFactory {
             this.throwError(err)
         }
     }
+
+    leaveRoom(roomUid) {
+        try {
+            const room = this.outsideRooms.get(roomUid)
+            if(room) {
+                for (const [uid, typeMsg] of this.subscribedOutEvents)
+                    room.unsubscribe(typeMsg, uid)
+
+                this.outsideRooms.delete(roomUid)
+            }
+        }
+        catch(err) {
+            this.throwError(err)
+        }
+    }
+
 
     throwError(err) {
         if(this.tools.logging)
