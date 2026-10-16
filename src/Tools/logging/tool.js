@@ -6,10 +6,8 @@ function ToolFactory({ currentMember }) {
 
     return {
         currentMember,
-        subscribeEvents() {
-            const roomUid =this.currentMember.outsideRoomMemberUid()
-
-            if(roomUid) {
+        subscribeEvents(_, roomUids) {
+            for(const roomUid of roomUids) {
                 const timestamp = Date.now().toString()
                 const msg = loggingAddParentEvent.createMsg({
                     timestamp,
@@ -31,7 +29,6 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 sourceName: this.currentMember.name(),
-                parentUid: this.currentMember.outsideRoomMemberUid(),
                 error: {
                     message: error.message || "Unknown error",
                     stack: error.stack || "",
@@ -57,34 +54,44 @@ function ToolFactory({ currentMember }) {
             }
         },
         subscribe(msgType, memberUid, getSelfEvent, limit) {
-            const timestamp = Date.now().toString()
-            const msg = loggingSubscriptionEvent.createMsg({
-                timestamp,
-                sourceUid: this.currentMember.uid(),
-                subscribedMemberUid: memberUid,
-                parentUid: this.currentMember.outsideRoomMemberUid(),
-                eventHash: sha1(msgType.toJSON().type),
-                limit,
-                getSelfEvent
-            })
+            const roomUids = this.currentMember.roomUids()
 
             if (this.currentMember.isReadyToSend())
-                this.currentMember.sendEvent(msg)
+                for(const roomUid of roomUids) {
+                    const timestamp = Date.now().toString()
+                    const msg = loggingSubscriptionEvent.createMsg({
+                        timestamp,
+                        sourceUid: this.currentMember.uid(),
+                        subscribedMemberUid: memberUid,
+                        parentUid: roomUid,
+                        eventHash: sha1(msgType.toJSON().type),
+                        limit,
+                        getSelfEvent
+                    })
+
+                    
+                    this.currentMember.sendEvent(msg)
+                }
         },
         send(typeMsg, payload) {
-            const timestamp = Date.now().toString()
-            const msg = loggingSendingEvent.createMsg({
-                timestamp,
-                sourceUid: this.currentMember.uid(),
-                sourceName: this.currentMember.name(),
-                parentUid: this.currentMember.outsideRoomMemberUid(),
-                eventHash: sha1(typeMsg.toJSON().type),
-                msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
-                isSendEvent: this.currentMember.isReadyToSend()
-            })
-            
+            const roomUids = this.currentMember.roomUids()
+
             if(this.currentMember.isReadyToSend())
-                this.currentMember.sendEvent(msg)
+                for(const roomUid of roomUids) {
+                    const timestamp = Date.now().toString()
+                    const msg = loggingSendingEvent.createMsg({
+                        timestamp,
+                        sourceUid: this.currentMember.uid(),
+                        sourceName: this.currentMember.name(),
+                        parentUid: roomUid,
+                        eventHash: sha1(typeMsg.toJSON().type),
+                        msgHash: sha1(JSON.stringify(typeMsg.createMsg(payload))),
+                        isSendEvent: this.currentMember.isReadyToSend()
+                    })
+                    
+                    
+                    this.currentMember.sendEvent(msg)
+                }
         },
         receive(typeMsg, fullMsg) {
             if(!outputEventsType.test(fullMsg))
@@ -95,7 +102,6 @@ function ToolFactory({ currentMember }) {
                 timestamp,
                 sourceUid: this.currentMember.uid(),
                 sourceName:this.currentMember.name(),
-                parentUid: this.currentMember.outsideRoomMemberUid(),
                 eventHash: sha1(typeMsg.toJSON().type),
                 msgHash: sha1(JSON.stringify(fullMsg))
             })
@@ -109,5 +115,5 @@ function ToolFactory({ currentMember }) {
 export const LogTool = {
     name: "logging",
     ToolFactory,
-    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "outsideRoomMemberUid", "isReadyToSend", "sendEvent"]}] }
+    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "roomUids", "isReadyToSend", "sendEvent"]}] }
 }

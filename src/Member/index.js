@@ -21,7 +21,7 @@ export class MemberFactory {
     }
 
     isReadyToSend() {
-        return !!(this.tools.room || this.outsideRoom)
+        return !!(this.tools.room || this.isOutsideRoom())
     }
 
     isOutsideRoom() {
@@ -30,6 +30,15 @@ export class MemberFactory {
 
     outsideRoomMemberUid() {
         return [...this.outsideRooms.values()].map(room => room.memberUid())[0]
+    }
+
+    roomUids() {
+        const rooms = [...this.outsideRooms.values()].map(room => room.memberUid())
+        
+        if(this.tools.room)
+            rooms.unshift(this.uid())
+
+        return rooms
     }
 
     addTool({ name, ToolFactory, depends: { required, optional }}) {
@@ -91,7 +100,7 @@ export class MemberFactory {
 
             const tool = this.tools[name]
             if(typeof tool.subscribeEvents == "function" && this.isReadyToSend())
-                tool.subscribeEvents(this.subscribeTool.bind(this))
+                tool.subscribeEvents(this.subscribeTool.bind(this), this.roomUids())
         }
         catch(err) {
             this.throwError(err)
@@ -120,7 +129,7 @@ export class MemberFactory {
             for(const toolName in this.tools){
                 const tool = this.tools[toolName]
                 if(typeof tool.subscribeEvents == "function")
-                    tool.subscribeEvents(this.subscribeTool.bind(this))
+                    tool.subscribeEvents(this.subscribeTool.bind(this), [this.uid()])
             }
         }
         catch(err) {
@@ -201,11 +210,13 @@ export class MemberFactory {
             
             if(typeof this.onJoinRoom == "function")
                 this.onJoinRoom(roomUid)
-            
+
             for(const toolName in this.tools){
                 const tool = this.tools[toolName]
-                if(typeof tool.subscribeEvents == "function")
-                    tool.subscribeEvents(this.subscribeTool.bind(this))
+
+                if(typeof tool.subscribeEvents == "function") {
+                    tool.subscribeEvents(this.subscribeTool.bind(this), [roomUid])
+                }
             }
         }
         catch(err) {

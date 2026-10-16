@@ -23,7 +23,6 @@ export const loggingErrorEvent = EventFactory(Types.Object.Def({
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
     sourceName: Types.Key.Def(),
-    parentUid,
     error: {
         message: Types.String.Def(),
         stack: Types.String.Def(),
@@ -50,7 +49,6 @@ export const loggingReceivingEvent = EventFactory(Types.Object.Def({
     timestamp: Types.Key.Def(3),
     sourceUid: Types.Key.Def(3),
     sourceName: Types.Key.Def(),
-    parentUid,
     eventHash: Types.Key.Def(3),
     msgHash: Types.Key.Def(3),
 }))
