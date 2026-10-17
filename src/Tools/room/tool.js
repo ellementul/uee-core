@@ -1,5 +1,6 @@
 import { EventFactory, Types } from "../../Event/index.js"
 import { Provider } from "../../Provider/index.js"
+import sha1 from 'sha1'
 
 export function RoomFactory({ ProviderFactory, outEvents }) {
     return function ToolFactory({ provider, currentMember, logging }) {
@@ -10,6 +11,7 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             provider = ProviderFactory ? ProviderFactory() : new Provider()
 
         room.members = new Map
+        room.caches = new Map
 
         if(outEvents?.length > 0)
             room.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
@@ -37,6 +39,40 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
             if(member) {
                 room.members.delete(uid)
                 member.leaveRoom(room.memberUid())
+            }
+        }
+
+        const CACHE_SOFT_LIMIT = 100
+        room.checkCache = (payload) => {
+
+            if(!room.caches.has(room.memberUid()))
+                room.caches.set(room.memberUid(), new Map)
+
+            const cache = room.caches.get(room.memberUid())
+
+            const time = parseInt(payload.timestamp)
+            const timestamp = isNaN(time) ? Date.now() : time
+
+            const currentHash = cache.get(timestamp)
+            const newHash = sha1(JSON.stringify(payload))
+
+            if(newHash == currentHash)
+                return false
+
+            cache.set(timestamp, newHash)
+
+            if(cache.size > CACHE_SOFT_LIMIT)
+                room.clearCache(cache)
+
+            return true
+        }
+
+        room.clearCache = (cache) => {
+            const oldTimestamp = Date.now() - 60 * (CACHE_SOFT_LIMIT / cache.size) * 1000
+
+            for (const [timestamp] of cache) {
+            if(timestamp < oldTimestamp)
+                cache.delete(timestamp)
             }
         }
 
@@ -68,8 +104,14 @@ export function RoomFactory({ ProviderFactory, outEvents }) {
                 }
             }
 
-            if(currentMember.isOutsideRoom())
+            if(currentMember.isOutsideRoom()) {
+                const oldCallback = callback
+                callback = (msg) => {
+                    if(room.checkCache(msg))
+                        oldCallback(msg)
+                }
                 currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
+            }
 
             if(logging) {
                 const oldCallback = callback
