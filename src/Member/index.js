@@ -107,12 +107,12 @@ export class MemberFactory {
         }
     }
 
-    makeRoom({ inEvents, outEvents } = {}) {
+    makeRoom({ inEvents, outEvents, inEvents } = {}) {
         try {
             if(inEvents?.length > 0)
                 this.inEvents = new Set(inEvents.map(event => event.sign()))
 
-            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents }), depends: { 
+            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents, inEvents }), depends: { 
                 required: [{ requiredName: "currentMember", requiredMethods: [
                     "isOutsideRoom",
                     "sendOutside",
@@ -138,11 +138,14 @@ export class MemberFactory {
     }
  
     send(typeMsg, payload) {
+        if (sourceEvent.isSubtypeEvent(typeMsg.type) && !payload.sourceUid)
+            payload.sourceUid = this.uid()
+
         const msg = typeMsg.createMsg(payload, this.strictValidationEvent)
 
         if(this.tools.logging)
-            this.tools.logging.send(typeMsg, payload)
-
+            this.tools.logging.send(typeMsg, msg)
+        
         this.sendEvent(msg)
     }
 
@@ -225,11 +228,8 @@ export class MemberFactory {
     }
 
     subscribeOut(msgType, callback, memberUid, getSelfEvent, limit) {
-        for(const [uid, room] of this.outsideRooms) {
+        for(const [_, room] of this.outsideRooms) {
             try {
-                if(this.inEvents && !this.inEvents.has(msgType.sign()))
-                    return
-
                 room.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
             }
             catch(err) {

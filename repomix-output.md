@@ -38,7 +38,9 @@ The content is organized as follows:
   docs/
     new-doc.yaml
 graphs_tests/
+  bottom_fork.test.js
   cross.test.js
+  top_fork.test.js
 src/
   Event/
     docs.yml
@@ -115,10 +117,178 @@ README.ru.md
 
 # Files
 
+## File: src/Event/docs.yml
+````yaml
+- Event
+- Хранит внутри себя функции которые вызывет когда вызван сам
+- Имеет тип
+- Может проверить евляется ли данное сообщение его типом
+- Вычисляет сигнатуру сообщения
+````
+
+## File: src/Provider/docs.yml
+````yaml
+Обязаности provider:
+- Взаимодествует с внешним транспортом если он есть
+- Привязывет переданую функцию к одному из событий по сигнатуре
+- К одному из событий может быть привязано сколько угодно функций
+- Когда приходит сообщение ищет к какомим событиям оно подходит и вызывает эти события
+````
+
+## File: .continue/docs/new-doc.yaml
+````yaml
+name: New doc
+version: 0.0.1
+schema: v1
+docs:
+  - name: New docs
+    startUrl: https://docs.continue.dev
+````
+
+## File: graphs_tests/bottom_fork.test.js
+````javascript
+import test from 'ava'
+import { MemberFactory, EventFactory, Types } from '../index.js'
+import { system } from '../src/Tools/relations/events.js'
+
+function later(delay) {
+    return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('Fork graph: logical flow', async t => {
+  // === 1. Построение графа ===
+  
+    const middle = new MemberFactory("middle")
+    middle.makeRoom()
+    
+    const leaf1 = new MemberFactory("leaf1")
+    middle.addMember(leaf1)
+    
+    const leaf2 = new MemberFactory("leaf2")
+    middle.addMember(leaf2)
+    
+    // === 2. Подписка на события ===
+    
+    const eventTypes = [
+        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
+        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+    ]
+    const receivedEvents = {}
+
+    eventTypes.forEach((eventType, index) => {
+        
+        const callback = (memberName, msg) => {
+
+            if(!receivedEvents[memberName])
+                receivedEvents[memberName] = []
+
+            receivedEvents[memberName].push(msg)
+        }
+
+        // Подписываем всех на событие
+        [middle, leaf1, leaf2].forEach(member => {
+            member.subscribe(eventType, (msg) => callback(member.name(), msg))
+        })
+    })
+  
+    // === 3. Генерация событий листьями ===
+    
+    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
+    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
+    
+    // === 4. Проверка получения событий ===
+    
+    await later(100)
+    
+    // Проверяем количество полученных событий для каждого участника
+    const expectedCounts = {
+        middle: 2,      // Получает от обоих листьев через roomA и roomB
+        leaf1: 2,     // От root через roomA и roomB
+        leaf2: 2      // От root через roomA и roomB
+    }
+
+    const receivedCounts = {}
+    for (let key in receivedEvents) {
+        receivedCounts[key] = receivedEvents[key].length
+    }
+
+    t.is(receivedEvents.leaf1.filter(({ system }) => system == 'Leaf2').length, 1)
+    t.is(receivedEvents.leaf2.filter(({ system }) => system == 'Leaf1').length, 1)
+    
+    t.deepEqual(receivedCounts, expectedCounts, 
+        `Каждый участник должен получить ожидаемое количество событий`)
+})
+
+test('Fork graph: logical flow all rooms', async t => {
+  // === 1. Построение графа ===
+  
+    const middle = new MemberFactory("middle")
+    middle.makeRoom()
+    
+    const leaf1 = new MemberFactory("leaf1")
+    leaf1.makeRoom()
+    middle.addMember(leaf1)
+    
+    const leaf2 = new MemberFactory("leaf2")
+    leaf2.makeRoom()
+    middle.addMember(leaf2)
+    
+    // === 2. Подписка на события ===
+    
+    const eventTypes = [
+        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
+        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+    ]
+    const receivedEvents = {}
+
+    eventTypes.forEach((eventType, index) => {
+        
+        const callback = (memberName, msg) => {
+
+            if(!receivedEvents[memberName])
+                receivedEvents[memberName] = []
+
+            receivedEvents[memberName].push(msg)
+        }
+
+        // Подписываем всех на событие
+        [middle, leaf1, leaf2].forEach(member => {
+            member.subscribe(eventType, (msg) => callback(member.name(), msg))
+        })
+    })
+  
+    // === 3. Генерация событий листьями ===
+    
+    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
+    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
+    
+    // === 4. Проверка получения событий ===
+    
+    await later(100)
+    
+    // Проверяем количество полученных событий для каждого участника
+    const expectedCounts = {
+        middle: 2,      // Получает от обоих листьев через roomA и roomB
+        leaf1: 2,     // От root через roomA и roomB
+        leaf2: 2      // От root через roomA и roomB
+    }
+
+    const receivedCounts = {}
+    for (let key in receivedEvents) {
+        receivedCounts[key] = receivedEvents[key].length
+    }
+
+    t.is(receivedEvents.leaf1.filter(({ system }) => system == 'Leaf2').length, 1)
+    t.is(receivedEvents.leaf2.filter(({ system }) => system == 'Leaf1').length, 1)
+    
+    t.deepEqual(receivedCounts, expectedCounts, 
+        `Каждый участник должен получить ожидаемое количество событий`)
+})
+````
+
 ## File: graphs_tests/cross.test.js
 ````javascript
 import test from 'ava'
-import sinon from "sinon"
 import { MemberFactory, EventFactory, Types } from '../index.js'
 
 function later(delay) {
@@ -140,37 +310,39 @@ test('Cross graph: logical flow', async t => {
     roomB.addMember(middle)
     
     const leaf1 = new MemberFactory("leaf1")
-    leaf1.makeRoom()
     middle.addMember(leaf1)
     
     const leaf2 = new MemberFactory("leaf2")
-    leaf2.makeRoom()
     middle.addMember(leaf2)
     
     // === 2. Подписка на события ===
     
     const eventTypes = [
-        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3) })),
-        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3) }))
+        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
+        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
     ]
-    const receivedCounts = {}
+    const receivedEvents = {}
 
     eventTypes.forEach((eventType, index) => {
         
-        const callback = (memberName) => {
-            receivedCounts[memberName] = receivedCounts[memberName] ? receivedCounts[memberName] + 1 : 1
+        const callback = (memberName, msg) => {
+            console.log(memberName, msg)
+            if(!receivedEvents[memberName])
+                receivedEvents[memberName] = []
+
+            receivedEvents[memberName].push(msg)
         }
 
         // Подписываем всех на событие
         [middle, roomA, roomB, leaf1, leaf2].forEach(member => {
-            member.subscribe(eventType, () => callback(member.name()))
+            member.subscribe(eventType, (msg) => callback(member.name(), msg))
         })
     })
   
     // === 3. Генерация событий листьями ===
     
-    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid() })
-    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid() })
+    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
+    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
     
     // === 4. Проверка получения событий ===
     
@@ -181,32 +353,97 @@ test('Cross graph: logical flow', async t => {
         middle: 2,      // Получает от обоих листьев через roomA и roomB
         roomA: 2,     // От leaf1 (прямой), root (через roomB)
         roomB: 2,     // От leaf2 (прямой), root (через roomA)
-        leaf1: 2,     // От root через roomA и roomB
-        leaf2: 2      // От root через roomA и roomB
+        leaf1: 1,     // От root через roomA и roomB
+        leaf2: 1      // От root через roomA и roomB
     }
+
+    const receivedCounts = {}
+    for (let key in receivedEvents) {
+        receivedCounts[key] = receivedEvents[key].length
+    }
+
+    t.is(receivedEvents.leaf1.filter(({ system }) => system == 'Leaf2').length, 1)
+    t.is(receivedEvents.leaf2.filter(({ system }) => system == 'Leaf1').length, 1)
     
     t.deepEqual(receivedCounts, expectedCounts, 
         `Каждый участник должен получить ожидаемое количество событий`)
 })
 ````
 
-## File: src/Event/docs.yml
-````yaml
-- Event
-- Хранит внутри себя функции которые вызывет когда вызван сам
-- Имеет тип
-- Может проверить евляется ли данное сообщение его типом
-- Вычисляет сигнатуру сообщения
-````
+## File: graphs_tests/top_fork.test.js
+````javascript
+import test from 'ava'
+import { MemberFactory, EventFactory, Types } from '../index.js'
 
-## File: .continue/docs/new-doc.yaml
-````yaml
-name: New doc
-version: 0.0.1
-schema: v1
-docs:
-  - name: New docs
-    startUrl: https://docs.continue.dev
+function later(delay) {
+    return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+test('Cross graph: logical flow', async t => {
+  // === 1. Построение графа ===
+  
+    const middle = new MemberFactory("middle")
+    middle.makeRoom()
+    
+    const roomA = new MemberFactory("roomA")
+    roomA.makeRoom()
+    roomA.addMember(middle)
+    
+    const roomB = new MemberFactory("roomB")
+    roomB.makeRoom()
+    roomB.addMember(middle)
+    
+    // === 2. Подписка на события ===
+    
+    const eventTypes = [
+        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
+        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+    ]
+    const receivedEvents = {}
+
+    eventTypes.forEach((eventType, index) => {
+        
+        const callback = (memberName, msg) => {
+
+            if(!receivedEvents[memberName])
+                receivedEvents[memberName] = []
+
+            receivedEvents[memberName].push(msg)
+        }
+
+        // Подписываем всех на событие
+        [middle, roomA, roomB].forEach(member => {
+            member.subscribe(eventType, (msg) => callback(member.name(), msg))
+        })
+    })
+  
+    // === 3. Генерация событий листьями ===
+    
+    middle.send(eventTypes[0], { sourceUid: "leaf1", timestamp: Date.now().toString() })
+    middle.send(eventTypes[1], { sourceUid: "leaf2", timestamp: Date.now().toString() })
+    
+    // === 4. Проверка получения событий ===
+    
+    await later(100)
+    
+    // Проверяем количество полученных событий для каждого участника
+    const expectedCounts = {
+        middle: 2,      // Получает от обоих листьев через roomA и roomB
+        roomA: 2,     // От leaf1 (прямой), root (через roomB)
+        roomB: 2,     // От leaf2 (прямой), root (через roomA)
+    }
+
+    const receivedCounts = {}
+    for (let key in receivedEvents) {
+        receivedCounts[key] = receivedEvents[key].length
+    }
+
+    t.is(receivedEvents.middle.filter(({ system }) => system == 'Leaf2').length, 1)
+    t.is(receivedEvents.middle.filter(({ system }) => system == 'Leaf1').length, 1)
+    
+    t.deepEqual(receivedCounts, expectedCounts, 
+        `Каждый участник должен получить ожидаемое количество событий`)
+})
 ````
 
 ## File: src/Event/mergician.js
@@ -856,15 +1093,6 @@ export async function runTests() {
 
     console.log("Is got event: ", callback.calledOnceWith({ system: "test" }))
 }
-````
-
-## File: src/Provider/docs.yml
-````yaml
-Обязаности provider:
-- Взаимодествует с внешним транспортом если он есть
-- Привязывет переданую функцию к одному из событий по сигнатуре
-- К одному из событий может быть привязано сколько угодно функций
-- Когда приходит сообщение ищет к какомим событиям оно подходит и вызывает эти события
 ````
 
 ## File: src/StoreMember/prompt.md
@@ -3275,109 +3503,6 @@ test('Subscribe', async t => {
 })
 ````
 
-## File: src/Tools/room/tool.js
-````javascript
-import { EventFactory, Types } from "../../Event/index.js"
-import { Provider } from "../../Provider/index.js"
-
-export function RoomFactory({ ProviderFactory, outEvents }) {
-    return function ToolFactory({ provider, currentMember, logging }) {
-
-        const room = {}
-
-        if(!provider)
-            provider = ProviderFactory ? ProviderFactory() : new Provider()
-
-        room.members = new Map
-
-        if(outEvents?.length > 0)
-            room.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
-
-        room.memberUid = () => currentMember.uid()
-
-        room.children = () =>[...room.members.keys()]
-
-        room.destroy = () => {
-            for (const [uid, _] of room.members) {
-                room.deleteMember(uid)
-            }
-
-            room.outEvent = null
-        }
-
-        room.addMember = (newMember) => {
-            room.members.set(newMember.uid(), newMember)
-            newMember.setOutsideRoom(room)
-        }
-
-        room.deleteMember = (uid) => {
-            const member = room.members.get(uid)
-
-            if(member) {
-                room.members.delete(uid)
-                member.leaveRoom(room.memberUid())
-            }
-        }
-
-        room.sendEvent = (msg) => {
-            if(currentMember.isOutsideRoom() && ( !room.outEvent || room.outEvent.isValid(msg) ))
-                currentMember.sendOutside(msg)
-
-            try {
-                provider.sendEvent(msg)
-            }
-            catch(err) {
-                currentMember.throwError(err)
-            }
-        }
-
-        room.subscribe = (msgType, callback, memberUid, getSelfEvent, limit) => {
-
-            if(!getSelfEvent) {
-                const oldCallback = callback
-
-                const structureEvent = JSON.parse(msgType.toJSON().type)
-
-                if(!structureEvent.struct.sourceUid)
-                    throw TypeError("Type message require sourceUid to not get self event!")
-
-                callback = (msg) => {
-                    if(memberUid !== msg.sourceUid)
-                        oldCallback(msg)
-                }
-            }
-
-            if(currentMember.isOutsideRoom())
-                currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
-
-            if(logging) {
-                const oldCallback = callback
-
-                callback = (msg) => {
-                    oldCallback(msg)
-                    logging.receive(msgType, msg)
-                }
-            }
-
-            provider.onEvent(msgType, callback, memberUid, limit)
-
-            if(logging)
-                logging.subscribe(msgType, memberUid, getSelfEvent, limit)
-        }
-
-        room.unsubscribe = (msgType, memberUid) => {
-
-            if(currentMember.isOutsideRoom())
-                currentMember.unsubscribeOut(msgType, memberUid)
-
-            provider.offEvent(msgType, memberUid)
-        }
-
-        return room
-    }
-}
-````
-
 ## File: src/Tools/logging/events.js
 ````javascript
 import { EventFactory, Types } from "../../Event/index.js"
@@ -3644,6 +3769,151 @@ export class HashMap  {
         
         
         this._hash = hashFromMapByKeys(this.map, this.hashFunction)
+    }
+}
+````
+
+## File: src/Tools/room/tool.js
+````javascript
+import { EventFactory, Types } from "../../Event/index.js"
+import { Provider } from "../../Provider/index.js"
+import sha1 from 'sha1'
+
+export function RoomFactory({ ProviderFactory, outEvents }) {
+    return function ToolFactory({ provider, currentMember, logging }) {
+
+        const room = {}
+
+        if(!provider)
+            provider = ProviderFactory ? ProviderFactory() : new Provider()
+
+        room.members = new Map
+        room.caches = new Map
+
+        if(outEvents?.length > 0)
+            room.outEvent = EventFactory(Types.Any.Def(outEvents.map( event => event.type)))
+
+        room.memberUid = () => currentMember.uid()
+
+        room.children = () =>[...room.members.keys()]
+
+        room.destroy = () => {
+            for (const [uid, _] of room.members) {
+                room.deleteMember(uid)
+            }
+
+            room.outEvent = null
+        }
+
+        room.addMember = (newMember) => {
+            room.members.set(newMember.uid(), newMember)
+            newMember.setOutsideRoom(room)
+        }
+
+        room.deleteMember = (uid) => {
+            const member = room.members.get(uid)
+
+            if(member) {
+                room.members.delete(uid)
+                member.leaveRoom(room.memberUid())
+            }
+        }
+
+        const CACHE_SOFT_LIMIT = 100
+        room.checkCache = (payload) => {
+
+            if(!room.caches.has(room.memberUid()))
+                room.caches.set(room.memberUid(), new Map)
+
+            const cache = room.caches.get(room.memberUid())
+
+            const time = parseInt(payload.timestamp)
+            const timestamp = isNaN(time) ? Date.now() : time
+
+            const currentHash = cache.get(timestamp)
+            const newHash = sha1(JSON.stringify(payload))
+
+            if(newHash == currentHash)
+                return false
+
+            cache.set(timestamp, newHash)
+
+            if(cache.size > CACHE_SOFT_LIMIT)
+                room.clearCache(cache)
+
+            return true
+        }
+
+        room.clearCache = (cache) => {
+            const oldTimestamp = Date.now() - 60 * (CACHE_SOFT_LIMIT / cache.size) * 1000
+
+            for (const [timestamp] of cache) {
+            if(timestamp < oldTimestamp)
+                cache.delete(timestamp)
+            }
+        }
+
+        room.sendEvent = (msg) => {
+            if(currentMember.isOutsideRoom() && ( !room.outEvent || room.outEvent.isValid(msg) ))
+                currentMember.sendOutside(msg)
+
+            try {
+                provider.sendEvent(msg)
+            }
+            catch(err) {
+                currentMember.throwError(err)
+            }
+        }
+
+        room.subscribe = (msgType, callback, memberUid, getSelfEvent, limit) => {
+
+            if(!getSelfEvent) {
+                const oldCallback = callback
+
+                const structureEvent = JSON.parse(msgType.toJSON().type)
+
+                if(!structureEvent.struct.sourceUid)
+                    throw TypeError("Type message require sourceUid to not get self event!")
+
+                callback = (msg) => {
+                    if(memberUid !== msg.sourceUid)
+                        oldCallback(msg)
+                }
+            }
+
+            if(currentMember.isOutsideRoom()) {
+                const oldCallback = callback
+                callback = (msg) => {
+                    if(room.checkCache(msg))
+                        oldCallback(msg)
+                }
+                currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
+            }
+
+            if(logging) {
+                const oldCallback = callback
+
+                callback = (msg) => {
+                    oldCallback(msg)
+                    logging.receive(msgType, msg)
+                }
+            }
+
+            provider.onEvent(msgType, callback, memberUid, limit)
+
+            if(logging)
+                logging.subscribe(msgType, memberUid, getSelfEvent, limit)
+        }
+
+        room.unsubscribe = (msgType, memberUid) => {
+
+            if(currentMember.isOutsideRoom())
+                currentMember.unsubscribeOut(msgType, memberUid)
+
+            provider.offEvent(msgType, memberUid)
+        }
+
+        return room
     }
 }
 ````
@@ -4032,14 +4302,6 @@ test('loaded', async t => {
 })
 ````
 
-## File: index.js
-````javascript
-export { Types, EventFactory } from './src/Event/index.js'
-export { MemberFactory } from './src/Member/index.js'
-
-export { RelationTool } from './src/Tools/relations/tool.js'
-````
-
 ## File: src/Tools/logging/tool.js
 ````javascript
 import { loggingErrorEvent, loggingReceivingEvent, loggingSendingEvent, loggingSubscriptionEvent, loggingAddParentEvent, outputEventsType } from "./events.js"
@@ -4161,6 +4423,14 @@ export const LogTool = {
     ToolFactory,
     depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "roomUids", "isReadyToSend", "sendEvent"]}] }
 }
+````
+
+## File: index.js
+````javascript
+export { Types, EventFactory } from './src/Event/index.js'
+export { MemberFactory } from './src/Member/index.js'
+
+export { RelationTool } from './src/Tools/relations/tool.js'
 ````
 
 ## File: src/Event/index.js
@@ -4749,14 +5019,14 @@ export { AsyncProvider, Provider }
 ````markdown
 ```mermaid
  flowchart TD
-    ZjX67A7yT4fUltksI8A1eDpzS_ldQssiWGS4Z1F[LoggerMember]
-    5kjcuhuYpAuSlcs9WUntXOtQEbAjYa8fMjIXV9rr[LoggerMember5]
-    DwUnB7ZyxZE3ZwAe6dmfSDdxMt5mGjkUTbaLsvUN[LoggerMemberD]
-    W2wMCe27KCCcxB3ldzV5V274VOEQTW4UtcGXxEBe[LoggerMemberW]
+    Niho3ABHU8cqT[LoggerMember]
+    NnClzpaGC7IV6aupgQslxt9TYPD8ZgPeeAMK2ii8[LoggerMemberN]
+    k1QpL6zu5pTZ7hZauUXDgHXZ3B0OhONb2GQqVj9A[LoggerMemberk]
+    arI1IuP0AHf77Co9POyPtCXGG4gSCaDM38MnQusX[LoggerMembera]
 
-    ZjX67A7yT4fUltksI8A1eDpzS_ldQssiWGS4Z1F --> 5kjcuhuYpAuSlcs9WUntXOtQEbAjYa8fMjIXV9rr
-    ZjX67A7yT4fUltksI8A1eDpzS_ldQssiWGS4Z1F --> DwUnB7ZyxZE3ZwAe6dmfSDdxMt5mGjkUTbaLsvUN
-    ZjX67A7yT4fUltksI8A1eDpzS_ldQssiWGS4Z1F --> W2wMCe27KCCcxB3ldzV5V274VOEQTW4UtcGXxEBe
+    Niho3ABHU8cqT --> NnClzpaGC7IV6aupgQslxt9TYPD8ZgPeeAMK2ii8
+    Niho3ABHU8cqT --> k1QpL6zu5pTZ7hZauUXDgHXZ3B0OhONb2GQqVj9A
+    Niho3ABHU8cqT --> arI1IuP0AHf77Co9POyPtCXGG4gSCaDM38MnQusX
 ```
 ````
 
@@ -5060,7 +5330,7 @@ test('DeleteMember', t => {
   },
   "homepage": "https://github.com/ellementul/UEE#readme",
   "dependencies": {
-    "@ellementul/message-types": "github:ellementul/messages-types#081d1d49b525ef85947ea94c34beebf58cf056fd",
+    "@ellementul/message-types": "github:ellementul/messages-types#82fd96904bdf0ea7d6ac7649e60fce3ab6e686c6",
     "mergician": "^2.0.2",
     "sha1": "^1.1.1"
   },

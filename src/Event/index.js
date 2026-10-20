@@ -94,6 +94,10 @@ function EventFactory(type) {
         callback(payload)
       }
     },
+
+    isSubtypeEvent(event) {
+      return this.type.isSubtype(event.type)
+    }, 
     
     clone: function() {
       return EventFactory(this.type)
