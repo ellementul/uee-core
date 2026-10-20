@@ -75,13 +75,8 @@ export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
             else {
                 const cachedHash = cache.get(timestamp)
 
-                if (cachedHash !== undefined) {
-                    if (cachedHash === hash)
-                        return false // Точный дубликат
-                    
-                    // Нарушение инварианта: источник выдал одинаковый timestamp для разных событий
-                    throw new Error(`Cache invariant violated: sourceUid=${sourceUid}, timestamp=${timestamp} has different hashes`)
-                }
+                if (cachedHash !== undefined && cachedHash === hash)
+                    return false
             }
             
             cache.set(timestamp, hash)
@@ -96,7 +91,7 @@ export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
 
         room.sendEvent = (msg) => {
             room.externalEventsCounter++
-            
+
             if(currentMember.isOutsideRoom() && room.outEvents.isValid(msg)) {
                 msg.timestamp = Date.now() + room.externalEventsCounter
                 currentMember.sendOutside(msg)
