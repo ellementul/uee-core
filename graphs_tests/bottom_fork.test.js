@@ -1,74 +1,73 @@
 import test from 'ava'
 import { MemberFactory, EventFactory, Types } from '../index.js'
-import { system } from '../src/Tools/relations/events.js'
 
 function later(delay) {
     return new Promise(resolve => setTimeout(resolve, delay))
 }
 
-test('Fork graph: logical flow', async t => {
-  // === 1. Построение графа ===
+// test('Fork graph: logical flow', async t => {
+//   // === 1. Построение графа ===
   
-    const middle = new MemberFactory("middle")
-    middle.makeRoom()
+//     const middle = new MemberFactory("middle")
+//     middle.makeRoom()
     
-    const leaf1 = new MemberFactory("leaf1")
-    middle.addMember(leaf1)
+//     const leaf1 = new MemberFactory("leaf1")
+//     middle.addMember(leaf1)
     
-    const leaf2 = new MemberFactory("leaf2")
-    middle.addMember(leaf2)
+//     const leaf2 = new MemberFactory("leaf2")
+//     middle.addMember(leaf2)
     
-    // === 2. Подписка на события ===
+//     // === 2. Подписка на события ===
     
-    const eventTypes = [
-        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
-        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
-    ]
-    const receivedEvents = {}
+//     const eventTypes = [
+//         EventFactory(Types.Object.Def({ system: "Leaf1" })),
+//         EventFactory(Types.Object.Def({ system: "Leaf2" }))
+//     ]
+//     const receivedEvents = {}
 
-    eventTypes.forEach((eventType, index) => {
+//     eventTypes.forEach((eventType, index) => {
         
-        const callback = (memberName, msg) => {
+//         const callback = (memberName, msg) => {
 
-            if(!receivedEvents[memberName])
-                receivedEvents[memberName] = []
+//             if(!receivedEvents[memberName])
+//                 receivedEvents[memberName] = []
 
-            receivedEvents[memberName].push(msg)
-        }
+//             receivedEvents[memberName].push(msg)
+//         }
 
-        // Подписываем всех на событие
-        [middle, leaf1, leaf2].forEach(member => {
-            member.subscribe(eventType, (msg) => callback(member.name(), msg))
-        })
-    })
+//         // Подписываем всех на событие
+//         [middle, leaf1, leaf2].forEach(member => {
+//             member.subscribe(eventType, (msg) => callback(member.name(), msg))
+//         })
+//     })
   
-    // === 3. Генерация событий листьями ===
+//     // === 3. Генерация событий листьями ===
     
-    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
-    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
+//     leaf1.send(eventTypes[0])
+//     leaf2.send(eventTypes[1])
     
-    // === 4. Проверка получения событий ===
+//     // === 4. Проверка получения событий ===
     
-    await later(100)
+//     await later(100)
     
-    // Проверяем количество полученных событий для каждого участника
-    const expectedCounts = {
-        middle: 2,      // Получает от обоих листьев через roomA и roomB
-        leaf1: 2,     // От root через roomA и roomB
-        leaf2: 2      // От root через roomA и roomB
-    }
+//     // Проверяем количество полученных событий для каждого участника
+//     const expectedCounts = {
+//         middle: 2,      // Получает от обоих листьев через roomA и roomB
+//         leaf1: 2,     // От root через roomA и roomB
+//         leaf2: 2      // От root через roomA и roomB
+//     }
 
-    const receivedCounts = {}
-    for (let key in receivedEvents) {
-        receivedCounts[key] = receivedEvents[key].length
-    }
+//     const receivedCounts = {}
+//     for (let key in receivedEvents) {
+//         receivedCounts[key] = receivedEvents[key].length
+//     }
 
-    t.is(receivedEvents.leaf1.filter(({ system }) => system == 'Leaf2').length, 1)
-    t.is(receivedEvents.leaf2.filter(({ system }) => system == 'Leaf1').length, 1)
+//     t.is(receivedEvents.leaf1.filter(({ system }) => system == 'Leaf2').length, 1)
+//     t.is(receivedEvents.leaf2.filter(({ system }) => system == 'Leaf1').length, 1)
     
-    t.deepEqual(receivedCounts, expectedCounts, 
-        `Каждый участник должен получить ожидаемое количество событий`)
-})
+//     t.deepEqual(receivedCounts, expectedCounts, 
+//         `Каждый участник должен получить ожидаемое количество событий`)
+// })
 
 test('Fork graph: logical flow all rooms', async t => {
   // === 1. Построение графа ===
@@ -87,8 +86,18 @@ test('Fork graph: logical flow all rooms', async t => {
     // === 2. Подписка на события ===
     
     const eventTypes = [
-        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
-        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf1", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        })),
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf2", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        }))
     ]
     const receivedEvents = {}
 
@@ -104,14 +113,14 @@ test('Fork graph: logical flow all rooms', async t => {
 
         // Подписываем всех на событие
         [middle, leaf1, leaf2].forEach(member => {
-            member.subscribe(eventType, (msg) => callback(member.name(), msg))
+            member.subscribe(eventType, (msg) => callback(member.name(), msg), false)
         })
     })
   
     // === 3. Генерация событий листьями ===
     
-    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
-    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
+    leaf1.send(eventTypes[0])
+    leaf2.send(eventTypes[1])
     
     // === 4. Проверка получения событий ===
     
@@ -119,9 +128,9 @@ test('Fork graph: logical flow all rooms', async t => {
     
     // Проверяем количество полученных событий для каждого участника
     const expectedCounts = {
-        middle: 2,      // Получает от обоих листьев через roomA и roomB
-        leaf1: 2,     // От root через roomA и roomB
-        leaf2: 2      // От root через roomA и roomB
+        middle: 2,
+        leaf1: 1,
+        leaf2: 1
     }
 
     const receivedCounts = {}

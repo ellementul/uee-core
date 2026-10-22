@@ -2,7 +2,7 @@ import { EventFactory, Types } from "../../Event/index.js"
 
 export const system = "Logging"
 
-const parentUid = Types.Any.Def(Types.Const.Def(undefined), Types.Key.Def(3))
+const parentUid = Types.Union.Def(Types.Const.Def(undefined), Types.Key.Def(3))
 
 export const loggingSubscriptionEvent = EventFactory(Types.Object.Def({
     system,
@@ -62,7 +62,7 @@ export const loggingAddParentEvent = EventFactory(Types.Object.Def({
     parentUid: Types.Key.Def(3)
 }))
 
-export const outputEventsType = Types.Any.Def([
+export const outputEventsType = Types.Union.Def([
     loggingSubscriptionEvent.type,
     loggingErrorEvent.type,
     loggingSendingEvent.type,

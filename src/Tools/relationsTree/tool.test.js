@@ -19,36 +19,36 @@ test('Build tree', async t => {
   const childId2 = "38560947ac42"
   const childId3 = "38560947ac43"
 
-  member.send(pingEvent, {
+   member.sendEvent(pingEvent.createMsg({
     sourceUid: rootId,
     parentUid: undefined,
     role: "Logger",
     name: "Root",
     children: []
-  })
+  }), true)
 
   t.truthy(member.tools.LoggingTree)
   t.truthy(member.tools.LoggingTree.getNode(rootId))
   t.is(member.tools.LoggingTree.getNodeAttr(rootId, "name"), "Root")
 
-  member.send(pingEvent, {
+   member.sendEvent(pingEvent.createMsg({
     role: "child1",
     name: "Child",
     parentUid: rootId,
     sourceUid: childId1,
     children: []
-  })
+  }), true)
 
   t.truthy(member.tools.LoggingTree.getNode(childId1))
   t.deepEqual(member.tools.LoggingTree.getChildren(rootId), [childId1])
   t.is(member.tools.LoggingTree.getNodeAttr(childId1, "name"), "Child")
 
-  member.send(pingEvent, {
+  member.sendEvent(pingEvent.createMsg({
     role: "child1",
     parentUid: undefined,
     sourceUid: childId1,
     children: [childId2, childId3]
-  })
+  }), true)
 
   t.deepEqual(member.tools.LoggingTree.getChildren(rootId), [childId1])
   t.deepEqual(member.tools.LoggingTree.getChildren(childId1), [childId2, childId3])

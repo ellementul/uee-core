@@ -28,15 +28,24 @@ test('Cross graph: logical flow', async t => {
     // === 2. Подписка на события ===
     
     const eventTypes = [
-        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
-        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf1", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        })),
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf2", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        }))
     ]
     const receivedEvents = {}
 
     eventTypes.forEach((eventType, index) => {
         
         const callback = (memberName, msg) => {
-            console.log(memberName, msg)
             if(!receivedEvents[memberName])
                 receivedEvents[memberName] = []
 
@@ -45,14 +54,14 @@ test('Cross graph: logical flow', async t => {
 
         // Подписываем всех на событие
         [middle, roomA, roomB, leaf1, leaf2].forEach(member => {
-            member.subscribe(eventType, (msg) => callback(member.name(), msg))
+            member.subscribe(eventType, (msg) => callback(member.name(), msg), false)
         })
     })
   
     // === 3. Генерация событий листьями ===
     
-    leaf1.send(eventTypes[0], { sourceUid: leaf1.uid(), timestamp: Date.now().toString() })
-    leaf2.send(eventTypes[1], { sourceUid: leaf2.uid(), timestamp: Date.now().toString() })
+    leaf1.send(eventTypes[0])
+    leaf2.send(eventTypes[1])
     
     // === 4. Проверка получения событий ===
     

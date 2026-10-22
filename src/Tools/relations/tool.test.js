@@ -22,6 +22,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   member.tools.Relations.sendPing()
   member.tools.Relations.sendPing()
   
+  t.is(receivedPings.length, 2)
   t.is(receivedPings[0].role, 'Tester')
   t.is(receivedPings[0].pingNumber, 1)
   t.is(receivedPings[0].receivedPings, 0)

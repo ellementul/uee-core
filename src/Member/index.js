@@ -142,8 +142,8 @@ export class MemberFactory {
         }
     }
  
-    send(typeMsg, payload) {
-        if (sourceEvent.isSubtypeEvent(typeMsg.type) && !payload.sourceUid)
+    send(typeMsg, payload = {}) {
+        if (sourceEvent.isSubtypeEvent(typeMsg))
             payload.sourceUid = this.uid()
 
         const msg = typeMsg.createMsg(payload, this.strictValidationEvent)
@@ -170,12 +170,14 @@ export class MemberFactory {
     }
 
     
-    checkCache ({ sourceUid, timestamp, hash }) {
-            
-        let source = this.caches.get(sourceUid)
+    checkCache ({ sourceUid, timestamp, hash }, memberUid) {
+
+
+        let key = `${sourceUid}:${memberUid}`
+        let source = this.caches.get(key)
         if (!source) {
             source = { cache: new Map(), maxTimestamp: 0 }
-            this.caches.set(sourceUid, source)
+            this.caches.set(key, source)
         }
 
         const cache = source.cache
@@ -210,10 +212,22 @@ export class MemberFactory {
             limit = limit || -1
             memberUid = memberUid || this.uid()
 
+            if(!getSelfEvent) {
+                const oldCallback = callback
+
+                if(!sourceEvent.isSubtypeEvent(msgType))
+                    throw new TypeError("Type message require sourceUid to not get self event!")
+
+                callback = (msg) => {
+                    if(this.uid() !== msg.sourceUid)
+                        oldCallback(msg)
+                }
+            }
+
             if(minimalExternalEvent.isSubtypeEvent(msgType)) {
                 const oldCallback = callback
                 callback = (msg) => {
-                    if(this.checkCache(msg))
+                    if(this.checkCache(msg, memberUid))
                         oldCallback(msg)
                 }
             }
@@ -231,8 +245,8 @@ export class MemberFactory {
         }
     }
 
-    subscribeTool(msgType, callback, toolName, getSelfEvent = true) {
-        this.subscribe(msgType, callback, getSelfEvent, `${this.uid()}:tool:${toolName}`)
+    subscribeTool(msgType, callback, toolName, getSelfEvent = true, limit) {
+        this.subscribe(msgType, callback, getSelfEvent, `${this.uid()}:tool:${toolName}`, limit)
     }
 
     unsubscribe(msgType, memberUid) {

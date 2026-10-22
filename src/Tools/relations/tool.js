@@ -19,8 +19,8 @@ function ToolFactory({ currentMember, room }) {
             return
 
         pingNumber += 1
-        const timestamp = Date.now().toString()
-        const runtime = (Date.now() - runTimestamp).toString()
+        const timestamp = Date.now()
+        const runtime = Date.now() - runTimestamp
 
         const roomUid = currentMember.outsideRoomMemberUid()
         const children = room.children()
@@ -58,8 +58,7 @@ function ToolFactory({ currentMember, room }) {
         memberStatus, 
         sourceUid, 
         timestamp, 
-        receivedPings: 
-        memberReceivedPings,  
+        receivedPings: memberReceivedPings,  
         memberListSize, 
         memberListHash, 
         parentUid, 

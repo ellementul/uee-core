@@ -3,6 +3,7 @@ import sinon from "sinon"
 
 import { MemberFactory } from './index.js'
 import { EventFactory, Types } from '../Event/index.js'
+import { Provider } from '../Provider/index.js'
 
 function later(delay) {
     return new Promise(function(resolve) {
@@ -303,4 +304,74 @@ test('DeleteMember', t => {
   
   // Verify child room's members map is empty
   t.is(childRoom.tools.room.members.size, 1)
+})
+
+test('Cache: deduplication works correctly', async t => {
+    const provider = new Provider
+    const member = new MemberFactory()
+    member.makeRoom({ provider })
+
+    const event = EventFactory(Types.Object.Def({
+        system: "test",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
+
+    const callback = sinon.fake()
+    const otherCallback = sinon.fake()
+    member.subscribe(event, callback)
+    member.subscribe(event, otherCallback, true, "otherCallback")
+
+    const ts = Date.now() + 1000
+
+    // 1. Два идентичных события → должен пройти только 1
+    const msg1 = event.createMsg({ timestamp: ts, sourceUid: "src1", hash: "hash1" })
+    const msg2 = event.createMsg({ timestamp: ts, sourceUid: "src1", hash: "hash1" })
+    provider.sendEvent(msg1)
+    provider.sendEvent(msg2)
+
+    // 2. Разные hash от того же источника → оба проходят
+    const msg3 = event.createMsg({ timestamp: ts + 1, sourceUid: "src1", hash: "hash2" })
+    provider.sendEvent(msg3)
+
+    // 3. Тот же hash от другого источника → проходит
+    const msg4 = event.createMsg({ timestamp: ts, sourceUid: "src2", hash: "hash1" })
+    provider.sendEvent(msg4)
+
+    await later(0)
+
+    t.is(callback.callCount, 3, `Expected 3 calls (msg1, msg3, msg4), got ${callback.callCount}`)
+    t.is(otherCallback.callCount, 3, `Expected 3 calls (msg1, msg3, msg4), got ${otherCallback.callCount}`)
+})
+
+
+test('subscribeTool: filters own events correctly', async t => {
+    const member = new MemberFactory()
+    member.makeRoom()
+
+    const event = EventFactory(Types.Object.Def({
+        system: "test",
+        sourceUid: Types.Key.Def(3)
+    }))
+
+    const callback1 = sinon.fake()
+    const callback2 = sinon.fake()
+
+    // Инструмент 1: не получает свои события (по умолчанию)
+    member.subscribeTool(event, callback1, "tool1", false)
+    
+    // Инструмент 2: получает свои события (явно указано)
+    member.subscribeTool(event, callback2, "tool2", true)
+
+    // Отправляем событие от себя
+    member.send(event, { sourceUid: member.uid() })
+
+    await later(0)
+
+    // callback1 не должен вызваться (фильтр своих событий)
+    t.true(callback1.notCalled, "tool1 should not receive own events")
+    
+    // callback2 должен вызваться (getSelfEvent = true)
+    t.true(callback2.calledOnce, "tool2 should receive own events")
 })

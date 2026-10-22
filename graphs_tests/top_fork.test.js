@@ -22,9 +22,20 @@ test('Cross graph: logical flow', async t => {
     // === 2. Подписка на события ===
     
     const eventTypes = [
-        EventFactory(Types.Object.Def({ system: "Leaf1", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) })),
-        EventFactory(Types.Object.Def({ system: "Leaf2", sourceUid: Types.Key.Def(3), timestamp: Types.Key.Def(3) }))
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf1", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        })),
+        EventFactory(Types.Object.Def({ 
+            system: "Leaf2", 
+            sourceUid: Types.Key.Def(3), 
+            timestamp: Types.Index.Def(2**53 - 1),
+            hash: Types.Key.Def(3) 
+        }))
     ]
+
     const receivedEvents = {}
 
     eventTypes.forEach((eventType, index) => {
@@ -45,8 +56,8 @@ test('Cross graph: logical flow', async t => {
   
     // === 3. Генерация событий листьями ===
     
-    middle.send(eventTypes[0], { sourceUid: "leaf1", timestamp: Date.now().toString() })
-    middle.send(eventTypes[1], { sourceUid: "leaf2", timestamp: Date.now().toString() })
+    middle.send(eventTypes[0], {})
+    middle.send(eventTypes[1], {})
     
     // === 4. Проверка получения событий ===
     

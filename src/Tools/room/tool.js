@@ -82,18 +82,6 @@ export function RoomFactory({ provider, ProviderFactory, inEvents, outEvents }) 
                 oldCallback(msg)
             }
 
-            if(!getSelfEvent) {
-                const oldCallback = callback
-
-                if(!sourceEvent.isSubtypeEvent(msgType))
-                    throw new TypeError("Type message require sourceUid to not get self event!")
-
-                callback = (msg) => {
-                    if(memberUid !== msg.sourceUid)
-                        oldCallback(msg)
-                }
-            }
-
             if(currentMember.isOutsideRoom() && room.inEvents.isSubtypeEvent(msgType))
                 currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
 
