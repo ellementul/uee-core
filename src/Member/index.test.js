@@ -70,18 +70,23 @@ test('subscribeToOutsideRoom', async t => {
 })
 
 test('three room: bubbling and subscribe level up', async t => {
-  const host = new MemberFactory()
-  const client1 = new MemberFactory()
-  const client2 = new MemberFactory()
+    const host = new MemberFactory()
+    const client1 = new MemberFactory()
+    const client2 = new MemberFactory()
+    
+    host.makeRoom()
+    client1.makeRoom()
+    client2.makeRoom()
+    
+    host.addMember(client1)
+    host.addMember(client2)
   
-  host.makeRoom()
-  client1.makeRoom()
-  client2.makeRoom()
-  
-  host.addMember(client1)
-  host.addMember(client2)
-  
-    const event = EventFactory(Types.Object.Def({ system: "test", sourceUid: Types.Key.Def(3) }))
+    const event = EventFactory(Types.Object.Def({ 
+        system: "test", 
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
 
     const gotClient1 = []
     client1.subscribe(event, (payload) => gotClient1.push(payload), false, client1.uid())
@@ -94,7 +99,7 @@ test('three room: bubbling and subscribe level up', async t => {
     await later(100)
     
     t.is(gotClient1.length, 1)
-    t.is(gotClient2.length, 2)
+    t.is(gotClient2.length, 1)
 })
 
 test('Bubble event', async t => {
@@ -108,7 +113,13 @@ test('Bubble event', async t => {
     const member = new MemberFactory
     secondRoom.addMember(member)
 
-    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const event = EventFactory(Types.Object.Def({ 
+        system: "test", 
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
+
     const callback = sinon.fake()
     room.subscribe(event, callback)
 
@@ -120,8 +131,18 @@ test('Bubble event', async t => {
 })
 
 test('Bubble filter', async t => {
-    const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
-    const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+    const allowEvent = EventFactory(Types.Object.Def({ 
+        system: "allowed",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
+    const deprecatedEvent = EventFactory(Types.Object.Def({ 
+        system: "deprecated",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
 
     const allowCallback = sinon.fake()
     const deprecatedCallback = sinon.fake()
@@ -159,7 +180,13 @@ test('Subscribe up level', async t => {
     const member = new MemberFactory
     secondRoom.addMember(member)
 
-    const event = EventFactory(Types.Object.Def({ system: "test" }))
+    const event = EventFactory(Types.Object.Def({ 
+        system: "test",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
+
     const callback = sinon.fake()
     member.subscribe(event, callback)
 
@@ -171,8 +198,18 @@ test('Subscribe up level', async t => {
 })
 
 test('Subscribe up level filter', async t => {
-    const allowEvent = EventFactory(Types.Object.Def({ system: "allowed" }))
-    const deprecatedEvent = EventFactory(Types.Object.Def({ system: "deprecated" }))
+    const allowEvent = EventFactory(Types.Object.Def({ 
+        system: "allowed",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
+    const deprecatedEvent = EventFactory(Types.Object.Def({ 
+        system: "deprecated",
+        timestamp: Types.Index.Def(2**53 - 1),
+        sourceUid: Types.Key.Def(3),
+        hash: Types.Key.Def(3)
+    }))
 
     const allowCallback = sinon.fake()
     const deprecatedCallback = sinon.fake()

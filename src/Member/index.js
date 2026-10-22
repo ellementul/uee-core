@@ -1,15 +1,20 @@
 import { Types } from "../Event/index.js"
+import { minimalExternalEvent, sourceEvent } from "./events.js"
 import { RoomFactory } from "../Tools/room/tool.js"
+
+const CACHE_LIMIT = 100
 
 export class MemberFactory {
 
     constructor(name = "Member") {
         this.tools = {}
-        this._uid = Types.Key.Def(3).rand().slice(0, 40).replace("_", "")
+        this._uid = Types.Key.Def(40).rand().slice(0, 40).replace("_", "")
         this._name = name
 
         this.outsideRooms = new Map()
         this.subscribedOutEvents = new Map
+
+        this.caches = new Map()
     }
 
     uid() {
@@ -107,12 +112,12 @@ export class MemberFactory {
         }
     }
 
-    makeRoom({ inEvents, outEvents, inEvents } = {}) {
+    makeRoom({ provider, inEvents, outEvents } = {}) {
         try {
             if(inEvents?.length > 0)
                 this.inEvents = new Set(inEvents.map(event => event.sign()))
 
-            this.addTool({ name: "room", ToolFactory: RoomFactory({ outEvents, inEvents }), depends: { 
+            this.addTool({ name: "room", ToolFactory: RoomFactory({ provider, outEvents, inEvents }), depends: {
                 required: [{ requiredName: "currentMember", requiredMethods: [
                     "isOutsideRoom",
                     "sendOutside",
@@ -164,6 +169,37 @@ export class MemberFactory {
         }
     }
 
+    
+    checkCache ({ sourceUid, timestamp, hash }) {
+            
+        let source = this.caches.get(sourceUid)
+        if (!source) {
+            source = { cache: new Map(), maxTimestamp: 0 }
+            this.caches.set(sourceUid, source)
+        }
+
+        const cache = source.cache
+
+        if(source.maxTimestamp < timestamp) {
+            source.maxTimestamp = timestamp
+        }
+        else {
+            const cachedHash = cache.get(timestamp)
+
+            if (cachedHash !== undefined && cachedHash === hash)
+                return false
+        }
+        
+        cache.set(timestamp, hash)
+        
+        if (cache.size > CACHE_LIMIT) {
+            const oldestKey = cache.keys().next().value
+            cache.delete(oldestKey)
+        }
+            
+        return true
+    }
+
     subscribe(msgType, callback, getSelfEvent, memberUid, limit) {
 
         if(getSelfEvent === undefined || getSelfEvent === null)
@@ -173,6 +209,15 @@ export class MemberFactory {
 
             limit = limit || -1
             memberUid = memberUid || this.uid()
+
+            if(minimalExternalEvent.isSubtypeEvent(msgType)) {
+                const oldCallback = callback
+                callback = (msg) => {
+                    if(this.checkCache(msg))
+                        oldCallback(msg)
+                }
+            }
+
 
             if(this.tools.room) {
                 this.tools.room.subscribe(msgType, callback, memberUid, getSelfEvent, limit)
@@ -186,8 +231,8 @@ export class MemberFactory {
         }
     }
 
-    subscribeTool(msgType, callback, toolName) {
-        this.subscribe(msgType, callback, `${this.uid()}:tool:${toolName}`)
+    subscribeTool(msgType, callback, toolName, getSelfEvent = true) {
+        this.subscribe(msgType, callback, getSelfEvent, `${this.uid()}:tool:${toolName}`)
     }
 
     unsubscribe(msgType, memberUid) {

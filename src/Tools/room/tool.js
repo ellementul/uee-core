@@ -2,8 +2,8 @@ import { EventFactory, Types } from "../../Event/index.js"
 import { Provider } from "../../Provider/index.js"
 import { minimalExternalEvent, sourceEvent } from "./events.js"
 
-export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
-    return function ToolFactory({ provider, currentMember, logging }) {
+export function RoomFactory({ provider, ProviderFactory, inEvents, outEvents }) {
+    return function ToolFactory({ currentMember, logging }) {
 
         const room = {}
 
@@ -58,37 +58,6 @@ export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
             }
         }
 
-        const CACHE_SOFT_LIMIT = 100
-        room.checkCache = ({ sourceUid, timestamp, hash }) => {
-            
-            let source = room.caches.get(sourceUid)
-            if (!source) {
-                source = { cache: new Map(), maxTimestamp: 0 }
-                room.caches.set(sourceUid, source)
-            }
-
-            const cache = source.cache
-
-            if(source.maxTimestamp < timestamp) {
-                source.maxTimestamp = timestamp
-            }
-            else {
-                const cachedHash = cache.get(timestamp)
-
-                if (cachedHash !== undefined && cachedHash === hash)
-                    return false
-            }
-            
-            cache.set(timestamp, hash)
-            
-            if (cache.size > CACHE_SOFT_LIMIT) {
-                const oldestKey = cache.keys().next().value
-                cache.delete(oldestKey)
-            }
-                
-            return true
-        }
-
         room.sendEvent = (msg) => {
             room.externalEventsCounter++
 
@@ -117,7 +86,7 @@ export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
                 const oldCallback = callback
 
                 if(!sourceEvent.isSubtypeEvent(msgType))
-                    throw TypeError("Type message require sourceUid to not get self event!")
+                    throw new TypeError("Type message require sourceUid to not get self event!")
 
                 callback = (msg) => {
                     if(memberUid !== msg.sourceUid)
@@ -125,16 +94,8 @@ export function RoomFactory({ ProviderFactory, inEvents, outEvents }) {
                 }
             }
 
-            if(currentMember.isOutsideRoom() && room.inEvents.isSubtypeEvent(msgType)) {
-
-                const oldCallback = callback
-                callback = (msg) => {
-                    if(room.checkCache(msg))
-                        oldCallback(msg)
-                }
-
+            if(currentMember.isOutsideRoom() && room.inEvents.isSubtypeEvent(msgType))
                 currentMember.subscribeOut(msgType, callback, memberUid, getSelfEvent, limit)
-            }
 
             if(logging) {
                 const oldCallback = callback
