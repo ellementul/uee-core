@@ -1,6 +1,6 @@
 import { EventFactory, Types } from "../../Event/index.js"
 import { Provider } from "../../Provider/index.js"
-import { minimalExternalEvent, sourceEvent } from "./events.js"
+import { minimalExternalEvent } from "./events.js"
 
 export function RoomFactory({ provider, ProviderFactory, inEvents, outEvents }) {
     return function ToolFactory({ currentMember, logging }) {
@@ -62,7 +62,7 @@ export function RoomFactory({ provider, ProviderFactory, inEvents, outEvents }) 
             room.externalEventsCounter++
 
             if(currentMember.isOutsideRoom() && room.outEvents.isValid(msg)) {
-                msg.timestamp = Date.now() + room.externalEventsCounter
+                msg.timestamp = msg.timestamp || Date.now() + room.externalEventsCounter
                 currentMember.sendOutside(msg)
             }
 

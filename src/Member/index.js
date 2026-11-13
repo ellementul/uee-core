@@ -3,6 +3,7 @@ import { minimalExternalEvent, sourceEvent } from "./events.js"
 import { RoomFactory } from "../Tools/room/tool.js"
 
 const CACHE_LIMIT = 100
+let count =  0
 
 export class MemberFactory {
 
@@ -171,34 +172,24 @@ export class MemberFactory {
 
     
     checkCache ({ sourceUid, timestamp, hash }, memberUid) {
-
-
         let key = `${sourceUid}:${memberUid}`
-        let source = this.caches.get(key)
-        if (!source) {
-            source = { cache: new Map(), maxTimestamp: 0 }
-            this.caches.set(key, source)
+        let cache = this.caches.get(key)
+
+        if (!cache) {
+            cache = new Set
+            this.caches.set(key, cache)
         }
 
-        const cache = source.cache
-
-        if(source.maxTimestamp < timestamp) {
-            source.maxTimestamp = timestamp
-        }
-        else {
-            const cachedHash = cache.get(timestamp)
-
-            if (cachedHash !== undefined && cachedHash === hash)
-                return false
-        }
+        if (cache.has(hash))
+            return false
         
-        cache.set(timestamp, hash)
+        cache.add(hash)
         
         if (cache.size > CACHE_LIMIT) {
-            const oldestKey = cache.keys().next().value
+            const oldestKey = cache.values().next().value
             cache.delete(oldestKey)
         }
-            
+
         return true
     }
 
