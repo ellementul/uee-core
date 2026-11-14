@@ -1,74 +1,15 @@
 # AGENTS.md
 
-## Project Structure
+## Memory
+Тезис о кэше: MemberFactory.caches уязвим к неограниченному росту по количеству ключей (sourceUid), так как лимит CACHE_LIMIT контролирует только размер Set внутри ключа, но не количество самих ключей в Map.
 
-- **Entry**: `index.js` → exports `Types`, `EventFactory`, `MemberFactory`, `RelationTool`, `pingEvent`, `LoggingTreeTool`, `LogTool`
-- **Core**: `src/Member/index.js`, `src/Event/index.js`, `src/Provider/index.js`
-- **Tools**: 
-  - `src/Tools/relations/tool.js` → `RelationTool`, `pingEvent` (ping-exchange)
-  - `src/Tools/relationsTree/tool.js` → `LoggingTreeTool` (topology building)
-  - `src/Tools/logging/tool.js` → `LogTool` (logging)
-- **Tests**: Match `**/*.test.js` (ava runs serially)
+Тезис о коллизиях: DataStore использует стратегию "Split" (расщепление) при разрешении конфликтов версий, генерируя разные ключи для разных узлов. Отсутствует явный механизм логического связывания или последующего слияния (Merge) этих расщепленных сущностей.
 
+Тезис о топологии: Архитектура MemberFactory.addMember допускает создание циклических зависимостей между узлами, что несет риск циклической маршрутизации событий в динамической P2P-сети.
 
-## Commands
+Тезис о мутации: Утилита deepFreezeMsg деструктивно мутирует исходные объекты пользователя перед заморозкой, что нарушает принцип неизменности входных данных.
 
-```bash
-npm test        # Run all tests (ava)
-npm run test:w # Watch mode
-```
+Тезис об одиночном коллбэке: Интерфейсы Connection и ConnectionFactory строго поддерживают только один коллбэк. Многоадресная рассылка или сложная логика обработки управляется исключительно на уровне "Инструмента транспорта" через паттерн Декоратор (Middleware).
 
-Browser tests require `parcel` (pre-installed):
-```bash
-npm run test:browser:member
-npm run test:browser:ticker
-npm run test:browser:peerjs
-```
+Тезис о виртуальной комнате: Клиентская часть транспорта реализует "Виртуальную комнату", которая дублирует внешний API-контракт реальной Room (sendEvent, subscribe, unsubscribe, memberUid, children), чтобы обмануть MemberFactory, но использует принципиально иную внутреннюю логику маршрутизации через транспорт.
 
-## Project Structure
-
-- **Entry**: `index.js` → exports `Types`, `EventFactory`, `MemberFactory`
-- **Core**: `src/Member/index.js`, `src/Event/index.js`, `src/Provider/index.js`
-- **Tests**: Match `**/*.test.js` (ava runs serially)
-
-## Key Facts
-
-- ES modules (`"type": "module"`)
-- No lint/typecheck configured
-- Test framework: `ava` with `sinon` for mocks
-- Uses `@ellantul/message-types` for event typing
-
-## Event-Driven Architecture
-
-### Core Components
-
-| Component | File | Role |
-|-----------|------|------|
-| Event | `src/Event/index.js` | Type-safe message with validation |
-| Provider | `src/Provider/index.js` | Event router/dispatcher |
-| Member | `src/Member/index.js` | Entity that sends/receives events |
-| Room | `src/Tools/room/tool.js` | Member container with event bubbling |
-
-### Event Flow
-
-1. **Define type**: `Types.Object.Def({ system: "Test", action: Types.Any.Def("On", "Off") })`
-2. **Create event**: `EventFactory(type)` returns event instance
-3. **Send**: `member.send(event, payload)` → `Provider.sendEvent()` → validates & dispatches
-4. **Subscribe**: `member.subscribe(event, callback)` registers with `Provider`
-
-### Event Filtering
-
-- `inEvents` - Allowed incoming event types (subscribed from outside room)
-- `outEvents` - Allowed outgoing event types (bubbled to parent room)
-- Set via `makeRoom({ inEvents, outEvents })`
-
-### Event Bubbling
-
-Events bubble up room hierarchy: child room → parent room. Parent can subscribe to child's events. Filtering controls what bubbles up via `outEvents`.
-
-### Key Methods
-
-- `member.send(type, payload)` - Send event to room
-- `member.subscribe(type, callback)` - Receive events
-- `member.makeRoom(opts)` - Create room with filtering
-- `member.addMember(m)` / `member.deleteMember(uid)` - Manage members
