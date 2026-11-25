@@ -1,16 +1,25 @@
 import { hashFromMapByKeys } from "../../utils/hashOfKeysFromMap.js"
 import sha1 from 'sha1'
 import { pingEvent } from "./events.js"
+import { StateTool } from "../state/index.js"
+
+const INIT_STATUS = 'Created'
 
 function ToolFactory({ currentMember, room }) {
     let pingNumber = 0
     let receivedPings = 0
     let role = "UknownRole"
-    let status = "Created"
     let runTimestamp = Date.now()
     let pingDelay = RelationTool.pingDelay || 250
 
-    let makeJitter = delay => delay + delay * Math.random() / 10
+    currentMember.addTool(StateTool({
+        name: 'Status',
+        possibleValues: RelationTool.statusValues,
+        initialState: RelationTool.statusValues[0] || INIT_STATUS
+    }))
+    const statusTool = currentMember.tools.Status
+
+    const makeJitter = delay => delay + delay * Math.random() / 10
 
     const memberList = new HashMap("receivedLastPingTime")
 
@@ -31,7 +40,7 @@ function ToolFactory({ currentMember, room }) {
             sourceUid: currentMember.uid(),
             name: currentMember.name(),
             role,
-            status,
+            status: statusTool.state(),
             runtime,
             parentUid: roomUid,
             children,
@@ -53,20 +62,20 @@ function ToolFactory({ currentMember, room }) {
 
     setTimeout(recursiveTimer, 0)
 
-    const receivePing = ({ 
-        role: memberRole, 
-        status: memberStatus, 
-        sourceUid, 
-        timestamp, 
-        receivedPings: memberReceivedPings,  
-        memberListSize, 
-        memberListHash, 
-        parentUid, 
-        children 
+    const receivePing = ({
+        role: memberRole,
+        status: memberStatus,
+        sourceUid,
+        timestamp,
+        receivedPings: memberReceivedPings,
+        memberListSize,
+        memberListHash,
+        parentUid,
+        children
     }) => {
         receivedPings += 1
 
-        const memberRecord = memberList.get(sourceUid) 
+        const memberRecord = memberList.get(sourceUid)
 
         let pingCount = 1
         let receivedFirstPingTime = Date.now().toString()
@@ -79,7 +88,6 @@ function ToolFactory({ currentMember, room }) {
             receivedFirstPingTime = memberRecord.pingsInfo.receivedFirstPingTime
             memberSentFirstPingTime = memberRecord.pingsInfo.sentFirstPingTime
         }
-
 
         const memberInfo = {
             memberRole,
@@ -95,7 +103,7 @@ function ToolFactory({ currentMember, room }) {
                 memberSentLastPingTime
             },
             relations: {
-                parentUid, 
+                parentUid,
                 children
             }
         }
@@ -114,10 +122,13 @@ function ToolFactory({ currentMember, room }) {
             return role
         },
         setStatus(newStatus) {
-            status = newStatus || status
+            statusTool.setState(newStatus)
         },
         status() {
-            return status
+            return statusTool.state()
+        },
+        onStatusTransition(fromStatus, toStatus, callback) {
+            statusTool.onTransition(fromStatus, toStatus, callback)
         },
         memberInfo(uid) {
             return memberList.get(uid)
@@ -128,11 +139,12 @@ function ToolFactory({ currentMember, room }) {
 
 export const RelationTool = {
     name: "Relations",
+    statusValues: [INIT_STATUS],
     ToolFactory,
     pingDelay: 250,
-    depends: { 
+    depends: {
         required: [
-            { requiredName: "currentMember" , requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError"]},
+            { requiredName: "currentMember", requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError", "addTool"]},
             { requiredName: "room", requiredMethods: ["children"]}
         ]
     }
@@ -186,8 +198,8 @@ export class HashMap  {
 
             this.map.delete(minimumKey)
         }
-        
-        
+
+
         this._hash = hashFromMapByKeys(this.map, this.hashFunction)
     }
 }

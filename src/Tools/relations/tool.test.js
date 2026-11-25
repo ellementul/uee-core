@@ -146,6 +146,7 @@ test('two_clients_send_pings_to_host', async t => {
 
 test('receivePing keeps sender status and role', async t => {
   Tool.pingDelay = 1000
+  Tool.statusValues = ['Created', 'Running']
 
   const host = new MemberFactory()
   const client = new MemberFactory()
@@ -168,6 +169,30 @@ test('receivePing keeps sender status and role', async t => {
   t.truthy(info)
   t.is(info.memberRole, 'Worker')
   t.is(info.memberStatus, 'Running')
+})
+
+test('status is a finite state managed by the State tool', t => {
+  Tool.statusValues = ['Created', 'Running']
+
+  const member = new MemberFactory()
+  member.makeRoom()
+  member.addTool(Tool)
+
+  const transitions = []
+  member.tools.Relations.onStatusTransition('Created', 'Running', (to, from) => {
+    transitions.push([to, from])
+  })
+
+  t.is(member.tools.Relations.status(), 'Created')
+
+  t.throws(() => member.tools.Relations.setStatus('Unknown'), {
+    message: /not in the list of possible values/
+  })
+  t.is(member.tools.Relations.status(), 'Created')
+
+  member.tools.Relations.setStatus('Running')
+  t.is(member.tools.Relations.status(), 'Running')
+  t.deepEqual(transitions, [['Running', 'Created']])
 })
 
 test('Hash consistency and eviction', (t) => {

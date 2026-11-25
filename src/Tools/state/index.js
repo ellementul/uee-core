@@ -1,18 +1,22 @@
 export const DEFAULT_STATE = "default"
 export const ANY_STATE = "any"
 
-export function StateTool({ possibleValues } = {}) {
+export function StateTool({ possibleValues, name = 'State', initialState = DEFAULT_STATE } = {}) {
     if (!possibleValues || possibleValues.length === 0)
         throw new Error('possibleValues cannot be empty')
 
     return {
-        name: 'State',
+        name,
         depends: {},
 
         ToolFactory: () => {
-            const allowedValues = new Set(possibleValues.concat([DEFAULT_STATE]))
+            const allowedValues = new Set(possibleValues.concat([initialState]))
+
+            if (!allowedValues.has(initialState) || initialState === ANY_STATE)
+                throw new TypeError(`Initial state "${initialState}" has to be one of possible values`)
+
             const transitionCallbacks = new Map()
-            let state = DEFAULT_STATE
+            let state = initialState
 
             const checkValue = value => {
                 const isValid = allowedValues.has(value) || value === ANY_STATE
@@ -96,7 +100,7 @@ export function StateTool({ possibleValues } = {}) {
 
             const destroy = () => {
                 transitionCallbacks.clear()
-                state = DEFAULT_STATE
+                state = initialState
             }
 
             return {
