@@ -11,7 +11,7 @@ test('sendPing: отправляет ping при вызове', async t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
   member.makeRoom()
-  member.addTool(Tool)
+  member.addTool(Tool())
   
   const receivedPings = []
   member.subscribe(pingEvent, (payload) => {
@@ -41,7 +41,7 @@ test('sendPing: периодическая отправка', async t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
   member.makeRoom()
-  member.addTool(Tool)
+  member.addTool(Tool())
   member.tools.Relations.setRole("member")
   
   const receivedPings = []
@@ -64,14 +64,14 @@ test('tool_requires_room_dependency', t => {
   
   // У подчинённого нет своей комнаты — инструмент не должен добавиться
   t.throws(() => {
-    subordinate.addTool(Tool)
+    subordinate.addTool(Tool())
   }, {
     message: /Not found depend: room/
   })
   
   // У хоста инструмент добавляется успешно
   t.notThrows(() => {
-    host.addTool(Tool)
+    host.addTool(Tool())
   })
   
   // Проверяем что пинг отправляется
@@ -99,9 +99,8 @@ test('two_clients_send_pings_to_host', async t => {
   client2.makeRoom()
   
   // Инструмент только у клиентов
-  Tool.pingDelay = 50
-  client1.addTool(Tool)
-  client2.addTool(Tool)
+  client1.addTool(Tool({ pingDelay: 50 }))
+  client2.addTool(Tool({ pingDelay: 50 }))
   client1.tools.Relations.setRole("client1")
   client2.tools.Relations.setRole("client2")
   
@@ -145,16 +144,13 @@ test('two_clients_send_pings_to_host', async t => {
 })
 
 test('receivePing keeps sender status and role', async t => {
-  Tool.pingDelay = 1000
-  Tool.statusValues = ['Created', 'Running']
-
   const host = new MemberFactory()
   const client = new MemberFactory()
 
   host.makeRoom()
   client.makeRoom()
-  host.addTool(Tool)
-  client.addTool(Tool)
+  host.addTool(Tool({ pingDelay: 1000 }))
+  client.addTool(Tool({ pingDelay: 1000, statusValues: ['Created', 'Running'] }))
   host.addMember(client)
 
   await later(2)
@@ -172,11 +168,9 @@ test('receivePing keeps sender status and role', async t => {
 })
 
 test('status is a finite state managed by the State tool', t => {
-  Tool.statusValues = ['Created', 'Running']
-
   const member = new MemberFactory()
   member.makeRoom()
-  member.addTool(Tool)
+  member.addTool(Tool({ statusValues: ['Created', 'Running'] }))
 
   const transitions = []
   member.tools.Relations.onStatusTransition('Created', 'Running', (to, from) => {

@@ -5,18 +5,18 @@ import { StateTool } from "../state/index.js"
 
 const INIT_STATUS = 'Created'
 
-function ToolFactory({ currentMember, room }) {
-    let pingNumber = 0
-    let receivedPings = 0
-    let role = "UknownRole"
-    let runTimestamp = Date.now()
-    let pingDelay = RelationTool.pingDelay || 250
+export function RelationTool({ name = 'Relations', statusValues = [INIT_STATUS], pingDelay = 250 } = {}) {
+    function ToolFactory({ currentMember, room }) {
+        let pingNumber = 0
+        let receivedPings = 0
+        let role = "UknownRole"
+        let runTimestamp = Date.now()
 
-    currentMember.addTool(StateTool({
-        name: 'Status',
-        possibleValues: RelationTool.statusValues,
-        initialState: RelationTool.statusValues[0] || INIT_STATUS
-    }))
+        currentMember.addTool(StateTool({
+            name: 'Status',
+            possibleValues: statusValues,
+            initialState: statusValues[0] || INIT_STATUS
+        }))
     const statusTool = currentMember.tools.Status
 
     const makeJitter = delay => delay + delay * Math.random() / 10
@@ -137,16 +137,15 @@ function ToolFactory({ currentMember, room }) {
     }
 }
 
-export const RelationTool = {
-    name: "Relations",
-    statusValues: [INIT_STATUS],
-    ToolFactory,
-    pingDelay: 250,
-    depends: {
-        required: [
-            { requiredName: "currentMember", requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError", "addTool"]},
-            { requiredName: "room", requiredMethods: ["children"]}
-        ]
+    return {
+        name,
+        ToolFactory,
+        depends: {
+            required: [
+                { requiredName: "currentMember", requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError", "addTool"]},
+                { requiredName: "room", requiredMethods: ["children"]}
+            ]
+        }
     }
 }
 
