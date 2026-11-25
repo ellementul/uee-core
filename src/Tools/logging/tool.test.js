@@ -24,7 +24,7 @@ test.afterEach(t => {
          isReadyToSend() { return true }
      }
   
-     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+     const tool = LogTool().ToolFactory({ currentMember: mockMember })
   
      t.is(typeof tool.sendError, 'function')
      t.is(typeof tool.setAlwaysConsole, 'function')
@@ -34,7 +34,7 @@ test.afterEach(t => {
      const member = new MemberFactory
      member.strictValidationEvent = true
 
-     member.addTool(LogTool)
+     member.addTool(LogTool())
      member.makeRoom()
 
      const event = EventFactory(Types.Object.Def({ system: "test" }))
@@ -64,7 +64,7 @@ test.afterEach(t => {
       isReadyToSend() { return false }
    }
 
-   const tool = LogTool.ToolFactory({ currentMember: mockMember })
+   const tool = LogTool().ToolFactory({ currentMember: mockMember })
 
    const testError = new Error('Test error not ready')
 
@@ -88,7 +88,7 @@ test.afterEach(t => {
         sendEvent: sendStub
      }
 
-     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+     const tool = LogTool().ToolFactory({ currentMember: mockMember })
 
      tool.setAlwaysConsole(true)
 
@@ -109,7 +109,7 @@ test.afterEach(t => {
        isReadyToSend() { return false }
      }
 
-     const tool = LogTool.ToolFactory({ currentMember: mockMember })
+     const tool = LogTool().ToolFactory({ currentMember: mockMember })
 
      const rawError = {}
 
@@ -131,7 +131,7 @@ test.afterEach(t => {
  test('log subscription events', t => {
    const member = new MemberFactory()
    member.strictValidationEvent = true
-   member.addTool(LogTool)
+   member.addTool(LogTool())
    member.makeRoom()
 
    const subscriptionCallback = sinon.fake()
@@ -187,7 +187,7 @@ test('log add member', t => {
   host.subscribe(loggingAddParentEvent, callback)
 
   const member = new MemberFactory()
-  member.addTool(LogTool)
+  member.addTool(LogTool())
   host.addMember(member)
 
   t.true(callback.calledOnce)
@@ -208,7 +208,7 @@ test('log reverse add member', t => {
 
   const member = new MemberFactory()
   host.addMember(member)
-  member.addTool(LogTool)
+  member.addTool(LogTool())
 
   t.true(callback.calledOnce)
   const logReciving = callback.getCall(0).firstArg

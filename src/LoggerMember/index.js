@@ -11,7 +11,7 @@ export class LoggerFactory extends MemberFactory {
         super(name)
 
         this.makeRoom()
-        this.addTool(LogTool)
+        this.addTool(LogTool())
         this.addTool(RelationTool)
         this.tools.Relations.setRole("Logger")
         this.addTool(LoggingTreeTool())

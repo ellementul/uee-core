@@ -112,8 +112,10 @@ function ToolFactory({ currentMember }) {
     }
 }
 
-export const LogTool = {
-    name: "logging",
-    ToolFactory,
-    depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "roomUids", "isReadyToSend", "sendEvent"]}] }
+export function LogTool({ name = 'logging' } = {}) {
+    return {
+        name,
+        ToolFactory,
+        depends: { required: [{ requiredName: "currentMember" , requiredMethods: ["uid", "name", "roomUids", "isReadyToSend", "sendEvent"]}] }
+    }
 }
