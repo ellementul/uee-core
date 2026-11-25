@@ -14,7 +14,7 @@ export class LoggerFactory extends MemberFactory {
         this.addTool(LogTool)
         this.addTool(RelationTool)
         this.tools.Relations.setRole("Logger")
-        this.addTool(LoggingTreeTool)
+        this.addTool(LoggingTreeTool())
     }
 
     genTopologyToMd() {

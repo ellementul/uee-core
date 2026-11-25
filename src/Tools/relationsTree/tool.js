@@ -97,10 +97,12 @@ function ToolFactory() {
     }
 }
 
-export const LoggingTreeTool = {
-    name: "LoggingTree",
-    ToolFactory,
-    depends: { 
-        required: []
+export function LoggingTreeTool({ name = 'LoggingTree' } = {}) {
+    return {
+        name,
+        ToolFactory,
+        depends: {
+            required: []
+        }
     }
 }

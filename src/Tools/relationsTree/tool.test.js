@@ -12,7 +12,7 @@ test('Build tree', async t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
   member.makeRoom()
-  member.addTool(Tool)
+  member.addTool(Tool())
   
   const rootId = member.uid()
   const childId1 = "38560947ac41"
@@ -62,7 +62,7 @@ test('Attrs', async t => {
   const member = new MemberFactory()
   member.strictValidationEvent = true
   member.makeRoom()
-  member.addTool(Tool)
+  member.addTool(Tool())
   
   const rootId = "e0892762-c91a-46e2-9e5e-38560947ac40"
 
