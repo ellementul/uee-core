@@ -1,204 +1,140 @@
 # UnyEvents Core
 
-Мощный фреймворк для событийно-ориентированной коммуникации, предназначенный для построения распределенных систем и приложений реального времени. UEE Core предоставляет гибкую архитектуру для управления коммуникацией на основе событий между различными компонентами вашего приложения.
+Фреймворк для событийно-ориентированной коммуникации между компонентами, объединёнными в комнаты.
+
+### Другие языки
+#### [English](README.md)
 
 ## Возможности
 
-- **Событийно-ориентированная архитектура**: Построена на надежной системе событий для гибкой коммуникации
-- **Организация на основе комнат**: Организуйте компоненты в комнаты для лучшей структуры
-- **Множество вариантов транспорта**: Поддержка различных механизмов транспорта, включая:
-  - In-memory транспорт для локальной коммуникации
-  - PeerJS транспорт для peer-to-peer коммуникации
-  - Надежный wrapper транспорт для повышенной надежности
-- **Типобезопасные события**: Встроенная система типов для определения событий
-- **Кроссплатформенность**: Работает как в Node.js, так и в браузерной среде
-- **Расширяемость**: Легко добавлять новые механизмы транспорта и типы событий
+- **Событийная архитектура**: типизированные события с валидацией
+- **Комнаты**: участники объединяются в комнаты, события распределяются по графу комнат
+- **Инструменты**: конечные автоматы, обмен пингами и логирование подключаются к участнику как инструменты
+- **Транспорт (планируется)**: фабрики соединений хоста/клиента и адаптер виртуальной комнаты; архитектура описана в [TODO.md](TODO.md)
+- **Кроссплатформенность**: работает в Node.js и в браузере
 
 ## Установка
 
 ```bash
-npm install @ellementul/uee-core
+npm install @ellementul/uny-events
 ```
 
-## Основные концепции
+Публичные экспорты: `Types`, `EventFactory`, `MemberFactory`, `RelationTool`, `StateTool`, `DEFAULT_STATE`, `ANY_STATE`.
+
+## Основные понятия
 
 ### Member (Участник)
-Компонент, который может отправлять и получать сообщения. Участники могут быть организованы в комнаты и общаться через события.
 
-#### Callbacks
+`MemberFactory` может создать комнату, присоединиться к другой комнате и отправлять/получать типизированные события.
 
-- `onMakeRoom` - Вызывается, когда участник становится комнатой
-- `onJoinRoom` - Вызывается, когда участник присоединяется к комнате
-- `onReady` - Вызывается, когда участник готов отправлять и получать сообщения
-- `onDestroy` - Вызывается, когда участник уничтожается (например, при удалении из комнаты)
+Реально вызываемые коллбэки:
 
-#### Methods
+- `onJoinRoom(roomUid)` — при присоединении к комнате через `setOutsideRoom`;
+- `onDestroy()` — только при явном вызове `destroy()`; `deleteMember()` его не вызывает.
 
-- `makeRoom()`: Создает новую комнату или присоединяется к существующей
-- `addMember(member)`: Добавляет участника в комнату
-- `send(event, payload)`: Отправляет событие с данными участнику
-- `subscribe(event, handler)`: Подписывается на событие и предоставляет обработчик для события 
+Методы:
+
+- `makeRoom({ provider, inEvents, outEvents })` — создать комнату на этом участнике;
+- `addMember(member)` / `deleteMember(uid)` — доступны после `makeRoom()`;
+- `send(event, payload)` / `sendEvent(msg)` — отправить событие;
+- `subscribe(event, handler, getSelfEvent, memberUid, limit)` — подписаться на событие;
+- `subscribeTool(...)` / `unsubscribe(...)` — подписка/отписка с id инструмента;
+- `setOutsideRoom(room)` / `leaveRoom(roomUid)` — присоединиться/выйти из внешней комнаты;
+- `destroy()` — уничтожить инструменты и выйти из внешних комнат.
 
 ### Event (Событие)
-Типизированное сообщение, определяющее структуру коммуникации между участниками. События типобезопасны и могут быть валидированы.
+
+Типизированное сообщение, создаваемое `EventFactory(type)`. Умеет валидировать данные (`createMsg`, `isValid`, `getValidError`), вычислять сигнатуру (`sign`) и вызывать коллбэки (`on`, `off`, `call`).
 
 ### Room (Комната)
-Специальный участник, который включает Provider для обработки сообщений и событий. Комнаты могут содержать несколько участников и управлять их коммуникацией.
 
-### Transport (Транспорт)
-Канал коммуникации, который соединяет две комнаты, обеспечивая обмен сообщениями между ними. Поддерживает различные механизмы транспорта.
+Комната создаётся вызовом `makeRoom()` на `MemberFactory` и lives в `member.tools.room`. Она хранит участников (`addMember`, `deleteMember`, `children`), `Provider` и маршрутизирует события (`sendEvent`, `subscribe`, `unsubscribe`). Отдельного публичного класса `Room` нет.
 
-## Примеры использования
+### Инструменты
 
-### Создание участника
+`addTool(config)` добавляет инструмент в `member.tools[name]`. Конфигурат создаётся фабрикой и имеет вид `{ name, ToolFactory, depends }`; `ToolFactory(depends)` возвращает объект инструмента. `MemberFactory.destroy()` вызывает `destroy()` у всех инструментов, где он определён.
+
+## RelationTool (обмен пингами)
 
 ```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory, RelationTool } from "@ellementul/uny-events"
 
 const member = new MemberFactory()
+member.makeRoom()
+member.addTool(RelationTool({ statusValues: ['Running'], pingDelay: 250 }))
+
+const relations = member.tools.Relations
+relations.setRole('Master')
+relations.setStatus('Running')
+relations.onStatusTransition('Created', 'Running', (to, from) => { /* ... */ })
 ```
 
-### Создание комнаты
+Опции: `name` (по умолчанию `"Relations"`), `statusValues` (по умолчанию `['Created']`), `pingDelay` в мс (по умолчанию `250`).
+
+`role` — обычная строка (`setRole`/`role`). `status` — конечный автомат, который ведёт внутренний `StateTool`, зарегистрированный как `member.tools.Status`; начальное значение `'Created'`, допустимы только `statusValues`, чтение/запись через `status()`/`setStatus()`. Пинги несут роль, статус, время работы, список детей и хэши списка участников.
+
+## StateTool
 
 ```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory, StateTool, ANY_STATE } from "@ellementul/uny-events"
 
-const room = new MemberFactory()
-
-// Опциональные колбэки
-room.onMakeRoom = () => { 
-    console.log("Комната успешно создана!") 
-}
-
-room.onInit = () => { 
-    console.log("Комната инициализирована!") 
-}
-
-room.makeRoom()
-```
-
-### Добавление участника в комнату
-
-```js
-import { MemberFactory } from "@ellementul/uee-core"
-
-// Создаем и инициализируем комнату
-const room = new MemberFactory()
-room.onMakeRoom = () => { console.log("Комната создана!") }
-room.makeRoom()
-
-// Создаем участника
 const member = new MemberFactory()
-member.onJoinRoom = () => { console.log("Участник присоединился к комнате") }
-member.onReady = () => { console.log("Участник готов") }
+member.makeRoom()
+member.addTool(StateTool({ possibleValues: ['idle', 'active'] }))
 
-// Добавляем участника в комнату
-room.addMember(member)
+const state = member.tools.State
+state.onTransition('idle', 'active', (to, from) => { /* ... */ })
+state.setState('idle')
+state.setState('active')
 ```
 
-### Удаление участника из комнаты
+Опции: `possibleValues` (обязательно, не пусто), `name` (по умолчанию `"State"`), `initialState` (по умолчанию `DEFAULT_STATE`). `ANY_STATE` можно использовать как подстановочный символ в правилах перехода, но нельзя установить как состояние. Self-переходы `X → X` запрещены. Изменения состояния доставляются только через коллбэки переходов — события не отправляются.
+
+Методы: `state()`, `possibleValues()`, `checkValue(value)`, `checkState(value)`, `setState(value)`, `onTransition(from, to, callback)`, `removeTransitionCallback(from, to)`, `destroy()`.
+
+## Примеры
+
+### Создание комнаты и добавление участника
 
 ```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory } from "@ellementul/uny-events"
 
-// Создаем и инициализируем комнату
 const room = new MemberFactory()
 room.makeRoom()
 
-// Создаем участника
 const member = new MemberFactory()
-member.onDestroy = () => { console.log("Участник уничтожается") }
+member.onJoinRoom = roomUid => console.log('joined', roomUid)
 room.addMember(member)
 
-// Удаляем участника из комнаты
-room.deleteMember(member.uid)
+room.deleteMember(member.uid())
 ```
 
-### Создание и отправка событий
+### Отправка и подписка
 
 ```js
-import { Types, EventFactory } from "@ellementul/uee-core"
+import { Types, EventFactory, MemberFactory } from "@ellementul/uny-events"
 
-// Определяем тип события
-const type = Types.Object.Def({ 
-    system: "Test", 
-    action: Types.Any.Def("Switch On", "Switch Off") 
-})
-
-// Создаем событие
-const event = EventFactory(type)
-
-// Отправляем событие с данными
-const payload = { action: "Switch On" }
-member.send(event, payload)
-```
-
-### Подписка на события
-
-```js
-import { Types, EventFactory } from "@ellementul/uee-core"
-
-// Определяем и создаем событие
-const type = Types.Object.Def({ 
-    system: "Test", 
-    action: Types.Any.Def("Switch On", "Switch Off") 
+const type = Types.Object.Def({
+  system: 'Test',
+  action: Types.String.Def()
 })
 const event = EventFactory(type)
 
-// Подписываемся на событие
-const handleEvent = (payload) => { 
-    console.log("Получено событие:", payload) 
-}
-member.subscribe(event, handleEvent)
-```
-
-### Соединение комнат через транспорт
-
-```js
-// Первая комната (Хост)
-import { MemberFactory, InMemory } from "@ellementul/uee-core"
-
-const room1 = new MemberFactory()
-const transport1 = new InMemory({ 
-    id: "TestTransport", 
-    isHost: true 
-})
-
-room1.makeRoom(transport1)
-room1.connect()
-
-// Вторая комната (Клиент)
-const room2 = new MemberFactory()
-const transport2 = new InMemory({ 
-    id: "TestTransport", 
-    isHost: false 
-})
-
-room2.makeRoom(transport2)
-room2.connect()
+const member = new MemberFactory()
+member.makeRoom()
+member.subscribe(event, payload => console.log(payload))
+member.send(event, { action: 'Switch On' })
 ```
 
 ## Разработка
 
-### Запуск тестов
-
 ```bash
-# Запуск всех тестов
-npm test
-
-# Запуск тестов в режиме наблюдения
-npm run test:w
-
-# Запуск браузерных тестов
-npm run test:browser:ticker
-npm run test:browser:member
-npm run test:browser:peerjs
+npm test                       # все тесты
+npm run test:w                 # режим наблюдения
+npm run test:browser:ticker    # браузерные тесты тикера
+npm run test:browser:member    # браузерные тесты участника
 ```
 
 ## Лицензия
 
 ISC
-
-## Вклад в проект
-
-Мы приветствуем ваш вклад в проект! Не стесняйтесь отправлять Pull Request.

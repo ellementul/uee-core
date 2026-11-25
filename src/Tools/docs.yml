@@ -1,0 +1,7 @@
+Обязанности Tools:
+- Каждый инструмент — фабрика XTool(options), возвращающая конфиг { name, ToolFactory, depends }
+- ToolFactory(depends) получает currentMember и инструменты, объявленные в зависимостях
+- Инструмент может объявить subscribeEvents(subscribe, roomUids) для подписки на события
+- Инструмент может объявить destroy() — MemberFactory.destroy() вызовет его
+- name инструмента служит ключом в member.tools
+- Room добавляется внутренне через makeRoom и не предназначен для ручного addTool

@@ -8,9 +8,7 @@
     "test": "ava",
     "test:w": "ava --watch",
     "test:browser:ticker": "npx parcel ./src/Ticker/test.html",
-    "test:browser:member": "npx parcel ./src/Member/browser.tests/member",
-    "test:browser:member:worker": "npx parcel ./src/Member/browser.tests/worker",
-    "test:browser:peerjs": "npx parcel ./src/Transports/PeerJs/test.*html"
+    "test:browser:member": "npx parcel ./src/Member/browser.tests/member"
   },
   "repository": {
     "type": "git",

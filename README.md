@@ -1,262 +1,140 @@
 # UnyEvents Core
 
-A powerful event-driven communication framework for building distributed systems and real-time applications. UEE Core provides a flexible architecture for managing event-based communication between different components in your application.
+A framework for event-driven communication between components organized in rooms.
 
 ### Other langs
 #### [Russian](README.ru.md)
 
 ## Features
 
-- **Event-Driven Architecture**: Built on a robust event system for flexible communication
-- **Room-Based Organization**: Organize components into rooms for better structure
-- **Multiple Transport Options**: Support for various transport mechanisms including:
-  - In-memory transport for local communication
-  - PeerJS transport for peer-to-peer communication
-  - Reliable wrapper transport for enhanced reliability
-- **Type-Safe Events**: Built-in type system for event definitions
-- **Cross-Platform**: Works in both Node.js and browser environments
-- **Extensible**: Easy to add new transport mechanisms and event types
+- **Event-driven architecture**: typed events with validation
+- **Rooms**: members are grouped in rooms; events bubble through the room graph
+- **Tools**: state machines, ping exchange and logging are attached to members as tools
+- **Transport (planned)**: host/client connection factories and a virtual-room adapter; the architecture is described in [TODO.md](TODO.md)
+- **Cross-platform**: works in Node.js and in the browser
 
 ## Installation
 
 ```bash
-npm install @ellementul/uee-core
+npm install @ellementul/uny-events
 ```
 
-## Core Concepts
+Public exports: `Types`, `EventFactory`, `MemberFactory`, `RelationTool`, `StateTool`, `DEFAULT_STATE`, `ANY_STATE`.
+
+## Core concepts
 
 ### Member
 
-Member is a class that can be used to create a room or join a room. It can be used to send and receive messages.
+`MemberFactory` can create a room, join another room and send/receive typed events.
 
-#### Callbacks
+Callbacks that are actually invoked:
 
-- `onMakeRoom` - Called when a member becomes a room
-- `onJoinRoom` - Called when a member joins a room
-- `onReady` - Called when a member is ready to send and receive messages
-- `onDestroy` - Called when a member is destroyed (e.g., when removed from a room)
+- `onJoinRoom(roomUid)` — called when the member joins a room via `setOutsideRoom`;
+- `onDestroy()` — called only by an explicit `destroy()` call; `deleteMember()` does not call it.
 
-#### Methods
+Methods:
 
-- `makeRoom()`: Creates a new room or joins an existing room
-- `addMember(member)`: Adds a member to a room
-- `send(event, payload)`: Sends an event with a payload to a member
-- `subscribe(event, handler)`: Subscribes to an event and provides a handler for the event
+- `makeRoom({ provider, inEvents, outEvents })` — creates a room on this member;
+- `addMember(member)` / `deleteMember(uid)` — available after `makeRoom()`;
+- `send(event, payload)` / `sendEvent(msg)` — send an event;
+- `subscribe(event, handler, getSelfEvent, memberUid, limit)` — subscribe to an event;
+- `subscribeTool(...)` / `unsubscribe(...)` — subscribe/unsubscribe with a tool id;
+- `setOutsideRoom(room)` / `leaveRoom(roomUid)` — join/leave an external room;
+- `destroy()` — destroys tools and leaves external rooms.
 
 ### Event
-A typed message that defines the structure of communication between members. Events are type-safe and can be validated.
+
+A typed message created by `EventFactory(type)`. It can validate payloads (`createMsg`, `isValid`, `getValidError`), compute a signature (`sign`) and dispatch callbacks (`on`, `off`, `call`).
 
 ### Room
-A special member that includes a Provider for processing messages and events. Rooms can contain multiple members and manage their communication.
 
-## RelationTool (Ping Exchange)
+A room is created by `makeRoom()` on a `MemberFactory` and lives at `member.tools.room`. It holds members (`addMember`, `deleteMember`, `children`), a `Provider`, and routes events (`sendEvent`, `subscribe`, `unsubscribe`). There is no separately exported `Room` class.
 
-The `RelationTool` provides automatic ping-exchange between members to monitor network health and track member relationships.
+### Tools
 
-### Features
+`addTool(config)` attaches a tool to `member.tools[name]`. A config is produced by a factory function and has the shape `{ name, ToolFactory, depends }`; `ToolFactory(depends)` returns the tool object. `MemberFactory.destroy()` calls `tool.destroy()` on every tool that defines it.
 
-- **Automatic Ping**: Sends pings every 250ms (configurable via `pingDelay`)
-- **Role Tracking**: Track member roles (`Master`, `Slave`, `Worker`, etc.)
-- **Status Monitoring**: Monitor runtime, children count, and network topology
-- **Member List Hashing**: Cryptographic hash of active members for consistency checks
-
-### Installation
+## RelationTool (ping exchange)
 
 ```js
-    import { MemberFactory, RelationTool } from "@ellementul/uee-core"
-
-    const member = new MemberFactory()
-    member.makeRoom()
-
-    // Add the tool
-    member.addTool({ 
-        name: "relations", 
-        ToolFactory: RelationTool.ToolFactory,
-        depends: { 
-            required: [
-                { requiredName: "currentMember", requiredMethods: ["uid", "name", "isReadyToSend", "send", "throwError"]},
-                { requiredName: "room", requiredMethods: ["children"]}
-            ] 
-        } 
-    })
-
-    // Configure role and status
-    member.tools.Relations.setRole("Master")
-    member.tools.Relations.setStatus("Running")
-```
-
-## StatesMember
-
-The `StatesMember` class is a specialized member implementation designed for managing state transitions and value validation in event-driven systems. It extends the base `MemberFactory` to provide:
-
-- State management with possible value constraints
-- Transition callbacks for state changes
-- Value validation against allowed states
-- Event-based state updates and notifications
-- Subscribing to events to only defined state
-
-#### Methods
-- `setState`- Sets the member's state to a specified value. Triggers transition callbacks and emits a memberChangedEvent if the state changes.
-- `checkValue` - Validates whether a given value is allowed (either a predefined possible value or ANY_STATE). If invalid, throws an error or sends an error event depending on context.
-- `checkState` - Checks if the current state matches the provided value. Used for validation in callback handlers.
-- `onTransition` - Registers a callback function to be invoked when transitioning from fromState to toState. Supports wildcard transitions using ANY_STATE.
-- `removeTransitionCallback` - Removes a previously registered transition callback for the specified state pair.
-- `subscribeForState` - Subscribes to events specifically related to state changes. Invokes the callback only when the member's state matches the provided 
-state value.
-
-## Usage Examples
-
-### Creating a Member
-
-```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory, RelationTool } from "@ellementul/uny-events"
 
 const member = new MemberFactory()
+member.makeRoom()
+member.addTool(RelationTool({ statusValues: ['Running'], pingDelay: 250 }))
+
+const relations = member.tools.Relations
+relations.setRole('Master')
+relations.setStatus('Running')
+relations.onStatusTransition('Created', 'Running', (to, from) => { /* ... */ })
 ```
 
-### Creating a Room
+Options: `name` (default `"Relations"`), `statusValues` (default `['Created']`), `pingDelay` in ms (default `250`).
+
+`role` is a plain string (`setRole`/`role`). `status` is a finite state managed by an internal `StateTool` registered as `member.tools.Status`; it starts at `'Created'`, accepts only `statusValues`, and is read/written via `status()`/`setStatus()`. Pings carry role, status, runtime, children and member-list hashes.
+
+## StateTool
 
 ```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory, StateTool, ANY_STATE } from "@ellementul/uny-events"
 
-const room = new MemberFactory()
-
-// Optional callbacks
-room.onMakeRoom = () => { 
-    console.log("Room created successfully!") 
-}
-
-room.onInit = () => { 
-    console.log("Room initialized!") 
-}
-
-room.makeRoom()
-```
-
-### Adding a Member to a Room
-
-```js
-import { MemberFactory } from "@ellementul/uee-core"
-
-// Create and initialize the room
-const room = new MemberFactory()
-room.onMakeRoom = () => { console.log("Room created!") }
-room.makeRoom()
-
-// Create a member
 const member = new MemberFactory()
-member.onJoinRoom = () => { console.log("Member joined room") }
-member.onReady = () => { console.log("Member is ready") }
+member.makeRoom()
+member.addTool(StateTool({ possibleValues: ['idle', 'active'] }))
 
-// Add member to room
-room.addMember(member)
+const state = member.tools.State
+state.onTransition('idle', 'active', (to, from) => { /* ... */ })
+state.setState('idle')
+state.setState('active')
 ```
 
-### Deleting a Member from a Room
+Options: `possibleValues` (required, non-empty), `name` (default `"State"`), `initialState` (default `DEFAULT_STATE`). Transition rules accept `ANY_STATE` as a wildcard on either side; `ANY_STATE` cannot be set as a state. Self transitions `X → X` are rejected. State changes are delivered through transition callbacks only — no events are emitted.
+
+Methods: `state()`, `possibleValues()`, `checkValue(value)`, `checkState(value)`, `setState(value)`, `onTransition(from, to, callback)`, `removeTransitionCallback(from, to)`, `destroy()`.
+
+## Usage examples
+
+### Creating a room and adding a member
 
 ```js
-import { MemberFactory } from "@ellementul/uee-core"
+import { MemberFactory } from "@ellementul/uny-events"
 
-// Create and initialize the room
 const room = new MemberFactory()
 room.makeRoom()
 
-// Create a member
 const member = new MemberFactory()
-member.onDestroy = () => { console.log("Member is being destroyed") }
+member.onJoinRoom = roomUid => console.log('joined', roomUid)
 room.addMember(member)
 
-// Delete member from room
-room.deleteMember(member.uid)
+room.deleteMember(member.uid())
 ```
 
-### Creating and Sending Events
+### Sending and subscribing
 
 ```js
-import { Types, EventFactory } from "@ellementul/uee-core"
+import { Types, EventFactory, MemberFactory } from "@ellementul/uny-events"
 
-// Define event type
-const type = Types.Object.Def({ 
-    system: "Test", 
-    action: Types.Any.Def("Switch On", "Switch Off") 
-})
-
-// Create event
-const event = EventFactory(type)
-
-// Send event with payload
-const payload = { action: "Switch On" }
-member.send(event, payload)
-```
-
-### Subscribing to Events
-
-```js
-import { Types, EventFactory } from "@ellementul/uee-core"
-
-// Define and create event
-const type = Types.Object.Def({ 
-    system: "Test", 
-    action: Types.Any.Def("Switch On", "Switch Off") 
+const type = Types.Object.Def({
+  system: 'Test',
+  action: Types.String.Def()
 })
 const event = EventFactory(type)
 
-// Subscribe to event
-const handleEvent = (payload) => { 
-    console.log("Received event:", payload) 
-}
-member.subscribe(event, handleEvent)
-```
-
-### Create Member with States
-
-```js
-import { StatesMember, DEFAULT_STATE, ANY_STATE } from './StateMember/index.js'
-
-const STATE_ONE = 'state1'
-const STATE_TWO = 'state2'
-
-// Create a member with possible values
-const myMember = new StatesMember([STATE_ONE, STATE_TWO])
-
-console.log(myMember.checkState(DEFAULT_STATE)) // true
-
-// Set state to valid value
-myMember.setState(STATE_ONE)
-
-// Check if current state is 'state1'
-console.log(myMember.checkState(STATE_ONE)) // true
-
-// Add transition callback from state 'state1' to 'state2'
-myMember.onTransition(ANY_STATE, STATE_TWO, () => {
-    console.log('Transitioning from any state to state2')
-})
-
-// Getting events when the state is state2
-member.subscribeForState(STATE_TWO, event, callback)
+const member = new MemberFactory()
+member.makeRoom()
+member.subscribe(event, payload => console.log(payload))
+member.send(event, { action: 'Switch On' })
 ```
 
 ## Development
 
-### Running Tests
-
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:w
-
-# Run browser tests
-npm run test:browser:ticker
-npm run test:browser:member
-npm run test:browser:peerjs
+npm test                       # all tests
+npm run test:w                 # watch mode
+npm run test:browser:ticker    # browser ticker suite
+npm run test:browser:member    # browser member suite
 ```
 
 ## License
 
 ISC
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
