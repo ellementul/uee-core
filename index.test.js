@@ -5,7 +5,7 @@ import {
   EventFactory,
   MemberFactory,
   RelationTool,
-  StatesMember,
+  StateTool,
   DEFAULT_STATE,
   ANY_STATE
 } from './index.js'
@@ -15,7 +15,7 @@ test('testing export main classes', t => {
   t.truthy(EventFactory)
   t.truthy(MemberFactory)
   t.truthy(RelationTool)
-  t.truthy(StatesMember)
+  t.truthy(StateTool)
   t.truthy(DEFAULT_STATE)
   t.truthy(ANY_STATE)
 })

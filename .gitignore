@@ -2,5 +2,6 @@ node_modules/*
 .parcel-cache/*
 dist/*
 
-# Generated code snapshot — regenerate locally when needed
+# Generated artifacts — regenerate locally when needed
 repomix-output.md
+mermaid.md
