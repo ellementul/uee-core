@@ -4,7 +4,10 @@ import {
   Types, 
   EventFactory,
   MemberFactory,
-  RelationTool
+  RelationTool,
+  StatesMember,
+  DEFAULT_STATE,
+  ANY_STATE
 } from './index.js'
 
 test('testing export main classes', t => {
@@ -12,4 +15,7 @@ test('testing export main classes', t => {
   t.truthy(EventFactory)
   t.truthy(MemberFactory)
   t.truthy(RelationTool)
+  t.truthy(StatesMember)
+  t.truthy(DEFAULT_STATE)
+  t.truthy(ANY_STATE)
 })

@@ -55,7 +55,7 @@ function ToolFactory({ currentMember, room }) {
 
     const receivePing = ({ 
         role: memberRole, 
-        memberStatus, 
+        status: memberStatus, 
         sourceUid, 
         timestamp, 
         receivedPings: memberReceivedPings,  
@@ -118,6 +118,9 @@ function ToolFactory({ currentMember, room }) {
         },
         status() {
             return status
+        },
+        memberInfo(uid) {
+            return memberList.get(uid)
         },
         sendPing
     }

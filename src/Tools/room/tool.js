@@ -11,7 +11,6 @@ export function RoomFactory({ provider, ProviderFactory, inEvents, outEvents }) 
             provider = ProviderFactory ? ProviderFactory() : new Provider()
 
         room.members = new Map
-        room.caches = new Map
 
         const checkMinimalEvent = event => {
 

@@ -144,6 +144,32 @@ test('two_clients_send_pings_to_host', async t => {
   t.is(gotClient2[1].memberListHash, gotClient1[1].memberListHash)
 })
 
+test('receivePing keeps sender status and role', async t => {
+  Tool.pingDelay = 1000
+
+  const host = new MemberFactory()
+  const client = new MemberFactory()
+
+  host.makeRoom()
+  client.makeRoom()
+  host.addTool(Tool)
+  client.addTool(Tool)
+  host.addMember(client)
+
+  await later(2)
+
+  client.tools.Relations.setRole('Worker')
+  client.tools.Relations.setStatus('Running')
+  client.tools.Relations.sendPing()
+
+  await later(2)
+
+  const info = host.tools.Relations.memberInfo(client.uid())
+  t.truthy(info)
+  t.is(info.memberRole, 'Worker')
+  t.is(info.memberStatus, 'Running')
+})
+
 test('Hash consistency and eviction', (t) => {
     const map1 = new HashMap('ts', 3)
     const map2 = new HashMap('ts', 3)
